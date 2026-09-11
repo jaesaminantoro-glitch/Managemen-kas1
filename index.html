@@ -41,7 +41,7 @@
     
         .admin-only.hidden { display:none !important; }
         .readonly-overlay { pointer-events:none; opacity:.65; }
-</style>
+    </style>
     <!-- Firebase Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-database-compat.js"></script>
@@ -71,9 +71,10 @@
                 </button>
             </div>
 
-            <div class="text-xs font-medium text-blue-100 hidden lg:block" id="current-date">
-                <!-- Tanggal diisi via JS -->
-            </div>
+            <div class="flex items-center">
+                <div class="text-xs font-medium text-blue-100 hidden lg:block mr-3" id="current-date">
+                    <!-- Tanggal diisi via JS -->
+                </div>
                 <button id="admin-login-btn" onclick="openAdminLogin()" class="ml-3 px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-xs font-semibold">
                     <i class="fas fa-lock mr-1"></i> Login Admin
                 </button>
@@ -83,11 +84,15 @@
                 <button id="admin-logout-btn" onclick="logoutAdmin()" class="ml-2 px-3 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-xs font-semibold hidden">
                     <i class="fas fa-sign-out-alt mr-1"></i> Logout
                 </button>
+            </div>
         </div>
     </nav>
 
     <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
         
+        <!-- Status koneksi Firebase -->
+        <div id="firebase-status" class="text-xs text-slate-500 font-medium"></div>
+
         <!-- ================= HALAMAN 1: DASHBOARD KAS & TRANSAKSI ================= -->
         <div id="page-dashboard" class="space-y-6">
             <!-- Summary Cards -->
@@ -268,7 +273,7 @@
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider sticky top-0 shadow-sm border-b border-slate-200">
-                                        <th class="px-5 py-3 font.semibold whitespace-nowrap">Tanggal</th>
+                                        <th class="px-5 py-3 font-semibold whitespace-nowrap">Tanggal</th>
                                         <th class="px-5 py-3 font-semibold">Keterangan & Detail</th>
                                         <th class="px-5 py-3 font-semibold text-right">Masuk</th>
                                         <th class="px-5 py-3 font-semibold text-right">Keluar</th>
@@ -395,9 +400,10 @@
                             <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
                                 <th class="px-6 py-4 font-semibold">Blok / No. Rumah</th>
                                 <th class="px-6 py-4 font-semibold">Nama Pemilik / Penghuni</th>
-                                <th class="px-6 py-4 font-semibold text-center">Status Pembayaran</th><th class="px-6 py-4 font-semibold text-center">Batas Bayar</th>
+                                <th class="px-6 py-4 font-semibold text-center">Status Pembayaran</th>
                                 <th class="px-6 py-4 font-semibold text-right">Nominal Bayar</th>
                                 <th class="px-6 py-4 font-semibold text-center">Tgl & Metode</th>
+                                <th class="px-6 py-4 font-semibold text-center">Batas Bayar</th>
                                 <th class="px-6 py-4 font-semibold text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -493,7 +499,6 @@
         ];
 
         // Global State - Firebase Realtime Database
-        // Setelah membuat project Firebase, ganti semua nilai ISI_... dengan config project Anda.
         const firebaseConfig = {
             apiKey: "AIzaSyA5XIhdeyBJw4MDNebedRKDcjsVcuR1Zx8",
             authDomain: "jaes-c1b52.firebaseapp.com",
@@ -509,6 +514,11 @@
         let firebaseDb = null;
         let transactions = [];
         let houses = defaultHouses.slice();
+
+        // Access control: Default ADMIN PIN
+        const DEFAULT_ADMIN_PIN = '1234';
+        let ADMIN_PIN = localStorage.getItem('kasRtAdminPin') || DEFAULT_ADMIN_PIN;
+        let isAdmin = false;
 
         // Current Period Setup
         const now = new Date();
@@ -737,7 +747,7 @@
                             : '<span class="text-slate-300 text-xs">-</span>'}
                     </td>
                     <td class="px-5 py-3 text-center">
-                        <button onclick="deleteTransaction('${t.id}')" class="admin-only text-slate-300 hover:text-rose-600 transition-colors p-1" title="Hapus Transaksi">
+                        <button onclick="deleteTransaction('${t.id}')" class="admin-only text-slate-300 hover:text-rose-600 transition-colors p-1 ${isAdmin ? '' : 'hidden'}" title="Hapus Transaksi">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>
@@ -892,7 +902,7 @@
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center gap-2">
                             ${actionBtn}
-                            <button onclick="deleteHouse('${h.id}')" class="admin-only text-slate-300 hover:text-rose-600 transition-colors p-1" title="Hapus Rumah Warga">
+                            <button onclick="deleteHouse('${h.id}')" class="admin-only text-slate-300 hover:text-rose-600 transition-colors p-1 ${isAdmin ? '' : 'hidden'}" title="Hapus Rumah Warga">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
@@ -928,7 +938,8 @@
         };
 
         // Quick record payment from status table
-        window.quickRecordPayment = function(houseNo) { if (!requireAdmin()) return;
+        window.quickRecordPayment = function(houseNo) { 
+            if (!requireAdmin()) return;
             switchMainPage('dashboard');
             switchForm('income');
             const houseInput = document.getElementById('inc-house');
@@ -957,7 +968,8 @@
         };
 
         // Modals & House Actions
-        window.openAddHouseModal = function() { if (!requireAdmin()) return;
+        window.openAddHouseModal = function() { 
+            if (!requireAdmin()) return;
             document.getElementById('modal-house-no').value = '';
             document.getElementById('modal-house-owner').value = '';
             document.getElementById('modal-house-phone').value = '';
@@ -968,12 +980,17 @@
             document.getElementById('house-modal').classList.add('hidden');
         };
 
-        window.deleteHouse = function(id) { if (!requireAdmin()) return;
-            houses = houses.filter(h => h.id !== id);
-            persistHouses();
-            updateHouseDatalist();
-            renderHouseStatus();
-            showToast('Data rumah warga dihapus', 'delete');
+        window.deleteHouse = function(id) { 
+            if (!requireAdmin()) return;
+            const house = houses.find(h => h.id === id);
+            const houseName = house ? `Rumah ${house.houseNumber} (${house.ownerName})` : 'data rumah ini';
+            if (confirm(`Apakah Anda yakin ingin menghapus ${houseName}?`)) {
+                houses = houses.filter(h => h.id !== id);
+                persistHouses();
+                updateHouseDatalist();
+                renderHouseStatus();
+                showToast('Data rumah warga dihapus', 'delete');
+            }
         };
 
         window.openProofModal = function(id) {
@@ -998,10 +1015,15 @@
             document.getElementById('proof-modal').classList.add('hidden');
         };
 
-        window.deleteTransaction = function(id) { if (!requireAdmin()) return;
-            transactions = transactions.filter(t => t.id !== id);
-            saveToLocalStorage();
-            showToast('Transaksi berhasil dihapus', 'delete');
+        window.deleteTransaction = function(id) { 
+            if (!requireAdmin()) return;
+            const t = transactions.find(item => item.id === id);
+            const desc = t ? `"${t.description}"` : 'transaksi ini';
+            if (confirm(`Apakah Anda yakin ingin menghapus ${desc}?`)) {
+                transactions = transactions.filter(t => t.id !== id);
+                saveToLocalStorage();
+                showToast('Transaksi berhasil dihapus', 'delete');
+            }
         };
 
         function renderAllViews() {
@@ -1034,7 +1056,18 @@
             });
         }
 
-        // Nama fungsi lama dipertahankan agar fitur yang sudah ada tetap berjalan.
+        // Persist PIN Admin ke Firebase
+        function persistPin(newPin) {
+            if (!firebaseReady) {
+                showToast('Database online belum terhubung.', 'error');
+                return;
+            }
+            firebaseDb.ref('kasRt/adminPin').set(newPin).catch(err => {
+                console.error(err);
+                showToast('Gagal memperbarui PIN di database.', 'error');
+            });
+        }
+
         function saveToLocalStorage() {
             persistTransactions();
             renderAllViews();
@@ -1065,6 +1098,18 @@
                     el.textContent = 'Terhubung • Database online • Real-time aktif';
                     el.className = 'text-xs text-emerald-700';
                 }
+
+                // Sync PIN Realtime dari Firebase
+                firebaseDb.ref('kasRt/adminPin').on('value', snap => {
+                    const pinVal = snap.val();
+                    if (pinVal) {
+                        ADMIN_PIN = String(pinVal);
+                        localStorage.setItem('kasRtAdminPin', ADMIN_PIN);
+                    } else {
+                        // Jika PIN di Firebase belum ada, simpan default PIN
+                        persistPin(DEFAULT_ADMIN_PIN);
+                    }
+                });
 
                 firebaseDb.ref('kasRt/transactions').on('value', snap => {
                     const data = snap.val();
@@ -1220,12 +1265,6 @@
             showToast(`Rumah ${no} berhasil ditambahkan!`);
         });
 
-
-        // Access control: default READ ONLY. Admin PIN = 1234.
-        const DEFAULT_ADMIN_PIN = '1234';
-        let ADMIN_PIN = localStorage.getItem('kasRtAdminPin') || DEFAULT_ADMIN_PIN;
-        let isAdmin = false;
-
         function requireAdmin() {
             if (!isAdmin) {
                 showToast('Mode Read Only. Login Admin terlebih dahulu.', 'error');
@@ -1282,6 +1321,7 @@
             });
         });
 
+        // Event listener ubah PIN -> Simpan ke Firebase Realtime
         document.addEventListener('DOMContentLoaded',()=>{
             const f=document.getElementById('change-pin-form');
             if(f) f.addEventListener('submit',e=>{
@@ -1293,10 +1333,13 @@
                 if(oldPin!==ADMIN_PIN) return showToast('PIN lama salah.','error');
                 if(!/^\d{4}$/.test(newPin)) return showToast('PIN baru harus 4 digit angka.','error');
                 if(newPin!==confirmPin) return showToast('Konfirmasi PIN tidak sama.','error');
+                
                 ADMIN_PIN=newPin;
                 localStorage.setItem('kasRtAdminPin',newPin);
+                persistPin(newPin);
+                
                 closeChangePin();
-                showToast('PIN Admin berhasil diubah.');
+                showToast('PIN Admin berhasil diubah secara real-time.');
             });
         });
 
@@ -1356,16 +1399,6 @@
     </form>
   </div>
 </div>
-<!--
-SETUP FIREBASE:
-1. Buat Firebase Project.
-2. Tambahkan Web App.
-3. Aktifkan Realtime Database.
-4. Salin firebaseConfig dari Firebase ke bagian firebaseConfig di atas.
-5. Sesuaikan databaseURL dengan URL Realtime Database project Anda.
 
-PENTING: PIN saat ini masih merupakan pengunci UI browser. Untuk keamanan
-admin yang benar-benar kuat, gunakan Firebase Authentication + Security Rules.
--->
 </body>
 </html>
