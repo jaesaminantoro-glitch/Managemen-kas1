@@ -42,6 +42,9 @@
         .admin-only.hidden { display:none !important; }
         .readonly-overlay { pointer-events:none; opacity:.65; }
 </style>
+    <!-- Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-database-compat.js"></script>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
 
@@ -73,6 +76,9 @@
             </div>
                 <button id="admin-login-btn" onclick="openAdminLogin()" class="ml-3 px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-xs font-semibold">
                     <i class="fas fa-lock mr-1"></i> Login Admin
+                </button>
+                <button id="admin-change-pin-btn" onclick="openChangePin()" class="admin-only ml-2 px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-xs font-semibold hidden">
+                    <i class="fas fa-key mr-1"></i> Ubah PIN
                 </button>
                 <button id="admin-logout-btn" onclick="logoutAdmin()" class="ml-2 px-3 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-xs font-semibold hidden">
                     <i class="fas fa-sign-out-alt mr-1"></i> Logout
@@ -486,9 +492,23 @@
             { id: 'h10', houseNumber: 'B-05', ownerName: 'Bpk. Anies Baswedan', phone: '' }
         ];
 
-        // Global State
-        let transactions = JSON.parse(localStorage.getItem('kasRtTransactions')) || [];
-        let houses = JSON.parse(localStorage.getItem('kasRtHouses')) || defaultHouses;
+        // Global State - Firebase Realtime Database
+        // Setelah membuat project Firebase, ganti semua nilai ISI_... dengan config project Anda.
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5XIhdeyBJw4MDNebedRKDcjsVcuR1Zx8",
+            authDomain: "jaes-c1b52.firebaseapp.com",
+            databaseURL: "https://jaes-c1b52-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "jaes-c1b52",
+            storageBucket: "jaes-c1b52.firebasestorage.app",
+            messagingSenderId: "934203338301",
+            appId: "1:934203338301:web:2bd353cec0b3f127e48454",
+            measurementId: "G-QT5XKJSQ1X"
+        };
+
+        let firebaseReady = false;
+        let firebaseDb = null;
+        let transactions = [];
+        let houses = defaultHouses.slice();
 
         // Current Period Setup
         const now = new Date();
@@ -950,7 +970,7 @@
 
         window.deleteHouse = function(id) { if (!requireAdmin()) return;
             houses = houses.filter(h => h.id !== id);
-            localStorage.setItem('kasRtHouses', JSON.stringify(houses));
+            persistHouses();
             updateHouseDatalist();
             renderHouseStatus();
             showToast('Data rumah warga dihapus', 'delete');
@@ -984,12 +1004,91 @@
             showToast('Transaksi berhasil dihapus', 'delete');
         };
 
-        function saveToLocalStorage() {
-            localStorage.setItem('kasRtTransactions', JSON.stringify(transactions));
+        function renderAllViews() {
+            updateHouseDatalist();
             renderDashboard();
             renderHistory();
             renderRecap();
             renderHouseStatus();
+        }
+
+        function persistTransactions() {
+            if (!firebaseReady) {
+                showToast('Database online belum terhubung.', 'error');
+                return;
+            }
+            firebaseDb.ref('kasRt/transactions').set(transactions).catch(err => {
+                console.error(err);
+                showToast('Gagal menyimpan data ke database.', 'error');
+            });
+        }
+
+        function persistHouses() {
+            if (!firebaseReady) {
+                showToast('Database online belum terhubung.', 'error');
+                return;
+            }
+            firebaseDb.ref('kasRt/houses').set(houses).catch(err => {
+                console.error(err);
+                showToast('Gagal menyimpan data rumah.', 'error');
+            });
+        }
+
+        // Nama fungsi lama dipertahankan agar fitur yang sudah ada tetap berjalan.
+        function saveToLocalStorage() {
+            persistTransactions();
+            renderAllViews();
+        }
+
+        function isFirebaseConfigured() {
+            return firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('ISI_') &&
+                   firebaseConfig.projectId && !firebaseConfig.projectId.startsWith('ISI_') &&
+                   firebaseConfig.databaseURL && !firebaseConfig.databaseURL.includes('ISI_PROJECT_ID');
+        }
+
+        function startFirebaseSync() {
+            if (!isFirebaseConfigured()) {
+                const el = document.getElementById('firebase-status');
+                if (el) {
+                    el.textContent = 'Belum terhubung — Firebase Config belum diisi.';
+                    el.className = 'text-xs text-amber-700';
+                }
+                initApp();
+                return;
+            }
+            try {
+                firebase.initializeApp(firebaseConfig);
+                firebaseDb = firebase.database();
+                firebaseReady = true;
+                const el = document.getElementById('firebase-status');
+                if (el) {
+                    el.textContent = 'Terhubung • Database online • Real-time aktif';
+                    el.className = 'text-xs text-emerald-700';
+                }
+
+                firebaseDb.ref('kasRt/transactions').on('value', snap => {
+                    const data = snap.val();
+                    transactions = Array.isArray(data) ? data : (data ? Object.values(data) : []);
+                    renderAllViews();
+                });
+
+                firebaseDb.ref('kasRt/houses').on('value', snap => {
+                    const data = snap.val();
+                    houses = Array.isArray(data) && data.length ? data : (data ? Object.values(data) : defaultHouses.slice());
+                    if (!data) persistHouses();
+                    renderAllViews();
+                });
+
+                initApp();
+            } catch (err) {
+                console.error(err);
+                const el = document.getElementById('firebase-status');
+                if (el) {
+                    el.textContent = 'Firebase gagal terhubung — periksa Config.';
+                    el.className = 'text-xs text-red-700';
+                }
+                initApp();
+            }
         }
 
         // Helper File Reader
@@ -1027,7 +1126,7 @@
                     ownerName: `Warga Rumah ${house}`,
                     phone: ''
                 });
-                localStorage.setItem('kasRtHouses', JSON.stringify(houses));
+                persistHouses();
                 updateHouseDatalist();
             }
 
@@ -1114,7 +1213,7 @@
                 phone: phone
             });
 
-            localStorage.setItem('kasRtHouses', JSON.stringify(houses));
+            persistHouses();
             closeHouseModal();
             updateHouseDatalist();
             renderHouseStatus();
@@ -1123,7 +1222,8 @@
 
 
         // Access control: default READ ONLY. Admin PIN = 1234.
-        const ADMIN_PIN = '1234';
+        const DEFAULT_ADMIN_PIN = '1234';
+        let ADMIN_PIN = localStorage.getItem('kasRtAdminPin') || DEFAULT_ADMIN_PIN;
         let isAdmin = false;
 
         function requireAdmin() {
@@ -1144,14 +1244,30 @@
             const modal=document.getElementById('admin-login-modal');
             modal.classList.add('hidden'); modal.classList.remove('flex');
         }
+
+        function openChangePin() {
+            if (!requireAdmin()) return;
+            const modal=document.getElementById('change-pin-modal');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            document.getElementById('old-pin').value='';
+            document.getElementById('new-pin').value='';
+            document.getElementById('confirm-pin').value='';
+            setTimeout(()=>document.getElementById('old-pin').focus(),50);
+        }
+        function closeChangePin() {
+            const modal=document.getElementById('change-pin-modal');
+            modal.classList.add('hidden'); modal.classList.remove('flex');
+        }
+
         function logoutAdmin() {
             isAdmin=false; updateAccessMode();
             showToast('Logout Admin. Mode Read Only aktif.');
         }
         function updateAccessMode() {
-            const lb=document.getElementById('admin-login-btn'), lo=document.getElementById('admin-logout-btn');
+            const lb=document.getElementById('admin-login-btn'), lo=document.getElementById('admin-logout-btn'), cp=document.getElementById('admin-change-pin-btn');
             if(lb) lb.classList.toggle('hidden',isAdmin);
             if(lo) lo.classList.toggle('hidden',!isAdmin);
+            if(cp) cp.classList.toggle('hidden',!isAdmin);
             document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!isAdmin));
             document.querySelectorAll('#form-income input, #form-income select, #form-income button, #form-expense input, #form-expense select, #form-expense button').forEach(el=>el.disabled=!isAdmin);
         }
@@ -1163,6 +1279,24 @@
                 if(document.getElementById('admin-pin').value===ADMIN_PIN){
                     isAdmin=true; closeAdminLogin(); updateAccessMode(); showToast('Login Admin berhasil.');
                 } else showToast('PIN salah.','error');
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded',()=>{
+            const f=document.getElementById('change-pin-form');
+            if(f) f.addEventListener('submit',e=>{
+                e.preventDefault();
+                if(!isAdmin) return;
+                const oldPin=document.getElementById('old-pin').value;
+                const newPin=document.getElementById('new-pin').value;
+                const confirmPin=document.getElementById('confirm-pin').value;
+                if(oldPin!==ADMIN_PIN) return showToast('PIN lama salah.','error');
+                if(!/^\d{4}$/.test(newPin)) return showToast('PIN baru harus 4 digit angka.','error');
+                if(newPin!==confirmPin) return showToast('Konfirmasi PIN tidak sama.','error');
+                ADMIN_PIN=newPin;
+                localStorage.setItem('kasRtAdminPin',newPin);
+                closeChangePin();
+                showToast('PIN Admin berhasil diubah.');
             });
         });
 
@@ -1184,7 +1318,7 @@
             updateAccessMode();
         }
 
-        document.addEventListener('DOMContentLoaded', initApp);
+        document.addEventListener('DOMContentLoaded', startFirebaseSync);
     </script>
 
 <!-- Admin PIN Modal -->
@@ -1203,5 +1337,35 @@
     </form>
   </div>
 </div>
+
+<!-- Change Admin PIN Modal -->
+<div id="change-pin-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[101] hidden items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fas fa-key"></i></div>
+      <div><h3 class="font-bold text-slate-800">Ubah PIN Admin</h3><p class="text-xs text-slate-500">Buat PIN baru 4 digit.</p></div>
+    </div>
+    <form id="change-pin-form">
+      <input id="old-pin" type="password" inputmode="numeric" maxlength="4" class="w-full border border-slate-300 rounded-xl px-4 py-3 mb-2 text-center tracking-[.4em] outline-none focus:ring-2 focus:ring-amber-500" placeholder="PIN lama" required>
+      <input id="new-pin" type="password" inputmode="numeric" maxlength="4" class="w-full border border-slate-300 rounded-xl px-4 py-3 mb-2 text-center tracking-[.4em] outline-none focus:ring-2 focus:ring-amber-500" placeholder="PIN baru (4 digit)" required>
+      <input id="confirm-pin" type="password" inputmode="numeric" maxlength="4" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-center tracking-[.4em] outline-none focus:ring-2 focus:ring-amber-500" placeholder="Ulangi PIN baru" required>
+      <div class="flex gap-2 justify-end mt-4">
+        <button type="button" onclick="closeChangePin()" class="px-4 py-2 rounded-lg bg-slate-100">Batal</button>
+        <button type="submit" class="px-5 py-2 rounded-lg bg-amber-500 text-white font-semibold">Simpan PIN</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!--
+SETUP FIREBASE:
+1. Buat Firebase Project.
+2. Tambahkan Web App.
+3. Aktifkan Realtime Database.
+4. Salin firebaseConfig dari Firebase ke bagian firebaseConfig di atas.
+5. Sesuaikan databaseURL dengan URL Realtime Database project Anda.
+
+PENTING: PIN saat ini masih merupakan pengunci UI browser. Untuk keamanan
+admin yang benar-benar kuat, gunakan Firebase Authentication + Security Rules.
+-->
 </body>
 </html>
