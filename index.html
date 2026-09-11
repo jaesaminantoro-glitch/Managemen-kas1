@@ -38,7 +38,10 @@
         .tab-inactive:hover {
             color: #1e293b;
         }
-    </style>
+    
+        .admin-only.hidden { display:none !important; }
+        .readonly-overlay { pointer-events:none; opacity:.65; }
+</style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
 
@@ -68,6 +71,12 @@
             <div class="text-xs font-medium text-blue-100 hidden lg:block" id="current-date">
                 <!-- Tanggal diisi via JS -->
             </div>
+                <button id="admin-login-btn" onclick="openAdminLogin()" class="ml-3 px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-xs font-semibold">
+                    <i class="fas fa-lock mr-1"></i> Login Admin
+                </button>
+                <button id="admin-logout-btn" onclick="logoutAdmin()" class="ml-2 px-3 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-xs font-semibold hidden">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                </button>
         </div>
     </nav>
 
@@ -366,7 +375,7 @@
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                         <input type="text" id="house-search-input" onkeyup="renderHouseStatus()" placeholder="Cari No. Rumah / Nama..." class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
-                    <button onclick="openAddHouseModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap shadow-sm">
+                    <button onclick="openAddHouseModal()" class="admin-only px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap shadow-sm">
                         <i class="fas fa-plus"></i> Tambah Warga
                     </button>
                 </div>
@@ -380,7 +389,7 @@
                             <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
                                 <th class="px-6 py-4 font-semibold">Blok / No. Rumah</th>
                                 <th class="px-6 py-4 font-semibold">Nama Pemilik / Penghuni</th>
-                                <th class="px-6 py-4 font-semibold text-center">Status Pembayaran</th>
+                                <th class="px-6 py-4 font-semibold text-center">Status Pembayaran</th><th class="px-6 py-4 font-semibold text-center">Batas Bayar</th>
                                 <th class="px-6 py-4 font-semibold text-right">Nominal Bayar</th>
                                 <th class="px-6 py-4 font-semibold text-center">Tgl & Metode</th>
                                 <th class="px-6 py-4 font-semibold text-center">Aksi</th>
@@ -708,7 +717,7 @@
                             : '<span class="text-slate-300 text-xs">-</span>'}
                     </td>
                     <td class="px-5 py-3 text-center">
-                        <button onclick="deleteTransaction('${t.id}')" class="text-slate-300 hover:text-rose-600 transition-colors p-1" title="Hapus Transaksi">
+                        <button onclick="deleteTransaction('${t.id}')" class="admin-only text-slate-300 hover:text-rose-600 transition-colors p-1" title="Hapus Transaksi">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>
@@ -809,6 +818,9 @@
                 });
 
                 const isPaid = !!payment;
+                const dueDate = `${selectedPeriod}-10`;
+                const todayISO = new Date().toISOString().split('T')[0];
+                const isLate = !isPaid && todayISO > dueDate;
                 if (isPaid) paidCount++;
                 else unpaidCount++;
 
@@ -820,13 +832,11 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition-colors";
 
-                const statusBadge = isPaid 
-                    ? `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
-                        <i class="fas fa-check-circle"></i> Lunas
-                       </span>`
-                    : `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">
-                        <i class="fas fa-times-circle"></i> Belum Bayar
-                       </span>`;
+                const statusBadge = isPaid
+                    ? `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700"><i class="fas fa-check-circle"></i> Lunas</span>`
+                    : isLate
+                    ? `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700"><i class="fas fa-clock"></i> Terlambat</span>`
+                    : `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700"><i class="fas fa-hourglass-half"></i> Belum Bayar</span>`;
 
                 const actionBtn = isPaid 
                     ? `<button onclick="openProofModal('${payment.id}')" class="text-xs px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors ${payment.proof ? '' : 'opacity-50 cursor-not-allowed'}" ${payment.proof ? '' : 'disabled'}>
@@ -855,10 +865,14 @@
                     <td class="px-6 py-4 text-center text-xs text-slate-500">
                         ${isPaid ? `${formatDate(payment.date)} <br><span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-medium">${escapeHTML(payment.paymentMethod || 'Cash')}</span>` : '<span class="text-slate-300">-</span>'}
                     </td>
+                    <td class="px-6 py-4 text-center text-xs">
+                        <div class="font-semibold text-slate-700">${formatDate(dueDate)}</div>
+                        <div class="${isLate ? 'text-rose-500 font-semibold' : 'text-slate-400'} text-[10px]">${isLate ? 'Lewat jatuh tempo' : 'Maks. tanggal 10'}</div>
+                    </td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center gap-2">
                             ${actionBtn}
-                            <button onclick="deleteHouse('${h.id}')" class="text-slate-300 hover:text-rose-600 transition-colors p-1" title="Hapus Rumah Warga">
+                            <button onclick="deleteHouse('${h.id}')" class="admin-only text-slate-300 hover:text-rose-600 transition-colors p-1" title="Hapus Rumah Warga">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
@@ -894,7 +908,7 @@
         };
 
         // Quick record payment from status table
-        window.quickRecordPayment = function(houseNo) {
+        window.quickRecordPayment = function(houseNo) { if (!requireAdmin()) return;
             switchMainPage('dashboard');
             switchForm('income');
             const houseInput = document.getElementById('inc-house');
@@ -923,7 +937,7 @@
         };
 
         // Modals & House Actions
-        window.openAddHouseModal = function() {
+        window.openAddHouseModal = function() { if (!requireAdmin()) return;
             document.getElementById('modal-house-no').value = '';
             document.getElementById('modal-house-owner').value = '';
             document.getElementById('modal-house-phone').value = '';
@@ -934,7 +948,7 @@
             document.getElementById('house-modal').classList.add('hidden');
         };
 
-        window.deleteHouse = function(id) {
+        window.deleteHouse = function(id) { if (!requireAdmin()) return;
             houses = houses.filter(h => h.id !== id);
             localStorage.setItem('kasRtHouses', JSON.stringify(houses));
             updateHouseDatalist();
@@ -964,7 +978,7 @@
             document.getElementById('proof-modal').classList.add('hidden');
         };
 
-        window.deleteTransaction = function(id) {
+        window.deleteTransaction = function(id) { if (!requireAdmin()) return;
             transactions = transactions.filter(t => t.id !== id);
             saveToLocalStorage();
             showToast('Transaksi berhasil dihapus', 'delete');
@@ -995,6 +1009,7 @@
         // Event Listener Form Income
         document.getElementById('form-income').addEventListener('submit', async function(e) {
             e.preventDefault();
+            if (!requireAdmin()) return;
             const date = document.getElementById('inc-date').value;
             const method = document.getElementById('inc-method').value;
             const house = document.getElementById('inc-house').value.trim().toUpperCase();
@@ -1052,6 +1067,7 @@
         // Event Listener Form Expense
         document.getElementById('form-expense').addEventListener('submit', async function(e) {
             e.preventDefault();
+            if (!requireAdmin()) return;
             const date = document.getElementById('exp-date').value;
             const desc = document.getElementById('exp-desc').value.trim();
             const amount = parseFloat(document.getElementById('exp-amount').value);
@@ -1079,6 +1095,7 @@
         // Event Listener Form House
         document.getElementById('form-house').addEventListener('submit', function(e) {
             e.preventDefault();
+            if (!requireAdmin()) return;
             const no = document.getElementById('modal-house-no').value.trim().toUpperCase();
             const owner = document.getElementById('modal-house-owner').value.trim();
             const phone = document.getElementById('modal-house-phone').value.trim();
@@ -1104,6 +1121,51 @@
             showToast(`Rumah ${no} berhasil ditambahkan!`);
         });
 
+
+        // Access control: default READ ONLY. Admin PIN = 1234.
+        const ADMIN_PIN = '1234';
+        let isAdmin = false;
+
+        function requireAdmin() {
+            if (!isAdmin) {
+                showToast('Mode Read Only. Login Admin terlebih dahulu.', 'error');
+                return false;
+            }
+            return true;
+        }
+
+        function openAdminLogin() {
+            const modal=document.getElementById('admin-login-modal');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            document.getElementById('admin-pin').value='';
+            setTimeout(()=>document.getElementById('admin-pin').focus(),50);
+        }
+        function closeAdminLogin() {
+            const modal=document.getElementById('admin-login-modal');
+            modal.classList.add('hidden'); modal.classList.remove('flex');
+        }
+        function logoutAdmin() {
+            isAdmin=false; updateAccessMode();
+            showToast('Logout Admin. Mode Read Only aktif.');
+        }
+        function updateAccessMode() {
+            const lb=document.getElementById('admin-login-btn'), lo=document.getElementById('admin-logout-btn');
+            if(lb) lb.classList.toggle('hidden',isAdmin);
+            if(lo) lo.classList.toggle('hidden',!isAdmin);
+            document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!isAdmin));
+            document.querySelectorAll('#form-income input, #form-income select, #form-income button, #form-expense input, #form-expense select, #form-expense button').forEach(el=>el.disabled=!isAdmin);
+        }
+
+        document.addEventListener('DOMContentLoaded',()=>{
+            const f=document.getElementById('admin-login-form');
+            if(f) f.addEventListener('submit',e=>{
+                e.preventDefault();
+                if(document.getElementById('admin-pin').value===ADMIN_PIN){
+                    isAdmin=true; closeAdminLogin(); updateAccessMode(); showToast('Login Admin berhasil.');
+                } else showToast('PIN salah.','error');
+            });
+        });
+
         // Initialize App
         function initApp() {
             const todayStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -1119,9 +1181,27 @@
             renderHistory();
             renderRecap();
             renderHouseStatus();
+            updateAccessMode();
         }
 
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
+
+<!-- Admin PIN Modal -->
+<div id="admin-login-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fas fa-lock"></i></div>
+      <div><h3 class="font-bold text-slate-800">Login Admin</h3><p class="text-xs text-slate-500">Masukkan PIN untuk mengubah data.</p></div>
+    </div>
+    <form id="admin-login-form">
+      <input id="admin-pin" type="password" inputmode="numeric" maxlength="4" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-center text-2xl tracking-[.5em] outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••" required>
+      <div class="flex gap-2 justify-end mt-4">
+        <button type="button" onclick="closeAdminLogin()" class="px-4 py-2 rounded-lg bg-slate-100">Batal</button>
+        <button type="submit" class="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold">Masuk</button>
+      </div>
+    </form>
+  </div>
+</div>
 </body>
 </html>
