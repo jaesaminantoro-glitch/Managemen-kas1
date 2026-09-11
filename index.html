@@ -168,13 +168,16 @@
                 <!-- Kolom Kiri: Form Input Transaksi -->
                 <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
                     <div class="flex items-center justify-between mb-5 pb-3 border-b border-slate-100">
-                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2" id="form-title">
                             <i class="fas fa-pen-to-square text-blue-600"></i> Catat Transaksi Baru
                         </h3>
+                        <button type="button" id="btn-cancel-edit" onclick="cancelEditTransaction()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2.5 py-1 rounded-lg font-medium hidden">
+                            Batal Edit
+                        </button>
                     </div>
 
                     <!-- Switcher Tipe Transaksi -->
-                    <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl mb-5">
+                    <div id="form-type-switcher" class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl mb-5">
                         <button type="button" onclick="switchForm('income')" id="btn-form-income" class="py-2 text-xs font-bold rounded-lg transition-all bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5">
                             <i class="fas fa-plus-circle"></i> Pemasukan
                         </button>
@@ -185,6 +188,7 @@
 
                     <!-- Form Pemasukan -->
                     <form id="form-income" class="space-y-4">
+                        <input type="hidden" id="inc-id" value="">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Transaksi <span class="text-rose-500">*</span></label>
                             <input type="date" id="inc-date" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
@@ -218,15 +222,17 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Upload Bukti Transaksi <span class="text-slate-400 font-normal">(Opsional)</span></label>
                             <input type="file" id="inc-proof" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                            <p id="inc-proof-info" class="text-[11px] text-emerald-600 font-medium mt-1 hidden"><i class="fas fa-check-circle"></i> Bukti transaksi sudah tersimpan.</p>
                         </div>
 
-                        <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 mt-2">
+                        <button type="submit" id="inc-submit-btn" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 mt-2">
                             <i class="fas fa-save"></i> Simpan Pemasukan
                         </button>
                     </form>
 
                     <!-- Form Pengeluaran (Default hidden) -->
                     <form id="form-expense" class="space-y-4 hidden">
+                        <input type="hidden" id="exp-id" value="">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Transaksi <span class="text-rose-500">*</span></label>
                             <input type="date" id="exp-date" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-rose-500 outline-none">
@@ -245,9 +251,10 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Upload Bukti / Struk / Nota <span class="text-slate-400 font-normal">(Opsional)</span></label>
                             <input type="file" id="exp-proof" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer">
+                            <p id="exp-proof-info" class="text-[11px] text-emerald-600 font-medium mt-1 hidden"><i class="fas fa-check-circle"></i> Bukti/Struk sudah tersimpan.</p>
                         </div>
 
-                        <button type="submit" class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 mt-2">
+                        <button type="submit" id="exp-submit-btn" class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 mt-2">
                             <i class="fas fa-save"></i> Simpan Pengeluaran
                         </button>
                     </form>
@@ -420,11 +427,11 @@
         </div>
     </main>
 
-    <!-- Modal Tambah Warga -->
+    <!-- Modal Tambah / Edit Warga -->
     <div id="house-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl transform transition-all">
             <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2" id="house-modal-title">
                     <i class="fas fa-home text-blue-600"></i> Tambah Data Rumah Warga
                 </h3>
                 <button onclick="closeHouseModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg transition-colors">
@@ -432,6 +439,7 @@
                 </button>
             </div>
             <form id="form-house" class="p-6 space-y-4">
+                <input type="hidden" id="modal-house-id" value="">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Blok / No. Rumah <span class="text-rose-500">*</span></label>
                     <input type="text" id="modal-house-no" placeholder="Misal: A-01" required class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none uppercase font-semibold">
@@ -514,11 +522,12 @@
         let firebaseDb = null;
         let transactions = [];
         let houses = defaultHouses.slice();
+        let editingTransactionId = null;
 
-        // Access control: Default ADMIN PIN
+        // Access control: Default ADMIN PIN & Status Session
         const DEFAULT_ADMIN_PIN = '1234';
         let ADMIN_PIN = localStorage.getItem('kasRtAdminPin') || DEFAULT_ADMIN_PIN;
-        let isAdmin = false;
+        let isAdmin = sessionStorage.getItem('kasRtIsAdmin') === 'true';
 
         // Current Period Setup
         const now = new Date();
@@ -747,9 +756,14 @@
                             : '<span class="text-slate-300 text-xs">-</span>'}
                     </td>
                     <td class="px-5 py-3 text-center">
-                        <button onclick="deleteTransaction('${t.id}')" class="admin-only text-slate-300 hover:text-rose-600 transition-colors p-1 ${isAdmin ? '' : 'hidden'}" title="Hapus Transaksi">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="editTransaction('${t.id}')" class="admin-only text-slate-400 hover:text-amber-600 transition-colors p-1 ${isAdmin ? '' : 'hidden'}" title="Edit Transaksi">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button onclick="deleteTransaction('${t.id}')" class="admin-only text-slate-300 hover:text-rose-600 transition-colors p-1 ${isAdmin ? '' : 'hidden'}" title="Hapus Transaksi">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -902,6 +916,9 @@
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center gap-2">
                             ${actionBtn}
+                            <button onclick="editHouse('${h.id}')" class="admin-only text-slate-400 hover:text-amber-600 transition-colors p-1 ${isAdmin ? '' : 'hidden'}" title="Edit Data Rumah">
+                                <i class="fas fa-pen"></i>
+                            </button>
                             <button onclick="deleteHouse('${h.id}')" class="admin-only text-slate-300 hover:text-rose-600 transition-colors p-1 ${isAdmin ? '' : 'hidden'}" title="Hapus Rumah Warga">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
@@ -941,6 +958,7 @@
         window.quickRecordPayment = function(houseNo) { 
             if (!requireAdmin()) return;
             switchMainPage('dashboard');
+            cancelEditTransaction();
             switchForm('income');
             const houseInput = document.getElementById('inc-house');
             const descInput = document.getElementById('inc-desc');
@@ -967,12 +985,98 @@
             showToast(`Mencatat iuran untuk rumah ${houseNo}`);
         };
 
+        // Edit Transaksi
+        window.editTransaction = function(id) {
+            if (!requireAdmin()) return;
+            const t = transactions.find(item => item.id === id);
+            if (!t) return;
+
+            editingTransactionId = id;
+            switchMainPage('dashboard');
+
+            // Sembunyikan switcher tipe transaksi saat edit
+            document.getElementById('form-type-switcher').classList.add('hidden');
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+
+            if (t.type === 'income') {
+                switchForm('income');
+                document.getElementById('form-title').innerHTML = '<i class="fas fa-edit text-amber-500"></i> Edit Pemasukan';
+                document.getElementById('inc-id').value = t.id;
+                document.getElementById('inc-date').value = t.date || '';
+                document.getElementById('inc-method').value = t.paymentMethod || 'Cash';
+                document.getElementById('inc-house').value = t.houseNumber || '';
+                document.getElementById('inc-desc').value = t.description || '';
+                document.getElementById('inc-amount').value = t.amount || '';
+                document.getElementById('inc-submit-btn').innerHTML = '<i class="fas fa-save"></i> Perbarui Pemasukan';
+
+                const proofInfo = document.getElementById('inc-proof-info');
+                if (t.proof) proofInfo.classList.remove('hidden');
+                else proofInfo.classList.add('hidden');
+
+            } else {
+                switchForm('expense');
+                document.getElementById('form-title').innerHTML = '<i class="fas fa-edit text-amber-500"></i> Edit Pengeluaran';
+                document.getElementById('exp-id').value = t.id;
+                document.getElementById('exp-date').value = t.date || '';
+                document.getElementById('exp-desc').value = t.description || '';
+                document.getElementById('exp-amount').value = t.amount || '';
+                document.getElementById('exp-submit-btn').innerHTML = '<i class="fas fa-save"></i> Perbarui Pengeluaran';
+
+                const proofInfo = document.getElementById('exp-proof-info');
+                if (t.proof) proofInfo.classList.remove('hidden');
+                else proofInfo.classList.add('hidden');
+            }
+
+            // Scroll ke posisi form
+            document.getElementById('form-title').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.cancelEditTransaction = function() {
+            editingTransactionId = null;
+            document.getElementById('form-type-switcher').classList.remove('hidden');
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+            document.getElementById('form-title').innerHTML = '<i class="fas fa-pen-to-square text-blue-600"></i> Catat Transaksi Baru';
+
+            // Reset form Pemasukan
+            const formInc = document.getElementById('form-income');
+            formInc.reset();
+            document.getElementById('inc-id').value = '';
+            document.getElementById('inc-submit-btn').innerHTML = '<i class="fas fa-save"></i> Simpan Pemasukan';
+            document.getElementById('inc-proof-info').classList.add('hidden');
+
+            // Reset form Pengeluaran
+            const formExp = document.getElementById('form-expense');
+            formExp.reset();
+            document.getElementById('exp-id').value = '';
+            document.getElementById('exp-submit-btn').innerHTML = '<i class="fas fa-save"></i> Simpan Pengeluaran';
+            document.getElementById('exp-proof-info').classList.add('hidden');
+
+            const todayISO = new Date().toISOString().split('T')[0];
+            document.getElementById('inc-date').value = todayISO;
+            document.getElementById('exp-date').value = todayISO;
+        };
+
         // Modals & House Actions
         window.openAddHouseModal = function() { 
             if (!requireAdmin()) return;
+            document.getElementById('modal-house-id').value = '';
             document.getElementById('modal-house-no').value = '';
             document.getElementById('modal-house-owner').value = '';
             document.getElementById('modal-house-phone').value = '';
+            document.getElementById('house-modal-title').innerHTML = '<i class="fas fa-home text-blue-600"></i> Tambah Data Rumah Warga';
+            document.getElementById('house-modal').classList.remove('hidden');
+        };
+
+        window.editHouse = function(id) {
+            if (!requireAdmin()) return;
+            const house = houses.find(h => h.id === id);
+            if (!house) return;
+
+            document.getElementById('modal-house-id').value = house.id;
+            document.getElementById('modal-house-no').value = house.houseNumber || '';
+            document.getElementById('modal-house-owner').value = house.ownerName || '';
+            document.getElementById('modal-house-phone').value = house.phone || '';
+            document.getElementById('house-modal-title').innerHTML = '<i class="fas fa-edit text-amber-500"></i> Edit Data Rumah Warga';
             document.getElementById('house-modal').classList.remove('hidden');
         };
 
@@ -1020,6 +1124,7 @@
             const t = transactions.find(item => item.id === id);
             const desc = t ? `"${t.description}"` : 'transaksi ini';
             if (confirm(`Apakah Anda yakin ingin menghapus ${desc}?`)) {
+                if (editingTransactionId === id) cancelEditTransaction();
                 transactions = transactions.filter(t => t.id !== id);
                 saveToLocalStorage();
                 showToast('Transaksi berhasil dihapus', 'delete');
@@ -1154,6 +1259,7 @@
         document.getElementById('form-income').addEventListener('submit', async function(e) {
             e.preventDefault();
             if (!requireAdmin()) return;
+            const editId = document.getElementById('inc-id').value;
             const date = document.getElementById('inc-date').value;
             const method = document.getElementById('inc-method').value;
             const house = document.getElementById('inc-house').value.trim().toUpperCase();
@@ -1185,33 +1291,57 @@
                 }
             }
 
-            const proofBase64 = fileInput.files.length > 0 ? await readFileAsBase64(fileInput.files[0]) : '';
+            let proofBase64 = fileInput.files.length > 0 ? await readFileAsBase64(fileInput.files[0]) : '';
 
-            transactions.unshift({
-                id: generateId(),
-                type: 'income',
-                date: date,
-                paymentMethod: method,
-                houseNumber: house,
-                description: desc,
-                amount: amount,
-                proof: proofBase64
-            });
+            if (editId) {
+                const index = transactions.findIndex(t => t.id === editId);
+                if (index !== -1) {
+                    // Jika tidak upload bukti baru, pakai bukti lama
+                    if (!proofBase64 && transactions[index].proof) {
+                        proofBase64 = transactions[index].proof;
+                    }
 
-            saveToLocalStorage();
-            this.reset();
-            document.getElementById('inc-date').value = new Date().toISOString().split('T')[0];
-            
-            const msg = house 
-                ? `Pemasukan dicatat & status iuran ${house} otomatis LUNAS!` 
-                : 'Pemasukan kas berhasil dicatat!';
-            showToast(msg);
+                    transactions[index] = {
+                        ...transactions[index],
+                        date: date,
+                        paymentMethod: method,
+                        houseNumber: house,
+                        description: desc,
+                        amount: amount,
+                        proof: proofBase64
+                    };
+                    cancelEditTransaction();
+                    saveToLocalStorage();
+                    showToast('Transaksi pemasukan berhasil diperbarui!');
+                }
+            } else {
+                transactions.unshift({
+                    id: generateId(),
+                    type: 'income',
+                    date: date,
+                    paymentMethod: method,
+                    houseNumber: house,
+                    description: desc,
+                    amount: amount,
+                    proof: proofBase64
+                });
+
+                saveToLocalStorage();
+                this.reset();
+                document.getElementById('inc-date').value = new Date().toISOString().split('T')[0];
+                
+                const msg = house 
+                    ? `Pemasukan dicatat & status iuran ${house} otomatis LUNAS!` 
+                    : 'Pemasukan kas berhasil dicatat!';
+                showToast(msg);
+            }
         });
 
         // Event Listener Form Expense
         document.getElementById('form-expense').addEventListener('submit', async function(e) {
             e.preventDefault();
             if (!requireAdmin()) return;
+            const editId = document.getElementById('exp-id').value;
             const date = document.getElementById('exp-date').value;
             const desc = document.getElementById('exp-desc').value.trim();
             const amount = parseFloat(document.getElementById('exp-amount').value);
@@ -1219,50 +1349,102 @@
 
             if (!date || !desc || isNaN(amount) || amount <= 0) return;
 
-            const proofBase64 = fileInput.files.length > 0 ? await readFileAsBase64(fileInput.files[0]) : '';
+            let proofBase64 = fileInput.files.length > 0 ? await readFileAsBase64(fileInput.files[0]) : '';
 
-            transactions.unshift({
-                id: generateId(),
-                type: 'expense',
-                date: date,
-                description: desc,
-                amount: amount,
-                proof: proofBase64
-            });
+            if (editId) {
+                const index = transactions.findIndex(t => t.id === editId);
+                if (index !== -1) {
+                    if (!proofBase64 && transactions[index].proof) {
+                        proofBase64 = transactions[index].proof;
+                    }
 
-            saveToLocalStorage();
-            this.reset();
-            document.getElementById('exp-date').value = new Date().toISOString().split('T')[0];
-            showToast('Pengeluaran kas berhasil dicatat!');
+                    transactions[index] = {
+                        ...transactions[index],
+                        date: date,
+                        description: desc,
+                        amount: amount,
+                        proof: proofBase64
+                    };
+                    cancelEditTransaction();
+                    saveToLocalStorage();
+                    showToast('Transaksi pengeluaran berhasil diperbarui!');
+                }
+            } else {
+                transactions.unshift({
+                    id: generateId(),
+                    type: 'expense',
+                    date: date,
+                    description: desc,
+                    amount: amount,
+                    proof: proofBase64
+                });
+
+                saveToLocalStorage();
+                this.reset();
+                document.getElementById('exp-date').value = new Date().toISOString().split('T')[0];
+                showToast('Pengeluaran kas berhasil dicatat!');
+            }
         });
 
         // Event Listener Form House
         document.getElementById('form-house').addEventListener('submit', function(e) {
             e.preventDefault();
             if (!requireAdmin()) return;
+            const houseId = document.getElementById('modal-house-id').value;
             const no = document.getElementById('modal-house-no').value.trim().toUpperCase();
             const owner = document.getElementById('modal-house-owner').value.trim();
             const phone = document.getElementById('modal-house-phone').value.trim();
 
             if (!no || !owner) return;
 
-            if (houses.some(h => h.houseNumber.toUpperCase() === no)) {
-                showToast('Nomor rumah tersebut sudah ada.', 'error');
-                return;
+            if (houseId) {
+                // Proses Edit Data Rumah
+                const index = houses.findIndex(h => h.id === houseId);
+                if (index !== -1) {
+                    if (houses.some((h, i) => i !== index && h.houseNumber.toUpperCase() === no)) {
+                        showToast('Nomor rumah tersebut sudah digunakan oleh warga lain.', 'error');
+                        return;
+                    }
+                    
+                    const oldHouseNo = houses[index].houseNumber;
+                    houses[index] = { ...houses[index], houseNumber: no, ownerName: owner, phone: phone };
+
+                    // Perbarui transaksi iuran warga jika nomor rumah berubah
+                    if (oldHouseNo !== no) {
+                        transactions.forEach(t => {
+                            if (t.houseNumber && t.houseNumber.toUpperCase() === oldHouseNo.toUpperCase()) {
+                                t.houseNumber = no;
+                            }
+                        });
+                        persistTransactions();
+                    }
+
+                    persistHouses();
+                    closeHouseModal();
+                    updateHouseDatalist();
+                    renderHouseStatus();
+                    showToast(`Data rumah ${no} berhasil diperbarui!`);
+                }
+            } else {
+                // Proses Tambah Data Rumah Baru
+                if (houses.some(h => h.houseNumber.toUpperCase() === no)) {
+                    showToast('Nomor rumah tersebut sudah ada.', 'error');
+                    return;
+                }
+
+                houses.push({
+                    id: generateId(),
+                    houseNumber: no,
+                    ownerName: owner,
+                    phone: phone
+                });
+
+                persistHouses();
+                closeHouseModal();
+                updateHouseDatalist();
+                renderHouseStatus();
+                showToast(`Rumah ${no} berhasil ditambahkan!`);
             }
-
-            houses.push({
-                id: generateId(),
-                houseNumber: no,
-                ownerName: owner,
-                phone: phone
-            });
-
-            persistHouses();
-            closeHouseModal();
-            updateHouseDatalist();
-            renderHouseStatus();
-            showToast(`Rumah ${no} berhasil ditambahkan!`);
         });
 
         function requireAdmin() {
@@ -1299,9 +1481,12 @@
         }
 
         function logoutAdmin() {
-            isAdmin=false; updateAccessMode();
+            isAdmin=false; 
+            sessionStorage.removeItem('kasRtIsAdmin');
+            updateAccessMode();
             showToast('Logout Admin. Mode Read Only aktif.');
         }
+
         function updateAccessMode() {
             const lb=document.getElementById('admin-login-btn'), lo=document.getElementById('admin-logout-btn'), cp=document.getElementById('admin-change-pin-btn');
             if(lb) lb.classList.toggle('hidden',isAdmin);
@@ -1316,7 +1501,12 @@
             if(f) f.addEventListener('submit',e=>{
                 e.preventDefault();
                 if(document.getElementById('admin-pin').value===ADMIN_PIN){
-                    isAdmin=true; closeAdminLogin(); updateAccessMode(); showToast('Login Admin berhasil.');
+                    isAdmin=true; 
+                    sessionStorage.setItem('kasRtIsAdmin', 'true');
+                    closeAdminLogin(); 
+                    updateAccessMode(); 
+                    renderAllViews();
+                    showToast('Login Admin berhasil.');
                 } else showToast('PIN salah.','error');
             });
         });
