@@ -460,7 +460,7 @@
                     <i class="fas fa-user-check"></i>
                 </div>
                 <h3 class="font-bold text-slate-800 text-base">Selamat Datang!</h3>
-                <p class="text-xs text-slate-500">Masukkan nama/panggilan Anda agar terdeteksi siapa yang sedang online di sistem.</p>
+                <p class="text-xs text-slate-500">Masukkan nama Anda.</p>
             </div>
             <form id="form-visitor-name" class="space-y-3">
                 <div>
@@ -2012,30 +2012,43 @@
             if(lbm) lbm.classList.toggle('hidden',isAdmin);
             if(lom) lom.classList.toggle('hidden',!isAdmin);
             if(cpm) cpm.classList.toggle('hidden',!isAdmin);
-            if(onlinePanel) onlinePanel.classList.toggle('hidden',!isAdmin);
 
-            document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!isAdmin));
+            if (onlinePanel) onlinePanel.classList.toggle('hidden', !isAdmin);
+
+            document.querySelectorAll('.admin-only').forEach(el => {
+                if (isAdmin) {
+                    el.classList.remove('hidden');
+                } else {
+                    if (!el.id.includes('admin-online-panel') && !el.id.includes('admin-login-btn') && !el.id.includes('admin-change-pin-btn') && !el.id.includes('admin-logout-btn')) {
+                        el.classList.add('hidden');
+                    }
+                }
+            });
+
+            const transFormCont = document.getElementById('transaction-form-container');
+            if (transFormCont) {
+                if (isAdmin) transFormCont.classList.remove('hidden');
+                else transFormCont.classList.add('hidden');
+            }
         }
 
         function initApp() {
-            updateAccessMode();
             const todayISO = new Date().toISOString().split('T')[0];
             const incDateEl = document.getElementById('inc-date');
             const expDateEl = document.getElementById('exp-date');
-            if(incDateEl) incDateEl.value = todayISO;
-            if(expDateEl) expDateEl.value = todayISO;
+            if (incDateEl) incDateEl.value = todayISO;
+            if (expDateEl) expDateEl.value = todayISO;
 
             const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             const dateEl = document.getElementById('current-date');
             if (dateEl) dateEl.textContent = new Date().toLocaleDateString('id-ID', dateOptions);
 
+            updateAccessMode();
             renderAllViews();
 
-            // Cek jika belum login sebagai admin dan belum mengisi nama pengunjung
+            // Cek apakah pengunjung non-admin sudah mengisi nama di session
             if (!isAdmin && !visitorName) {
-                const visitorModal = document.getElementById('visitor-name-modal');
-                visitorModal.classList.remove('hidden');
-                setTimeout(() => document.getElementById('visitor-input-name').focus(), 50);
+                document.getElementById('visitor-name-modal').classList.remove('hidden');
             }
         }
 
