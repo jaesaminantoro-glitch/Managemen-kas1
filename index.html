@@ -104,10 +104,24 @@
         
         <div id="firebase-status" class="text-[11px] text-slate-500 font-medium px-1"></div>
 
+        <!-- PANEL ADMIN: SIAPA YANG SEDANG ONLINE -->
+        <div id="admin-online-panel" class="admin-only bg-white rounded-2xl p-4 shadow-sm border border-slate-200 hidden">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-2">
+                    <i class="fas fa-signal text-emerald-500 animate-pulse"></i> Pengunjung Sedang Membuka Web 
+                    <span id="online-count-badge" class="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full font-bold">0 Online</span>
+                </h3>
+                <span class="text-[10px] text-slate-400">Pembaruan Real-time</span>
+            </div>
+            <div id="online-users-container" class="flex flex-wrap gap-2">
+                <!-- Daftar user online akan muncul di sini -->
+            </div>
+        </div>
+
         <!-- DASHBOARD KAS & TRANSAKSI -->
         <div id="page-dashboard" class="space-y-4 sm:space-y-6">
             
-            <!-- PANEL INFORMASI REKENING BANK (Bisa dicopy warga & diedit admin) -->
+            <!-- PANEL INFORMASI REKENING BANK -->
             <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200">
                 <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
                     <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-2">
@@ -566,6 +580,7 @@
         let houses = [];       
         let bankAccounts = [];
         let editingTransactionId = null;
+        let userSessionId = 'User_' + Math.random().toString(36).substring(2, 8);
 
         const DEFAULT_ADMIN_PIN = '123456';
         let ADMIN_PIN = localStorage.getItem('kasRtAdminPin') || DEFAULT_ADMIN_PIN;
@@ -1473,6 +1488,49 @@
                 firebaseDb = firebase.database();
                 firebaseReady = true;
 
+                // --- FITUR REALTIME PRESENCE (SIAPA YANG ONLINE) ---
+                const myPresenceRef = firebaseDb.ref(`kasRt/presence/${userSessionId}`);
+                const connectedRef = firebaseDb.ref('.info/connected');
+
+                connectedRef.on('value', (snap) => {
+                    if (snap.val() === true) {
+                        myPresenceRef.onDisconnect().remove();
+                        myPresenceRef.set({
+                            joinedAt: firebase.database.ServerValue.TIMESTAMP,
+                            device: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
+                        });
+                    }
+                });
+
+                firebaseDb.ref('kasRt/presence').on('value', (snap) => {
+                    const presenceObj = snap.val() || {};
+                    const container = document.getElementById('online-users-container');
+                    const countBadge = document.getElementById('online-count-badge');
+                    if (!container) return;
+
+                    container.innerHTML = '';
+                    const keys = Object.keys(presenceObj);
+                    countBadge.textContent = `${keys.length} Online`;
+
+                    if (keys.length === 0) {
+                        container.innerHTML = '<span class="text-xs text-slate-400">Belum ada pengunjung online.</span>';
+                        return;
+                    }
+
+                    keys.forEach((key, index) => {
+                        const user = presenceObj[key];
+                        const isMe = key === userSessionId;
+                        const badge = document.createElement('div');
+                        badge.className = "flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-xl text-xs font-medium shadow-xs";
+                        badge.innerHTML = `
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></i></span>
+                            <span>Pengunjung #${index + 1} (${user.device || 'Web'}) ${isMe ? '<span class="text-[10px] text-blue-600 font-bold">(Anda)</span>' : ''}</span>
+                        `;
+                        container.appendChild(badge);
+                    });
+                });
+                // ----------------------------------------------------
+
                 firebaseDb.ref('kasRt/adminPin').on('value', snap => {
                     const pinVal = snap.val();
                     if (pinVal) {
@@ -1734,6 +1792,7 @@
         function updateAccessMode() {
             const lb=document.getElementById('admin-login-btn'), lo=document.getElementById('admin-logout-btn'), cp=document.getElementById('admin-change-pin-btn');
             const lbm=document.getElementById('admin-login-btn-mb'), lom=document.getElementById('admin-logout-btn-mb'), cpm=document.getElementById('admin-change-pin-btn-mb');
+            const onlinePanel = document.getElementById('admin-online-panel');
             
             if(lb) lb.classList.toggle('hidden',isAdmin);
             if(lo) lo.classList.toggle('hidden',!isAdmin);
@@ -1742,6 +1801,7 @@
             if(lbm) lbm.classList.toggle('hidden',isAdmin);
             if(lom) lom.classList.toggle('hidden',!isAdmin);
             if(cpm) cpm.classList.toggle('hidden',!isAdmin);
+            if(onlinePanel) onlinePanel.classList.toggle('hidden',!isAdmin);
 
             document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!isAdmin));
             document.querySelectorAll('#form-income input, #form-income select, #form-income button, #form-expense input, #form-expense select, #form-expense button').forEach(el=>el.disabled=!isAdmin);
@@ -1832,17 +1892,26 @@
 <!-- Change Admin PIN Modal -->
 <div id="change-pin-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[101] hidden items-center justify-center p-3">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs p-4">
-    <div class="cpp flex items-center gap-2 mb-3">
+    <div class="flex items-center gap-2 mb-3">
       <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-xs"><i class="fas fa-key"></i></div>
-      <div><h3 class="font-bold text-slate-800 text-xs sm:text-sm">Ubah PIN Admin</h3><p class="text-[10px] text-slate-500">PIN baru harus 6 digit.</p></div>
+      <div><h3 class="font-bold text-slate-800 text-xs sm:text-sm">Ubah PIN Admin</h3><p class="text-[10px] text-slate-500">Masukkan PIN baru (6 digit).</p></div>
     </div>
-    <form id="change-pin-form">
-      <input id="old-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 mb-2 text-center tracking-[.3em] outline-none text-xs focus:ring-2 focus:ring-amber-500" placeholder="PIN lama (6 digit)" required>
-      <input id="new-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 mb-2 text-center tracking-[.3em] outline-none text-xs focus:ring-2 focus:ring-amber-500" placeholder="PIN baru (6 digit)" required>
-      <input id="confirm-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 text-center tracking-[.3em] outline-none text-xs focus:ring-2 focus:ring-amber-500" placeholder="Ulangi PIN baru" required>
+    <form id="change-pin-form" class="space-y-2.5">
+      <div>
+        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIN Lama</label>
+        <input id="old-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-center text-sm tracking-widest outline-none focus:ring-2 focus:ring-amber-500" placeholder="••••••" required>
+      </div>
+      <div>
+        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIN Baru (6 Digit)</label>
+        <input id="new-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-center text-sm tracking-widest outline-none focus:ring-2 focus:ring-amber-500" placeholder="••••••" required>
+      </div>
+      <div>
+        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Konfirmasi PIN Baru</label>
+        <input id="confirm-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-center text-sm tracking-widest outline-none focus:ring-2 focus:ring-amber-500" placeholder="••••••" required>
+      </div>
       <div class="flex gap-2 justify-end mt-3 text-xs">
         <button type="button" onclick="closeChangePin()" class="px-3 py-1.5 rounded-lg bg-slate-100">Batal</button>
-        <button type="submit" class="px-4 py-1.5 rounded-lg bg-amber-500 text-white font-semibold">Simpan</button>
+        <button type="submit" class="px-4 py-1.5 rounded-lg bg-amber-500 text-white font-semibold">Simpan PIN</button>
       </div>
     </form>
   </div>
