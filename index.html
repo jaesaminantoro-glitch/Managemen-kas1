@@ -336,12 +336,16 @@
                         </div>
                     </div>
 
+                    <!-- TAMPILAN REKAP BULANAN (OPTIMASI HP) -->
                     <div id="view-recap" class="p-0 overflow-hidden hidden flex-1 flex-col">
-                        <div class="bg-blue-50/80 px-3 py-2 border-b border-blue-100 flex justify-between items-center text-[10px] sm:text-xs text-blue-800">
-                            <span><i class="fas fa-info-circle mr-1"></i> Klik pada salah satu baris bulan untuk melihat rincian mutasi transaksi (rekening koran).</span>
+                        <div class="bg-blue-50/80 px-3 py-2 border-b border-blue-100 flex justify-between items-center text-[11px] sm:text-xs text-blue-800">
+                            <span><i class="fas fa-info-circle mr-1"></i> Ketuk baris bulan untuk rincian mutasi (rekening koran).</span>
                         </div>
                         <div class="overflow-y-auto custom-scrollbar flex-1">
-                            <table class="w-full text-left border-collapse cursor-pointer">
+                            <div class="sm:hidden divide-y divide-slate-100" id="recap-mobile-list">
+                                <!-- Render Card Khusus HP -->
+                            </div>
+                            <table class="hidden sm:table w-full text-left border-collapse cursor-pointer">
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider sticky top-0 shadow-sm border-b border-slate-200">
                                         <th class="px-3 py-2 font-semibold">Periode <i class="fas fa-hand-pointer text-[10px] ml-1 opacity-60"></i></th>
@@ -438,38 +442,41 @@
         </div>
     </main>
 
-    <!-- Modal Rekening Koran Bulanan -->
-    <div id="statement-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
-        <div class="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-900 text-white">
+    <!-- Modal Rekening Koran Bulanan (Responsif HP) -->
+    <div id="statement-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-3 hidden">
+        <div class="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+            <div class="p-3.5 sm:p-4 border-b border-slate-100 flex justify-between items-center bg-slate-900 text-white">
                 <div>
-                    <h3 class="font-bold text-sm sm:text-base flex items-center gap-2">
+                    <h3 class="font-bold text-xs sm:text-base flex items-center gap-2">
                         <i class="fas fa-file-invoice-dollar text-emerald-400"></i> Rekening Koran Kas RT
                     </h3>
-                    <p id="statement-subtitle" class="text-slate-300 text-xs mt-0.5">Periode: -</p>
+                    <p id="statement-subtitle" class="text-slate-300 text-[11px] sm:text-xs mt-0.5">Periode: -</p>
                 </div>
                 <button onclick="closeStatementModal()" class="text-slate-300 hover:text-white p-1.5 rounded-lg bg-white/10">
                     <i class="fas fa-times text-base"></i>
                 </button>
             </div>
             
-            <div class="p-4 bg-slate-50 border-b border-slate-200 grid grid-cols-3 gap-2 text-center">
-                <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs">
-                    <span class="text-[10px] text-slate-500 block uppercase font-bold">Saldo Awal</span>
-                    <span id="st-initial-balance" class="font-bold text-xs sm:text-sm text-slate-800">Rp 0</span>
+            <div class="p-2.5 sm:p-4 bg-slate-50 border-b border-slate-200 grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
+                <div class="bg-white p-2 sm:p-2.5 rounded-xl border border-slate-200 shadow-xs">
+                    <span class="text-[9px] sm:text-[10px] text-slate-500 block uppercase font-bold">Saldo Awal</span>
+                    <span id="st-initial-balance" class="font-bold text-[11px] sm:text-sm text-slate-800">Rp 0</span>
                 </div>
-                <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs">
-                    <span class="text-[10px] text-emerald-600 block uppercase font-bold">Total Masuk</span>
-                    <span id="st-total-in" class="font-bold text-xs sm:text-sm text-emerald-600">Rp 0</span>
+                <div class="bg-white p-2 sm:p-2.5 rounded-xl border border-slate-200 shadow-xs">
+                    <span class="text-[9px] sm:text-[10px] text-emerald-600 block uppercase font-bold">Total Masuk</span>
+                    <span id="st-total-in" class="font-bold text-[11px] sm:text-sm text-emerald-600">Rp 0</span>
                 </div>
-                <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs">
-                    <span class="text-[10px] text-rose-600 block uppercase font-bold">Total Keluar</span>
-                    <span id="st-total-out" class="font-bold text-xs sm:text-sm text-rose-600">Rp 0</span>
+                <div class="bg-white p-2 sm:p-2.5 rounded-xl border border-slate-200 shadow-xs">
+                    <span class="text-[9px] sm:text-[10px] text-rose-600 block uppercase font-bold">Total Keluar</span>
+                    <span id="st-total-out" class="font-bold text-[11px] sm:text-sm text-rose-600">Rp 0</span>
                 </div>
             </div>
 
-            <div class="overflow-y-auto custom-scrollbar flex-1 p-3">
-                <table class="w-full text-left border-collapse">
+            <div class="overflow-y-auto custom-scrollbar flex-1 p-2 sm:p-3">
+                <div id="statement-mobile-list" class="sm:hidden space-y-2 mb-2">
+                    <!-- List Mutasi Khusus HP -->
+                </div>
+                <table class="hidden sm:table w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-100 text-slate-600 text-[10px] uppercase tracking-wider sticky top-0">
                             <th class="px-2.5 py-2 font-semibold w-20">Tanggal</th>
@@ -487,11 +494,11 @@
                 </div>
             </div>
 
-            <div class="p-3 bg-slate-100 border-t border-slate-200 flex justify-between items-center">
+            <div class="p-3 bg-slate-100 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-2">
                 <div class="text-xs font-semibold text-slate-600">
                     Saldo Akhir Periode: <span id="st-final-balance" class="font-extrabold text-blue-700">Rp 0</span>
                 </div>
-                <button onclick="closeStatementModal()" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-medium rounded-lg text-xs">Tutup</button>
+                <button onclick="closeStatementModal()" class="w-full sm:w-auto px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-medium rounded-lg text-xs">Tutup</button>
             </div>
         </div>
     </div>
@@ -1008,8 +1015,10 @@
 
         window.renderRecap = function() {
             const tbody = document.getElementById('recap-tbody');
+            const mobileList = document.getElementById('recap-mobile-list');
             const emptyEl = document.getElementById('recap-empty');
             tbody.innerHTML = '';
+            mobileList.innerHTML = '';
 
             let tfoot = document.getElementById('recap-tfoot');
             if (tfoot) tfoot.innerHTML = '';
@@ -1053,8 +1062,9 @@
                 const net = item.income - item.expense;
                 const monthName = item.dateObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
+                // Render Tabel Desktop
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-blue-50/60 transition-colors group";
+                tr.className = "hover:bg-blue-50/60 transition-colors group cursor-pointer";
                 tr.setAttribute('onclick', `openMonthStatement('${key}')`);
 
                 tr.innerHTML = `
@@ -1067,6 +1077,36 @@
                     <td class="px-3 py-2.5 text-right font-bold text-[11px] sm:text-xs ${net >= 0 ? 'text-blue-600' : 'text-rose-600'}">${formatRupiah(net)}</td>
                 `;
                 tbody.appendChild(tr);
+
+                // Render Card Khusus HP (Agar Tampilan Rekap Rapih di Smartphone)
+                const card = document.createElement('div');
+                card.className = "bg-white p-3 hover:bg-blue-50/40 transition-colors cursor-pointer border-b border-slate-100 flex flex-col gap-2";
+                card.setAttribute('onclick', `openMonthStatement('${key}')`);
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                            <i class="far fa-calendar-alt text-blue-600"></i> ${monthName}
+                        </span>
+                        <span class="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            Rincian <i class="fas fa-chevron-right text-[8px]"></i>
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-50 text-center">
+                        <div class="bg-slate-50 p-1.5 rounded-lg">
+                            <span class="text-[9px] text-emerald-600 block uppercase font-bold">Masuk</span>
+                            <span class="text-[11px] font-bold text-emerald-600">${formatRupiah(item.income)}</span>
+                        </div>
+                        <div class="bg-slate-50 p-1.5 rounded-lg">
+                            <span class="text-[9px] text-rose-600 block uppercase font-bold">Keluar</span>
+                            <span class="text-[11px] font-bold text-rose-600">${formatRupiah(item.expense)}</span>
+                        </div>
+                        <div class="bg-slate-50 p-1.5 rounded-lg">
+                            <span class="text-[9px] text-slate-500 block uppercase font-bold">Bersih</span>
+                            <span class="text-[11px] font-extrabold ${net >= 0 ? 'text-blue-600' : 'text-rose-600'}">${formatRupiah(net)}</span>
+                        </div>
+                    </div>
+                `;
+                mobileList.appendChild(card);
             });
 
             const grandNet = grandTotalIncome - grandTotalExpense;
@@ -1090,7 +1130,7 @@
             `;
         };
 
-        // Fungsi Rekening Koran Bulanan
+        // Fungsi Rekening Koran Bulanan (Optimasi Tampilan HP)
         window.openMonthStatement = function(yearMonth) {
             const [year, month] = yearMonth.split('-');
             const targetDate = new Date(parseInt(year), parseInt(month) - 1, 1);
@@ -1098,7 +1138,6 @@
 
             document.getElementById('statement-subtitle').textContent = `Periode Mutasi: ${monthNameStr}`;
 
-            // Hitung saldo awal (akumulasi seluruh transaksi sebelum bulan ini)
             let initialBalance = 0;
             transactions.forEach(t => {
                 if (!t.date) return;
@@ -1112,7 +1151,6 @@
                 }
             });
 
-            // Ambil transaksi pada bulan tersebut
             const monthTransactions = transactions.filter(t => {
                 if (!t.date) return false;
                 const tDate = new Date(t.date);
@@ -1121,8 +1159,10 @@
             }).sort((a, b) => new Date(a.date) - new Date(b.date) || (a.id || '').localeCompare(b.id || ''));
 
             const tbody = document.getElementById('statement-tbody');
+            const mobileList = document.getElementById('statement-mobile-list');
             const emptyEl = document.getElementById('statement-empty');
             tbody.innerHTML = '';
+            mobileList.innerHTML = '';
 
             let runningBalance = initialBalance;
             let totalIn = 0;
@@ -1146,6 +1186,7 @@
                         totalOut += amt;
                     }
 
+                    // Baris Tabel Desktop
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 transition-colors";
                     tr.innerHTML = `
@@ -1162,6 +1203,28 @@
                         <td class="px-2.5 py-2 text-right font-bold text-slate-800">${formatRupiah(runningBalance)}</td>
                     `;
                     tbody.appendChild(tr);
+
+                    // Card Khusus HP di Rekening Koran
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs flex flex-col gap-1";
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between text-[10px] text-slate-500 font-medium">
+                            <span><i class="far fa-calendar-alt mr-1"></i> ${formatDate(t.date)}</span>
+                            <div class="flex items-center gap-1">
+                                ${t.houseNumber ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.2 rounded font-bold text-[9px]">${escapeHTML(t.houseNumber)}</span>` : ''}
+                                ${t.paymentMethod ? `<span class="bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded text-[9px]">${escapeHTML(t.paymentMethod)}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="font-semibold text-xs text-slate-800">${escapeHTML(t.description)}</div>
+                        <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-xs">
+                            <span class="text-[10px] text-slate-400">Nominal / Saldo:</span>
+                            <div class="text-right">
+                                <span class="font-bold ${isInc ? 'text-emerald-600' : 'text-rose-600'}">${isInc ? '+' : '-'}${formatRupiah(amt)}</span>
+                                <span class="text-[10px] text-slate-400 block">Saldo: <b class="text-slate-700">${formatRupiah(runningBalance)}</b></span>
+                            </div>
+                        </div>
+                    `;
+                    mobileList.appendChild(card);
                 });
             }
 
@@ -1847,155 +1910,21 @@
             return true;
         }
 
-        function openAdminLogin() {
-            const modal=document.getElementById('admin-login-modal');
-            modal.classList.remove('hidden'); modal.classList.add('flex');
-            document.getElementById('admin-pin').value='';
-            setTimeout(()=>document.getElementById('admin-pin').focus(),50);
-        }
-        function closeAdminLogin() {
-            const modal=document.getElementById('admin-login-modal');
-            modal.classList.add('hidden'); modal.classList.remove('flex');
-        }
-
-        function openChangePin() {
-            if (!requireAdmin()) return;
-            const modal=document.getElementById('change-pin-modal');
-            modal.classList.remove('hidden'); modal.classList.add('flex');
-            document.getElementById('old-pin').value='';
-            document.getElementById('new-pin').value='';
-            document.getElementById('confirm-pin').value='';
-            setTimeout(()=>document.getElementById('old-pin').focus(),50);
-        }
-        function closeChangePin() {
-            const modal=document.getElementById('change-pin-modal');
-            modal.classList.add('hidden'); modal.classList.remove('flex');
-        }
-
-        function logoutAdmin() {
-            isAdmin=false; 
-            sessionStorage.removeItem('kasRtIsAdmin');
-            updateAccessMode();
-            renderAllViews();
-            showToast('Logout Admin.');
-        }
-
-        function updateAccessMode() {
-            const lb=document.getElementById('admin-login-btn'), lo=document.getElementById('admin-logout-btn'), cp=document.getElementById('admin-change-pin-btn');
-            const lbm=document.getElementById('admin-login-btn-mb'), lom=document.getElementById('admin-logout-btn-mb'), cpm=document.getElementById('admin-change-pin-btn-mb');
-            
-            if(lb) lb.classList.toggle('hidden',isAdmin);
-            if(lo) lo.classList.toggle('hidden',!isAdmin);
-            if(cp) cp.classList.toggle('hidden',!isAdmin);
-            
-            if(lbm) lbm.classList.toggle('hidden',isAdmin);
-            if(lom) lom.classList.toggle('hidden',!isAdmin);
-            if(cpm) cpm.classList.toggle('hidden',!isAdmin);
-
-            document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!isAdmin));
-            document.querySelectorAll('#form-income input, #form-income select, #form-income button, #form-expense input, #form-expense select, #form-expense button').forEach(el=>el.disabled=!isAdmin);
-
-            const historyContainer = document.getElementById('transaction-history-container');
-            if (historyContainer) {
-                if (isAdmin) {
-                    historyContainer.className = "lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[520px]";
-                } else {
-                    historyContainer.className = "lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[520px]";
-                }
-            }
-            renderBankAccounts();
-        }
-
-        document.addEventListener('DOMContentLoaded',()=>{
-            const f=document.getElementById('admin-login-form');
-            if(f) f.addEventListener('submit',e=>{
-                e.preventDefault();
-                if(document.getElementById('admin-pin').value===ADMIN_PIN){
-                    isAdmin=true; 
-                    sessionStorage.setItem('kasRtIsAdmin', 'true');
-                    closeAdminLogin(); 
-                    updateAccessMode(); 
-                    renderAllViews();
-                    showToast('Login Admin berhasil.');
-                } else showToast('PIN salah.','error');
-            });
-
-            const fc=document.getElementById('change-pin-form');
-            if(fc) fc.addEventListener('submit',e=>{
-                e.preventDefault();
-                if(!isAdmin) return;
-                const oldPin=document.getElementById('old-pin').value;
-                const newPin=document.getElementById('new-pin').value;
-                const confirmPin=document.getElementById('confirm-pin').value;
-                if(oldPin!==ADMIN_PIN) return showToast('PIN lama salah.','error');
-                if(!/^\d{6}$/.test(newPin)) return showToast('PIN harus 6 digit.','error');
-                if(newPin!==confirmPin) return showToast('PIN tidak sama.','error');
-                
-                ADMIN_PIN=newPin;
-                localStorage.setItem('kasRtAdminPin',newPin);
-                if (firebaseReady) firebaseDb.ref('kasRt/adminPin').set(newPin);
-                closeChangePin();
-                showToast('PIN diubah.');
-            });
-        });
-
         function initApp() {
-            const todayStr = new Date().toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-            const elDate = document.getElementById('current-date');
-            if (elDate) elDate.textContent = todayStr;
-
             const todayISO = new Date().toISOString().split('T')[0];
-            document.getElementById('inc-date').value = todayISO;
-            document.getElementById('exp-date').value = todayISO;
-            document.getElementById('house-period-filter').value = currentYearMonth;
+            const incDateEl = document.getElementById('inc-date');
+            const expDateEl = document.getElementById('exp-date');
+            if (incDateEl && !incDateEl.value) incDateEl.value = todayISO;
+            if (expDateEl && !expDateEl.value) expDateEl.value = todayISO;
 
-            updateHouseDatalist();
-            renderBankAccounts();
-            renderDashboard();
-            renderHistory();
-            renderRecap();
-            renderHouseStatus();
-            updateAccessMode();
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateEl = document.getElementById('current-date');
+            if (dateEl) dateEl.textContent = new Date().toLocaleDateString('id-ID', dateOptions);
+
+            renderAllViews();
         }
 
-        document.addEventListener('DOMContentLoaded', startFirebaseSync);
+        window.onload = startFirebaseSync;
     </script>
-
-<!-- Admin PIN Modal -->
-<div id="admin-login-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] hidden items-center justify-center p-3">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs p-4">
-    <div class="flex items-center gap-2 mb-3">
-      <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-xs"><i class="fas fa-lock"></i></div>
-      <div><h3 class="font-bold text-slate-800 text-xs sm:text-sm">Login Admin</h3><p class="text-[10px] text-slate-500">Masukkan PIN Admin (6 digit).</p></div>
-    </div>
-    <form id="admin-login-form">
-      <input id="admin-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-center text-xl tracking-[.4em] outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••" required>
-      <div class="flex gap-2 justify-end mt-3 text-xs">
-        <button type="button" onclick="closeAdminLogin()" class="px-3 py-1.5 rounded-lg bg-slate-100">Batal</button>
-        <button type="submit" class="px-4 py-1.5 rounded-lg bg-blue-600 text-white font-semibold">Masuk</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Change Admin PIN Modal -->
-<div id="change-pin-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[101] hidden items-center justify-center p-3">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs p-4">
-    <div class="cpp flex items-center gap-2 mb-3">
-      <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-xs"><i class="fas fa-key"></i></div>
-      <div><h3 class="font-bold text-slate-800 text-xs sm:text-sm">Ubah PIN Admin</h3><p class="text-[10px] text-slate-500">PIN baru harus 6 digit.</p></div>
-    </div>
-    <form id="change-pin-form">
-      <input id="old-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 mb-2 text-center tracking-[.3em] outline-none text-xs focus:ring-2 focus:ring-amber-500" placeholder="PIN lama (6 digit)" required>
-      <input id="new-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 mb-2 text-center tracking-[.3em] outline-none text-xs focus:ring-2 focus:ring-amber-500" placeholder="PIN baru (6 digit)" required>
-      <input id="confirm-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 text-center tracking-[.3em] outline-none text-xs focus:ring-2 focus:ring-amber-500" placeholder="Ulangi PIN baru" required>
-      <div class="flex gap-2 justify-end mt-3 text-xs">
-        <button type="button" onclick="closeChangePin()" class="px-3 py-1.5 rounded-lg bg-slate-100">Batal</button>
-        <button type="submit" class="px-4 py-1.5 rounded-lg bg-amber-500 text-white font-semibold">Ubah PIN</button>
-      </div>
-    </form>
-  </div>
-</div>
-
 </body>
 </html>
