@@ -452,6 +452,81 @@
         </div>
     </main>
 
+    <!-- MODAL WAJIB INPUT NAMA UNTUK PENGUNJUNG NON-ADMIN -->
+    <div id="visitor-name-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[300] flex items-center justify-center p-3 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl p-5 space-y-4">
+            <div class="text-center space-y-1">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2 text-xl shadow-inner">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 text-base">Selamat Datang!</h3>
+                <p class="text-xs text-slate-500">Masukkan nama/panggilan Anda agar terdeteksi siapa yang sedang online di sistem.</p>
+            </div>
+            <form id="form-visitor-name" class="space-y-3">
+                <div>
+                    <input type="text" id="visitor-input-name" placeholder="Contoh: Bpk. Rudi / Warga A-05" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-blue-500 outline-none text-center font-semibold">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-xs shadow-md transition-all">
+                    Masuk ke Sistem
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Login Admin -->
+    <div id="admin-login-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+        <div class="bg-white rounded-2xl max-w-xs w-full overflow-hidden shadow-2xl p-4 space-y-3">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-1.5">
+                    <i class="fas fa-lock text-blue-600"></i> Login Pengurus RT
+                </h3>
+                <button onclick="closeAdminLogin()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form onsubmit="handleAdminLogin(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">PIN Admin</label>
+                    <input type="password" id="admin-pin" placeholder="Masukkan PIN" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs outline-none focus:ring-2 focus:ring-blue-500 font-bold text-center tracking-widest">
+                </div>
+                <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow">
+                    Masuk Admin
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Ubah PIN Admin -->
+    <div id="change-pin-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+        <div class="bg-white rounded-2xl max-w-xs w-full overflow-hidden shadow-2xl p-4 space-y-3">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-1.5">
+                    <i class="fas fa-key text-amber-500"></i> Ubah PIN Admin
+                </h3>
+                <button onclick="closeChangePin()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form onsubmit="handleUpdatePin(event)" class="space-y-2.5">
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-600 mb-0.5">PIN Lama</label>
+                    <input type="password" id="old-pin" required class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-600 mb-0.5">PIN Baru</label>
+                    <input type="password" id="new-pin" required class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-600 mb-0.5">Konfirmasi PIN Baru</label>
+                    <input type="password" id="confirm-pin" required class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <button type="submit" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg shadow mt-1">
+                    Simpan PIN Baru
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal Tambah/Edit Rekening Bank -->
     <div id="bank-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
@@ -485,7 +560,7 @@
         </div>
     </div>
 
-    <!-- Modal Modals & Toast -->
+    <!-- Modal Rumah Warga -->
     <div id="house-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -518,7 +593,7 @@
         </div>
     </div>
 
-    <!-- Modal Lihat Bukti Transaksi (Support Multiple Carousel/Grid) -->
+    <!-- Modal Lihat Bukti Transaksi -->
     <div id="proof-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -530,7 +605,7 @@
                 </button>
             </div>
             <div id="proof-images-container" class="p-4 overflow-y-auto custom-scrollbar flex flex-wrap gap-3 items-center justify-center bg-slate-900 min-h-[220px]">
-                <!-- Gambar bukti akan dimuat di sini -->
+                <!-- Gambar bukti -->
             </div>
             <div class="p-2 bg-slate-50 text-right">
                 <button onclick="closeProofModal()" class="px-3 py-1 bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg">Tutup</button>
@@ -581,8 +656,8 @@
         let bankAccounts = [];
         let editingTransactionId = null;
         let userSessionId = 'User_' + Math.random().toString(36).substring(2, 8);
+        let visitorName = sessionStorage.getItem('kasRtVisitorName') || '';
 
-        // Variabel penampung array foto sementara saat form diisi/diedit
         let currentIncomeProofs = [];
         let currentExpenseProofs = [];
 
@@ -723,7 +798,6 @@
             }
         };
 
-        // Fungsi handle multiple upload & preview dengan tombol hapus foto
         window.handleFilesUpload = async function(type) {
             const fileInput = document.getElementById(type === 'income' ? 'inc-proof' : 'exp-proof');
             const files = fileInput.files;
@@ -739,7 +813,7 @@
                     }
                 }
             }
-            fileInput.value = ''; // Reset input agar bisa pilih file lagi
+            fileInput.value = '';
             renderPreviews(type);
         };
 
@@ -945,7 +1019,6 @@
                     methodBadge = `<span class="inline-block px-1.5 py-0.2 text-[9px] rounded font-semibold ${badgeBg}">${escapeHTML(m)}</span>`;
                 }
 
-                // Normalisasi cek bukti (bisa berupa array proofs atau string tunggal proof lama)
                 let proofsCount = 0;
                 if (Array.isArray(t.proofs) && t.proofs.length > 0) {
                     proofsCount = t.proofs.length;
@@ -1374,7 +1447,6 @@
             document.getElementById('form-type-switcher').classList.add('hidden');
             document.getElementById('btn-cancel-edit').classList.remove('hidden');
 
-            // Load existing proofs to array
             if (t.type === 'income') {
                 switchForm('income');
                 document.getElementById('form-title').innerHTML = '<i class="fas fa-edit text-amber-500"></i> Edit Pemasukan';
@@ -1573,46 +1645,8 @@
                 firebaseDb = firebase.database();
                 firebaseReady = true;
 
-                const myPresenceRef = firebaseDb.ref(`kasRt/presence/${userSessionId}`);
-                const connectedRef = firebaseDb.ref('.info/connected');
-
-                connectedRef.on('value', (snap) => {
-                    if (snap.val() === true) {
-                        myPresenceRef.onDisconnect().remove();
-                        myPresenceRef.set({
-                            joinedAt: firebase.database.ServerValue.TIMESTAMP,
-                            device: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
-                        });
-                    }
-                });
-
-                firebaseDb.ref('kasRt/presence').on('value', (snap) => {
-                    const presenceObj = snap.val() || {};
-                    const container = document.getElementById('online-users-container');
-                    const countBadge = document.getElementById('online-count-badge');
-                    if (!container) return;
-
-                    container.innerHTML = '';
-                    const keys = Object.keys(presenceObj);
-                    countBadge.textContent = `${keys.length} Online`;
-
-                    if (keys.length === 0) {
-                        container.innerHTML = '<span class="text-xs text-slate-400">Belum ada pengunjung online.</span>';
-                        return;
-                    }
-
-                    keys.forEach((key, index) => {
-                        const user = presenceObj[key];
-                        const isMe = key === userSessionId;
-                        const badge = document.createElement('div');
-                        badge.className = "flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-xl text-xs font-medium shadow-xs";
-                        badge.innerHTML = `
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></i></span>
-                            <span>Pengunjung #${index + 1} (${user.device || 'Web'}) ${isMe ? '<span class="text-[10px] text-blue-600 font-bold">(Anda)</span>' : ''}</span>
-                        `;
-                        container.appendChild(badge);
-                    });
-                });
+                // Jika admin atau visitor sudah isi nama, langsung daftarkan presence
+                setupPresenceSync();
 
                 firebaseDb.ref('kasRt/adminPin').on('value', snap => {
                     const pinVal = snap.val();
@@ -1666,6 +1700,53 @@
                 console.error(err);
                 initApp();
             }
+        }
+
+        function setupPresenceSync() {
+            if (!firebaseReady) return;
+            const displayName = isAdmin ? 'Pengurus RT (Admin)' : (visitorName || 'Tamu');
+            const myPresenceRef = firebaseDb.ref(`kasRt/presence/${userSessionId}`);
+            const connectedRef = firebaseDb.ref('.info/connected');
+
+            connectedRef.on('value', (snap) => {
+                if (snap.val() === true) {
+                    myPresenceRef.onDisconnect().remove();
+                    myPresenceRef.set({
+                        name: displayName,
+                        isAdmin: isAdmin,
+                        joinedAt: firebase.database.ServerValue.TIMESTAMP,
+                        device: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
+                    });
+                }
+            });
+
+            firebaseDb.ref('kasRt/presence').on('value', (snap) => {
+                const presenceObj = snap.val() || {};
+                const container = document.getElementById('online-users-container');
+                const countBadge = document.getElementById('online-count-badge');
+                if (!container) return;
+
+                container.innerHTML = '';
+                const keys = Object.keys(presenceObj);
+                countBadge.textContent = `${keys.length} Online`;
+
+                if (keys.length === 0) {
+                    container.innerHTML = '<span class="text-xs text-slate-400">Belum ada pengunjung online.</span>';
+                    return;
+                }
+
+                keys.forEach((key) => {
+                    const user = presenceObj[key];
+                    const isMe = key === userSessionId;
+                    const badge = document.createElement('div');
+                    badge.className = `flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-medium shadow-xs border ${user.isAdmin ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-emerald-50 border-emerald-200 text-emerald-800'}`;
+                    badge.innerHTML = `
+                        <span class="w-2 h-2 rounded-full ${user.isAdmin ? 'bg-blue-500' : 'bg-emerald-500'} animate-pulse"></span>
+                        <span><b>${escapeHTML(user.name || 'Tamu')}</b> (${user.device || 'Web'}) ${isMe ? '<span class="text-[10px] text-rose-600 font-bold">(Anda)</span>' : ''}</span>
+                    `;
+                    container.appendChild(badge);
+                });
+            });
         }
 
         document.getElementById('form-bank').addEventListener('submit', function(e) {
@@ -1728,7 +1809,7 @@
                     description: desc,
                     amount,
                     proofs: proofsPayload,
-                    proof: null, // Bersihkan field lama jika ada
+                    proof: null,
                     paymentType
                 });
                 cancelEditTransaction();
@@ -1816,6 +1897,23 @@
             }
         });
 
+        // Handler form input nama pengunjung non-admin
+        document.getElementById('form-visitor-name').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('visitor-input-name').value.trim();
+            if (!nameInput) return;
+
+            visitorName = nameInput;
+            sessionStorage.setItem('kasRtVisitorName', visitorName);
+            document.getElementById('visitor-name-modal').classList.add('hidden');
+
+            // Aktifkan presence dengan nama yang baru diinput
+            if (firebaseReady) {
+                setupPresenceSync();
+            }
+            showToast(`Halo, ${visitorName}! Selamat datang.`);
+        });
+
         function requireAdmin() {
             if (!isAdmin) {
                 showToast('Login Admin terlebih dahulu.', 'error');
@@ -1835,6 +1933,22 @@
             modal.classList.add('hidden'); modal.classList.remove('flex');
         }
 
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const pin = document.getElementById('admin-pin').value;
+            if (pin === ADMIN_PIN) {
+                isAdmin = true;
+                sessionStorage.setItem('kasRtIsAdmin', 'true');
+                closeAdminLogin();
+                updateAccessMode();
+                if (firebaseReady) setupPresenceSync();
+                renderAllViews();
+                showToast('Berhasil Login sebagai Admin!');
+            } else {
+                showToast('PIN Admin salah!', 'error');
+            }
+        }
+
         function openChangePin() {
             if (!requireAdmin()) return;
             const modal=document.getElementById('change-pin-modal');
@@ -1849,10 +1963,39 @@
             modal.classList.add('hidden'); modal.classList.remove('flex');
         }
 
+        function handleUpdatePin(e) {
+            e.preventDefault();
+            const oldPin = document.getElementById('old-pin').value;
+            const newPin = document.getElementById('new-pin').value;
+            const confirmPin = document.getElementById('confirm-pin').value;
+
+            if (oldPin !== ADMIN_PIN) {
+                showToast('PIN lama tidak sesuai!', 'error');
+                return;
+            }
+            if (newPin.length < 4) {
+                showToast('PIN baru minimal 4 karakter!', 'error');
+                return;
+            }
+            if (newPin !== confirmPin) {
+                showToast('Konfirmasi PIN baru tidak sama!', 'error');
+                return;
+            }
+
+            ADMIN_PIN = newPin;
+            localStorage.setItem('kasRtAdminPin', ADMIN_PIN);
+            if (firebaseReady) {
+                firebaseDb.ref('kasRt/adminPin').set(ADMIN_PIN);
+            }
+            closeChangePin();
+            showToast('PIN Admin berhasil diubah!');
+        }
+
         function logoutAdmin() {
             isAdmin=false; 
             sessionStorage.removeItem('kasRtIsAdmin');
             updateAccessMode();
+            if (firebaseReady) setupPresenceSync();
             renderAllViews();
             showToast('Logout Admin.');
         }
@@ -1872,121 +2015,33 @@
             if(onlinePanel) onlinePanel.classList.toggle('hidden',!isAdmin);
 
             document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!isAdmin));
-            document.querySelectorAll('#form-income input, #form-income select, #form-income button, #form-expense input, #form-expense select, #form-expense button').forEach(el=>el.disabled=!isAdmin);
-
-            const historyContainer = document.getElementById('transaction-history-container');
-            if (historyContainer) {
-                if (isAdmin) {
-                    historyContainer.className = "lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[520px]";
-                } else {
-                    historyContainer.className = "lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[520px]";
-                }
-            }
-            renderBankAccounts();
         }
-
-        document.addEventListener('DOMContentLoaded',()=>{
-            const f=document.getElementById('admin-login-form');
-            if(f) f.addEventListener('submit',e=>{
-                e.preventDefault();
-                if(document.getElementById('admin-pin').value===ADMIN_PIN){
-                    isAdmin=true; 
-                    sessionStorage.setItem('kasRtIsAdmin', 'true');
-                    closeAdminLogin(); 
-                    updateAccessMode(); 
-                    renderAllViews();
-                    showToast('Login Admin berhasil.');
-                } else showToast('PIN salah.','error');
-            });
-
-            const fc=document.getElementById('change-pin-form');
-            if(fc) fc.addEventListener('submit',e=>{
-                e.preventDefault();
-                if(!isAdmin) return;
-                const oldPin=document.getElementById('old-pin').value;
-                const newPin=document.getElementById('new-pin').value;
-                const confirmPin=document.getElementById('confirm-pin').value;
-                if(oldPin!==ADMIN_PIN) return showToast('PIN lama salah.','error');
-                if(!/^\d{6}$/.test(newPin)) return showToast('PIN harus 6 digit.','error');
-                if(newPin!==confirmPin) return showToast('PIN tidak sama.','error');
-                
-                ADMIN_PIN=newPin;
-                localStorage.setItem('kasRtAdminPin',newPin);
-                if (firebaseReady) firebaseDb.ref('kasRt/adminPin').set(newPin);
-                closeChangePin();
-                showToast('PIN diubah.');
-            });
-        });
 
         function initApp() {
-            const todayStr = new Date().toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-            const elDate = document.getElementById('current-date');
-            if (elDate) elDate.textContent = todayStr;
-
-            const todayISO = new Date().toISOString().split('T')[0];
-            document.getElementById('inc-date').value = todayISO;
-            document.getElementById('exp-date').value = todayISO;
-            document.getElementById('house-period-filter').value = currentYearMonth;
-
-            updateHouseDatalist();
-            renderBankAccounts();
-            renderDashboard();
-            renderHistory();
-            renderRecap();
-            renderHouseStatus();
             updateAccessMode();
+            const todayISO = new Date().toISOString().split('T')[0];
+            const incDateEl = document.getElementById('inc-date');
+            const expDateEl = document.getElementById('exp-date');
+            if(incDateEl) incDateEl.value = todayISO;
+            if(expDateEl) expDateEl.value = todayISO;
+
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateEl = document.getElementById('current-date');
+            if (dateEl) dateEl.textContent = new Date().toLocaleDateString('id-ID', dateOptions);
+
+            renderAllViews();
+
+            // Cek jika belum login sebagai admin dan belum mengisi nama pengunjung
+            if (!isAdmin && !visitorName) {
+                const visitorModal = document.getElementById('visitor-name-modal');
+                visitorModal.classList.remove('hidden');
+                setTimeout(() => document.getElementById('visitor-input-name').focus(), 50);
+            }
         }
 
-        document.addEventListener('DOMContentLoaded', startFirebaseSync);
+        window.addEventListener('DOMContentLoaded', () => {
+            startFirebaseSync();
+        });
     </script>
-
-<!-- Admin PIN Modal -->
-<div id="admin-login-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] hidden items-center justify-center p-3">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs p-4">
-    <div class="flex items-center gap-2 mb-3">
-      <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-xs"><i class="fas fa-lock"></i></div>
-      <h3 class="font-bold text-slate-800 text-xs sm:text-sm">Login Admin RT</h3>
-    </div>
-    <form id="admin-login-form" class="space-y-3">
-      <div>
-        <label class="block text-xs font-medium text-slate-700 mb-1">PIN Akses Admin</label>
-        <input type="password" id="admin-pin" placeholder="Masukkan 6 digit PIN" maxlength="6" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
-      </div>
-      <div class="flex justify-end gap-2 pt-1">
-        <button type="button" onclick="closeAdminLogin()" class="px-3 py-1.5 bg-slate-100 text-slate-700 font-medium rounded-lg text-xs">Batal</button>
-        <button type="submit" class="px-4 py-1.5 bg-blue-600 text-white font-medium rounded-lg text-xs shadow-sm">Masuk</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Change PIN Modal -->
-<div id="change-pin-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] hidden items-center justify-center p-3">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs p-4">
-    <div class="flex items-center gap-2 mb-3">
-      <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-xs"><i class="fas fa-key"></i></div>
-      <h3 class="font-bold text-slate-800 text-xs sm:text-sm">Ubah PIN Admin</h3>
-    </div>
-    <form id="change-pin-form" class="space-y-3">
-      <div>
-        <label class="block text-xs font-medium text-slate-700 mb-1">PIN Lama</label>
-        <input type="password" id="old-pin" placeholder="PIN saat ini" maxlength="6" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-slate-700 mb-1">PIN Baru (6 Digit)</label>
-        <input type="password" id="new-pin" placeholder="PIN baru 6 digit" maxlength="6" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-slate-700 mb-1">Konfirmasi PIN Baru</label>
-        <input type="password" id="confirm-pin" placeholder="Ulangi PIN baru" maxlength="6" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
-      </div>
-      <div class="flex justify-end gap-2 pt-1">
-        <button type="button" onclick="closeChangePin()" class="px-3 py-1.5 bg-slate-100 text-slate-700 font-medium rounded-lg text-xs">Batal</button>
-        <button type="submit" class="px-4 py-1.5 bg-amber-600 text-white font-medium rounded-lg text-xs shadow-sm">Simpan</button>
-      </div>
-    </form>
-  </div>
-</div>
-
 </body>
 </html>
