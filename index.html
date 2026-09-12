@@ -93,7 +93,7 @@
                 <button id="admin-change-pin-btn" onclick="openChangePin()" class="admin-only ml-2 px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-xs font-semibold hidden">
                     <i class="fas fa-key mr-1"></i> Ubah PIN
                 </button>
-                <button id="admin-logout-btn" onclick="logoutAdmin()" class="ml-2 px-3 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-xs font-semibold hidden">
+                <button id="admin-logout-btn" onclick="logoutAdmin()" class="admin-only ml-2 px-3 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-xs font-semibold hidden">
                     <i class="fas fa-sign-out-alt mr-1"></i> Logout
                 </button>
             </div>
@@ -121,17 +121,17 @@
         <!-- DASHBOARD KAS & TRANSAKSI -->
         <div id="page-dashboard" class="space-y-4 sm:space-y-6">
             
-            <!-- PANEL INFORMASI REKENING BANK -->
-            <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200">
-                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-                    <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-2">
-                        <i class="fas fa-university text-blue-600"></i> Informasi Rekening Pembayaran RT
+            <!-- PANEL INFORMASI REKENING BANK (DIPERECIL) -->
+            <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                        <i class="fas fa-university text-blue-600 text-[11px]"></i> Informasi Rekening Pembayaran RT
                     </h3>
-                    <button onclick="openAddBankModal()" class="admin-only px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1 shadow-sm hidden">
-                        <i class="fas fa-plus"></i> Tambah Rekening
+                    <button onclick="openAddBankModal()" class="admin-only px-2 py-0.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-semibold rounded transition-colors flex items-center gap-1 shadow-sm hidden">
+                        <i class="fas fa-plus"></i> Tambah
                     </button>
                 </div>
-                <div id="bank-accounts-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div id="bank-accounts-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                     <!-- Dinamis dimuat oleh JS -->
                 </div>
             </div>
@@ -844,31 +844,32 @@
             container.innerHTML = '';
 
             if (bankAccounts.length === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-400 col-span-full">Belum ada nomor rekening bank yang terdaftar.</p>';
+                container.innerHTML = '<p class="text-[11px] text-slate-400 col-span-full">Belum ada nomor rekening bank yang terdaftar.</p>';
                 return;
             }
 
             bankAccounts.forEach(b => {
                 const card = document.createElement('div');
-                card.className = "bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col justify-between gap-2 shadow-xs";
+                card.className = "bg-slate-50 border border-slate-200 rounded-lg p-2.5 flex items-center justify-between gap-2 shadow-xs";
                 card.innerHTML = `
-                    <div class="flex items-start justify-between">
-                        <div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5">
                             <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">${escapeHTML(b.bankName)}</span>
-                            <div class="font-bold text-slate-800 text-sm tracking-wide mt-0.5">${escapeHTML(b.accountNumber)}</div>
-                            <div class="text-[11px] text-slate-500">a.n. ${escapeHTML(b.accountHolder)}</div>
+                            <span class="text-[10px] text-slate-400">•</span>
+                            <span class="text-[11px] text-slate-500 truncate">a.n. ${escapeHTML(b.accountHolder)}</span>
                         </div>
-                        <div class="flex items-center gap-1">
-                            <button onclick="copyToClipboard('${escapeHTML(b.accountNumber)}')" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold rounded-lg text-xs flex items-center gap-1 transition-colors" title="Salin No Rekening">
-                                <i class="fas fa-copy"></i> Salin
-                            </button>
-                            <button onclick="editBank('${b.id}')" class="admin-only text-slate-400 hover:text-amber-600 p-1 ${isAdmin ? '' : 'hidden'}" title="Edit Rekening">
-                                <i class="fas fa-pen text-xs"></i>
-                            </button>
-                            <button onclick="deleteBank('${b.id}')" class="admin-only text-slate-300 hover:text-rose-600 p-1 ${isAdmin ? '' : 'hidden'}" title="Hapus Rekening">
-                                <i class="fas fa-trash-alt text-xs"></i>
-                            </button>
-                        </div>
+                        <div class="font-bold text-slate-800 text-xs tracking-wide">${escapeHTML(b.accountNumber)}</div>
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button onclick="copyToClipboard('${escapeHTML(b.accountNumber)}')" class="px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold rounded text-[10px] flex items-center gap-1 transition-colors" title="Salin No Rekening">
+                            <i class="fas fa-copy"></i> Salin
+                        </button>
+                        <button onclick="editBank('${b.id}')" class="admin-only text-slate-400 hover:text-amber-600 p-1 ${isAdmin ? '' : 'hidden'}" title="Edit Rekening">
+                            <i class="fas fa-pen text-[10px]"></i>
+                        </button>
+                        <button onclick="deleteBank('${b.id}')" class="admin-only text-slate-300 hover:text-rose-600 p-1 ${isAdmin ? '' : 'hidden'}" title="Hapus Rekening">
+                            <i class="fas fa-trash-alt text-[10px]"></i>
+                        </button>
                     </div>
                 `;
                 container.appendChild(card);
@@ -1630,7 +1631,6 @@
 
                 connectedRef.on('value', (snap) => {
                     if (snap.val() === true) {
-                        // Menggunakan onDisconnect().remove() agar otomatis terhapus saat koneksi terputus/tab ditutup
                         myPresenceRef.onDisconnect().remove();
                         myPresenceRef.set({
                             joinedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -1639,7 +1639,6 @@
                     }
                 });
 
-                // Tambahan event listener pagehide/beforeunload untuk memastikan data terhapus instan saat tab ditutup
                 window.addEventListener('beforeunload', () => {
                     if (firebaseReady) {
                         myPresenceRef.remove();
