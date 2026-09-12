@@ -250,9 +250,9 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Upload Bukti Transaksi <span class="text-slate-400 font-normal">(Opsional)</span></label>
-                            <input type="file" id="inc-proof" accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                            <p id="inc-proof-info" class="text-[10px] text-emerald-600 font-medium mt-1 hidden"><i class="fas fa-check-circle"></i> Bukti transaksi tersimpan.</p>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Upload Bukti Transaksi (Bisa > 1 Foto) <span class="text-slate-400 font-normal">(Opsional)</span></label>
+                            <input type="file" id="inc-proof" accept="image/*" multiple onchange="handleFilesUpload('income')" class="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                            <div id="inc-preview-container" class="flex flex-wrap gap-2 mt-2"></div>
                         </div>
 
                         <button type="submit" id="inc-submit-btn" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-lg transition-colors shadow-sm flex items-center justify-center gap-1.5 mt-2">
@@ -278,9 +278,9 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Upload Bukti / Nota <span class="text-slate-400 font-normal">(Opsional)</span></label>
-                            <input type="file" id="exp-proof" accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer">
-                            <p id="exp-proof-info" class="text-[10px] text-emerald-600 font-medium mt-1 hidden"><i class="fas fa-check-circle"></i> Bukti/Struk tersimpan.</p>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Upload Bukti / Nota (Bisa > 1 Foto) <span class="text-slate-400 font-normal">(Opsional)</span></label>
+                            <input type="file" id="exp-proof" accept="image/*" multiple onchange="handleFilesUpload('expense')" class="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer">
+                            <div id="exp-preview-container" class="flex flex-wrap gap-2 mt-2"></div>
                         </div>
 
                         <button type="submit" id="exp-submit-btn" class="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm rounded-lg transition-colors shadow-sm flex items-center justify-center gap-1.5 mt-2">
@@ -518,8 +518,9 @@
         </div>
     </div>
 
+    <!-- Modal Lihat Bukti Transaksi (Support Multiple Carousel/Grid) -->
     <div id="proof-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
-        <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                     <i class="fas fa-receipt text-blue-600"></i> Bukti Transaksi
@@ -528,9 +529,8 @@
                     <i class="fas fa-times text-base"></i>
                 </button>
             </div>
-            <div class="p-3 flex items-center justify-center bg-slate-900 min-h-[220px]">
-                <img id="proof-img" src="" alt="Bukti Transaksi" class="max-h-[60vh] object-contain rounded-lg hidden">
-                <p id="proof-empty-text" class="text-slate-400 text-xs hidden">Bukti transaksi tidak tersedia.</p>
+            <div id="proof-images-container" class="p-4 overflow-y-auto custom-scrollbar flex flex-wrap gap-3 items-center justify-center bg-slate-900 min-h-[220px]">
+                <!-- Gambar bukti akan dimuat di sini -->
             </div>
             <div class="p-2 bg-slate-50 text-right">
                 <button onclick="closeProofModal()" class="px-3 py-1 bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg">Tutup</button>
@@ -581,6 +581,10 @@
         let bankAccounts = [];
         let editingTransactionId = null;
         let userSessionId = 'User_' + Math.random().toString(36).substring(2, 8);
+
+        // Variabel penampung array foto sementara saat form diisi/diedit
+        let currentIncomeProofs = [];
+        let currentExpenseProofs = [];
 
         const DEFAULT_ADMIN_PIN = '123456';
         let ADMIN_PIN = localStorage.getItem('kasRtAdminPin') || DEFAULT_ADMIN_PIN;
@@ -716,6 +720,67 @@
                 tabRecap.className = "pb-2.5 text-xs sm:text-sm transition-all tab-active";
                 tabHistory.className = "pb-2.5 text-xs sm:text-sm transition-all tab-inactive";
                 renderRecap();
+            }
+        };
+
+        // Fungsi handle multiple upload & preview dengan tombol hapus foto
+        window.handleFilesUpload = async function(type) {
+            const fileInput = document.getElementById(type === 'income' ? 'inc-proof' : 'exp-proof');
+            const files = fileInput.files;
+            if (!files || files.length === 0) return;
+
+            for (let i = 0; i < files.length; i++) {
+                const base64 = await readFileAsBase64(files[i]);
+                if (base64) {
+                    if (type === 'income') {
+                        currentIncomeProofs.push(base64);
+                    } else {
+                        currentExpenseProofs.push(base64);
+                    }
+                }
+            }
+            fileInput.value = ''; // Reset input agar bisa pilih file lagi
+            renderPreviews(type);
+        };
+
+        function readFileAsBase64(file) {
+            return new Promise((resolve) => {
+                if (!file) {
+                    resolve('');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = () => resolve('');
+                reader.readAsDataURL(file);
+            });
+        }
+
+        window.renderPreviews = function(type) {
+            const container = document.getElementById(type === 'income' ? 'inc-preview-container' : 'exp-preview-container');
+            const list = type === 'income' ? currentIncomeProofs : currentExpenseProofs;
+            container.innerHTML = '';
+
+            list.forEach((imgSrc, index) => {
+                const wrap = document.createElement('div');
+                wrap.className = "relative w-16 h-16 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 shrink-0 shadow-xs";
+                wrap.innerHTML = `
+                    <img src="${imgSrc}" class="w-full h-full object-cover">
+                    <button type="button" onclick="removeProofItem('${type}', ${index})" class="absolute top-0.5 right-0.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] shadow" title="Hapus foto">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                container.appendChild(wrap);
+            });
+        };
+
+        window.removeProofItem = function(type, index) {
+            if (type === 'income') {
+                currentIncomeProofs.splice(index, 1);
+                renderPreviews('income');
+            } else {
+                currentExpenseProofs.splice(index, 1);
+                renderPreviews('expense');
             }
         };
 
@@ -880,6 +945,14 @@
                     methodBadge = `<span class="inline-block px-1.5 py-0.2 text-[9px] rounded font-semibold ${badgeBg}">${escapeHTML(m)}</span>`;
                 }
 
+                // Normalisasi cek bukti (bisa berupa array proofs atau string tunggal proof lama)
+                let proofsCount = 0;
+                if (Array.isArray(t.proofs) && t.proofs.length > 0) {
+                    proofsCount = t.proofs.length;
+                } else if (t.proof) {
+                    proofsCount = 1;
+                }
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition-colors";
                 tr.innerHTML = `
@@ -893,9 +966,9 @@
                         <div class="font-semibold text-slate-800 text-xs sm:text-sm leading-tight">${escapeHTML(t.description)}</div>
                         <div class="flex items-center gap-1.5 mt-1 flex-wrap">
                             ${methodBadge}
-                            ${t.proof 
+                            ${proofsCount > 0 
                                 ? `<button onclick="openProofModal('${t.id}')" class="text-blue-600 hover:text-blue-800 text-[10px] font-semibold underline flex items-center gap-0.5">
-                                    <i class="fas fa-image"></i> Bukti
+                                    <i class="fas fa-image"></i> Bukti (${proofsCount})
                                    </button>` 
                                 : ''}
                         </div>
@@ -943,9 +1016,9 @@
                     <div class="flex items-center justify-between pt-1 text-[10px]">
                         <div class="flex items-center gap-2">
                             ${methodBadge}
-                            ${t.proof 
+                            ${proofsCount > 0 
                                 ? `<button onclick="openProofModal('${t.id}')" class="text-blue-600 font-medium underline flex items-center gap-1">
-                                    <i class="fas fa-image"></i> Bukti
+                                    <i class="fas fa-image"></i> Bukti (${proofsCount})
                                    </button>` 
                                 : ''}
                         </div>
@@ -1098,7 +1171,8 @@
 
                 let actionBtn = '';
                 if (isPaid) {
-                    actionBtn = `<button onclick="openProofModal('${payment.id}')" class="text-[11px] px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded ${payment.proof ? '' : 'opacity-40 cursor-not-allowed'}" ${payment.proof ? '' : 'disabled'}>Bukti</button>`;
+                    const hasProof = (payment.proofs && payment.proofs.length > 0) || payment.proof;
+                    actionBtn = `<button onclick="openProofModal('${payment.id}')" class="text-[11px] px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded ${hasProof ? '' : 'opacity-40 cursor-not-allowed'}" ${hasProof ? '' : 'disabled'}>Bukti</button>`;
                 } else if (isAdmin) {
                     actionBtn = `<button onclick="quickRecordPayment('${h.houseNumber}')" class="text-[11px] px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded shadow-sm">Bayar</button>`;
                 } else {
@@ -1300,6 +1374,7 @@
             document.getElementById('form-type-switcher').classList.add('hidden');
             document.getElementById('btn-cancel-edit').classList.remove('hidden');
 
+            // Load existing proofs to array
             if (t.type === 'income') {
                 switchForm('income');
                 document.getElementById('form-title').innerHTML = '<i class="fas fa-edit text-amber-500"></i> Edit Pemasukan';
@@ -1311,9 +1386,8 @@
                 document.getElementById('inc-amount').value = t.amount || '';
                 document.getElementById('inc-submit-btn').innerHTML = '<i class="fas fa-save"></i> Perbarui Pemasukan';
 
-                const proofInfo = document.getElementById('inc-proof-info');
-                if (t.proof) proofInfo.classList.remove('hidden');
-                else proofInfo.classList.add('hidden');
+                currentIncomeProofs = Array.isArray(t.proofs) ? [...t.proofs] : (t.proof ? [t.proof] : []);
+                renderPreviews('income');
 
             } else {
                 switchForm('expense');
@@ -1324,9 +1398,8 @@
                 document.getElementById('exp-amount').value = t.amount || '';
                 document.getElementById('exp-submit-btn').innerHTML = '<i class="fas fa-save"></i> Perbarui Pengeluaran';
 
-                const proofInfo = document.getElementById('exp-proof-info');
-                if (t.proof) proofInfo.classList.remove('hidden');
-                else proofInfo.classList.add('hidden');
+                currentExpenseProofs = Array.isArray(t.proofs) ? [...t.proofs] : (t.proof ? [t.proof] : []);
+                renderPreviews('expense');
             }
 
             document.getElementById('form-title').scrollIntoView({ behavior: 'smooth' });
@@ -1342,13 +1415,15 @@
             formInc.reset();
             document.getElementById('inc-id').value = '';
             document.getElementById('inc-submit-btn').innerHTML = '<i class="fas fa-save"></i> Simpan Pemasukan';
-            document.getElementById('inc-proof-info').classList.add('hidden');
+            currentIncomeProofs = [];
+            renderPreviews('income');
 
             const formExp = document.getElementById('form-expense');
             formExp.reset();
             document.getElementById('exp-id').value = '';
             document.getElementById('exp-submit-btn').innerHTML = '<i class="fas fa-save"></i> Simpan Pengeluaran';
-            document.getElementById('exp-proof-info').classList.add('hidden');
+            currentExpenseProofs = [];
+            renderPreviews('expense');
 
             const todayISO = new Date().toISOString().split('T')[0];
             document.getElementById('inc-date').value = todayISO;
@@ -1397,17 +1472,27 @@
         window.openProofModal = function(id) {
             const t = transactions.find(item => item.id === id);
             const modal = document.getElementById('proof-modal');
-            const img = document.getElementById('proof-img');
-            const emptyText = document.getElementById('proof-empty-text');
+            const container = document.getElementById('proof-images-container');
+            container.innerHTML = '';
 
-            if (t && t.proof) {
-                img.src = t.proof;
-                img.classList.remove('hidden');
-                emptyText.classList.add('hidden');
+            let proofsList = [];
+            if (t) {
+                if (Array.isArray(t.proofs) && t.proofs.length > 0) {
+                    proofsList = t.proofs;
+                } else if (t.proof) {
+                    proofsList = [t.proof];
+                }
+            }
+
+            if (proofsList.length > 0) {
+                proofsList.forEach((src) => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.className = "max-h-[50vh] max-w-full object-contain rounded-lg border border-slate-700 bg-black/40 shadow";
+                    container.appendChild(img);
+                });
             } else {
-                img.src = '';
-                img.classList.add('hidden');
-                emptyText.classList.remove('hidden');
+                container.innerHTML = '<p class="text-slate-400 text-xs">Bukti transaksi tidak tersedia.</p>';
             }
             modal.classList.remove('hidden');
         };
@@ -1488,7 +1573,6 @@
                 firebaseDb = firebase.database();
                 firebaseReady = true;
 
-                // --- FITUR REALTIME PRESENCE (SIAPA YANG ONLINE) ---
                 const myPresenceRef = firebaseDb.ref(`kasRt/presence/${userSessionId}`);
                 const connectedRef = firebaseDb.ref('.info/connected');
 
@@ -1529,7 +1613,6 @@
                         container.appendChild(badge);
                     });
                 });
-                // ----------------------------------------------------
 
                 firebaseDb.ref('kasRt/adminPin').on('value', snap => {
                     const pinVal = snap.val();
@@ -1585,19 +1668,6 @@
             }
         }
 
-        function readFileAsBase64(file) {
-            return new Promise((resolve) => {
-                if (!file) {
-                    resolve('');
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.onerror = () => resolve('');
-                reader.readAsDataURL(file);
-            });
-        }
-
         document.getElementById('form-bank').addEventListener('submit', function(e) {
             e.preventDefault();
             if (!requireAdmin()) return;
@@ -1632,7 +1702,6 @@
             const house = document.getElementById('inc-house').value.trim().toUpperCase();
             const desc = document.getElementById('inc-desc').value.trim();
             const amount = parseFloat(document.getElementById('inc-amount').value);
-            const fileInput = document.getElementById('inc-proof');
 
             if (!date || !desc || isNaN(amount) || amount <= 0) return;
 
@@ -1640,7 +1709,6 @@
                 addHouseToFirebase({ houseNumber: house, ownerName: `Warga Rumah ${house}`, phone: '' });
             }
 
-            let proofBase64 = fileInput.files.length > 0 ? await readFileAsBase64(fileInput.files[0]) : '';
             const normalizedDesc = desc.toLowerCase().trim();
             const paymentType = (
                 normalizedDesc.includes('iuran') ||
@@ -1649,11 +1717,9 @@
                 normalizedDesc.includes('keamanan')
             ) ? 'monthly_fee' : 'other_income';
 
+            const proofsPayload = [...currentIncomeProofs];
 
             if (editId) {
-                const existing = transactions.find(t => t.id === editId);
-                if (existing && !proofBase64) proofBase64 = existing.proof || '';
-                
                 firebaseDb.ref(`kasRt/transactions/${editId}`).update({
                     type: 'income',
                     date,
@@ -1661,7 +1727,8 @@
                     houseNumber: house,
                     description: desc,
                     amount,
-                    proof: proofBase64,
+                    proofs: proofsPayload,
+                    proof: null, // Bersihkan field lama jika ada
                     paymentType
                 });
                 cancelEditTransaction();
@@ -1674,10 +1741,12 @@
                     houseNumber: house,
                     description: desc,
                     amount,
-                    proof: proofBase64,
+                    proofs: proofsPayload,
                     paymentType
                 });
                 this.reset();
+                currentIncomeProofs = [];
+                renderPreviews('income');
                 document.getElementById('inc-date').value = new Date().toISOString().split('T')[0];
                 showToast('Pemasukan disimpan!');
             }
@@ -1690,22 +1759,19 @@
             const date = document.getElementById('exp-date').value;
             const desc = document.getElementById('exp-desc').value.trim();
             const amount = parseFloat(document.getElementById('exp-amount').value);
-            const fileInput = document.getElementById('exp-proof');
 
             if (!date || !desc || isNaN(amount) || amount <= 0) return;
 
-            let proofBase64 = fileInput.files.length > 0 ? await readFileAsBase64(fileInput.files[0]) : '';
+            const proofsPayload = [...currentExpenseProofs];
 
             if (editId) {
-                const existing = transactions.find(t => t.id === editId);
-                if (existing && !proofBase64) proofBase64 = existing.proof || '';
-
                 firebaseDb.ref(`kasRt/transactions/${editId}`).update({
                     type: 'expense',
                     date,
                     description: desc,
                     amount,
-                    proof: proofBase64
+                    proofs: proofsPayload,
+                    proof: null
                 });
                 cancelEditTransaction();
                 showToast('Pengeluaran diperbarui!');
@@ -1715,9 +1781,11 @@
                     date,
                     description: desc,
                     amount,
-                    proof: proofBase64
+                    proofs: proofsPayload
                 });
                 this.reset();
+                currentExpenseProofs = [];
+                renderPreviews('expense');
                 document.getElementById('exp-date').value = new Date().toISOString().split('T')[0];
                 showToast('Pengeluaran disimpan!');
             }
@@ -1877,41 +1945,44 @@
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs p-4">
     <div class="flex items-center gap-2 mb-3">
       <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-xs"><i class="fas fa-lock"></i></div>
-      <div><h3 class="font-bold text-slate-800 text-xs sm:text-sm">Login Admin</h3><p class="text-[10px] text-slate-500">Masukkan PIN Admin (6 digit).</p></div>
+      <h3 class="font-bold text-slate-800 text-xs sm:text-sm">Login Admin RT</h3>
     </div>
-    <form id="admin-login-form">
-      <input id="admin-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-center text-xl tracking-[.4em] outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••" required>
-      <div class="flex gap-2 justify-end mt-3 text-xs">
-        <button type="button" onclick="closeAdminLogin()" class="px-3 py-1.5 rounded-lg bg-slate-100">Batal</button>
-        <button type="submit" class="px-4 py-1.5 rounded-lg bg-blue-600 text-white font-semibold">Masuk</button>
+    <form id="admin-login-form" class="space-y-3">
+      <div>
+        <label class="block text-xs font-medium text-slate-700 mb-1">PIN Akses Admin</label>
+        <input type="password" id="admin-pin" placeholder="Masukkan 6 digit PIN" maxlength="6" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" onclick="closeAdminLogin()" class="px-3 py-1.5 bg-slate-100 text-slate-700 font-medium rounded-lg text-xs">Batal</button>
+        <button type="submit" class="px-4 py-1.5 bg-blue-600 text-white font-medium rounded-lg text-xs shadow-sm">Masuk</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Change Admin PIN Modal -->
-<div id="change-pin-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[101] hidden items-center justify-center p-3">
+<!-- Change PIN Modal -->
+<div id="change-pin-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] hidden items-center justify-center p-3">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs p-4">
     <div class="flex items-center gap-2 mb-3">
       <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-xs"><i class="fas fa-key"></i></div>
-      <div><h3 class="font-bold text-slate-800 text-xs sm:text-sm">Ubah PIN Admin</h3><p class="text-[10px] text-slate-500">Masukkan PIN baru (6 digit).</p></div>
+      <h3 class="font-bold text-slate-800 text-xs sm:text-sm">Ubah PIN Admin</h3>
     </div>
-    <form id="change-pin-form" class="space-y-2.5">
+    <form id="change-pin-form" class="space-y-3">
       <div>
-        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIN Lama</label>
-        <input id="old-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-center text-sm tracking-widest outline-none focus:ring-2 focus:ring-amber-500" placeholder="••••••" required>
+        <label class="block text-xs font-medium text-slate-700 mb-1">PIN Lama</label>
+        <input type="password" id="old-pin" placeholder="PIN saat ini" maxlength="6" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
       </div>
       <div>
-        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">PIN Baru (6 Digit)</label>
-        <input id="new-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-center text-sm tracking-widest outline-none focus:ring-2 focus:ring-amber-500" placeholder="••••••" required>
+        <label class="block text-xs font-medium text-slate-700 mb-1">PIN Baru (6 Digit)</label>
+        <input type="password" id="new-pin" placeholder="PIN baru 6 digit" maxlength="6" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
       </div>
       <div>
-        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Konfirmasi PIN Baru</label>
-        <input id="confirm-pin" type="password" inputmode="numeric" maxlength="6" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-center text-sm tracking-widest outline-none focus:ring-2 focus:ring-amber-500" placeholder="••••••" required>
+        <label class="block text-xs font-medium text-slate-700 mb-1">Konfirmasi PIN Baru</label>
+        <input type="password" id="confirm-pin" placeholder="Ulangi PIN baru" maxlength="6" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
       </div>
-      <div class="flex gap-2 justify-end mt-3 text-xs">
-        <button type="button" onclick="closeChangePin()" class="px-3 py-1.5 rounded-lg bg-slate-100">Batal</button>
-        <button type="submit" class="px-4 py-1.5 rounded-lg bg-amber-500 text-white font-semibold">Simpan PIN</button>
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" onclick="closeChangePin()" class="px-3 py-1.5 bg-slate-100 text-slate-700 font-medium rounded-lg text-xs">Batal</button>
+        <button type="submit" class="px-4 py-1.5 bg-amber-600 text-white font-medium rounded-lg text-xs shadow-sm">Simpan</button>
       </div>
     </form>
   </div>
