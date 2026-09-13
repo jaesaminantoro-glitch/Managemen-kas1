@@ -80,7 +80,7 @@
         
         <div id="firebase-status" class="text-[11px] text-slate-500 font-medium px-1"></div>
 
-        <!-- PANEL ADMIN: SIAPA YANG SEDANG ONLINE -->
+        <!-- PANEL ADMIN -->
         <div id="admin-online-panel" class="admin-only bg-white rounded-2xl p-4 shadow-sm border border-slate-200 hidden">
             <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
                 <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-2">
@@ -90,7 +90,7 @@
                 <span class="text-[10px] text-slate-400">Pembaruan Real-time</span>
             </div>
             <div id="online-users-container" class="flex flex-wrap gap-2"></div>
-            <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap gap-2">
+            <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap gap-2 items-center">
                 <button onclick="backupDataJSON()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-lg flex items-center gap-1.5">
                     <i class="fas fa-download"></i> Backup Data (JSON)
                 </button>
@@ -98,13 +98,13 @@
                     <i class="fas fa-upload"></i> Restore Data
                 </button>
                 <input type="file" id="restore-file-input" accept=".json" onchange="restoreDataJSON(event)" class="hidden">
-                <button onclick="resetAllData()" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 ml-auto">
-                    <i class="fas fa-trash-alt"></i> Reset Semua Data
-                </button>
+                <span class="text-[10px] text-slate-400 italic ml-auto">
+                    <i class="fas fa-shield-alt"></i> Untuk reset total, lakukan manual via Firebase Console
+                </span>
             </div>
         </div>
 
-        <!-- DASHBOARD KAS & TRANSAKSI -->
+        <!-- DASHBOARD -->
         <div id="page-dashboard" class="space-y-4 sm:space-y-6">
             
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -271,8 +271,11 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">No. Rumah / Blok Warga</label>
-                            <input type="text" id="inc-house" list="house-list" placeholder="Misal: A-01" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">
+                                No. Rumah / Blok Warga
+                                <span class="text-purple-600 font-normal text-[10px]">(Kosongkan jika Donasi/Infaq)</span>
+                            </label>
+                            <input type="text" id="inc-house" list="house-list" placeholder="Misal: A-01" oninput="updateAllocationPreview(document.getElementById('inc-amount').value)" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase">
                             <datalist id="house-list"></datalist>
                         </div>
 
@@ -430,6 +433,7 @@
             </div>
         </div>
 
+        <!-- STATUS IURAN -->
         <div id="page-houses" class="hidden space-y-4">
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm">
@@ -505,7 +509,7 @@
         </div>
     </main>
 
-    <!-- Modal Tambah/Edit Rekening Bank -->
+    <!-- Modal Bank -->
     <div id="bank-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -538,7 +542,7 @@
         </div>
     </div>
 
-    <!-- Modal Tambah/Edit Rincian Alokasi Iuran -->
+    <!-- Modal Alokasi -->
     <div id="allocation-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -556,8 +560,9 @@
                     <input type="text" id="modal-allocation-title" placeholder="Misal: Keamanan & Pos Satpam" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">Nominal (Rp) <span class="text-rose-500">*</span></label>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Nominal per Rumah (Rp) <span class="text-rose-500">*</span></label>
                     <input type="number" id="modal-allocation-amount" min="0" placeholder="20000" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold">
+                    <p class="text-[10px] text-slate-400 mt-1 italic">Nominal ini akan dikalikan jumlah rumah yang membayar iuran.</p>
                 </div>
                 <div class="pt-2 flex justify-end gap-2">
                     <button type="button" onclick="closeAllocationModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg text-xs">Batal</button>
@@ -567,7 +572,7 @@
         </div>
     </div>
 
-    <!-- Modal Data Warga -->
+    <!-- Modal House -->
     <div id="house-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -600,7 +605,7 @@
         </div>
     </div>
 
-    <!-- Modal Lihat Bukti Transaksi -->
+    <!-- Modal Proof -->
     <div id="proof-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -618,7 +623,7 @@
         </div>
     </div>
 
-    <!-- Modal Rincian Mutasi Rekap Bulanan -->
+    <!-- Modal Recap Detail -->
     <div id="recap-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -677,7 +682,7 @@
         </div>
     </div>
 
-    <!-- Modal Ubah PIN Admin -->
+    <!-- Modal Change PIN -->
     <div id="change-pin-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-xs w-full overflow-hidden shadow-2xl">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -709,7 +714,7 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
+    <!-- Toast -->
     <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 -translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 z-[200] pointer-events-none text-xs">
         <i id="toast-icon" class="fas fa-check-circle text-emerald-400 text-sm"></i>
         <span id="toast-message" class="font-medium whitespace-nowrap">Notifikasi</span>
@@ -717,7 +722,7 @@
 
     <script>
         // ============================================================
-        // KONFIGURASI DEFAULT
+        // DATA DEFAULT
         // ============================================================
         const defaultHousesArray = [
             { houseNumber: 'A-01', ownerName: 'Bpk. Budi Santoso', phone: '08123456781' },
@@ -755,7 +760,7 @@
         };
 
         // ============================================================
-        // STATE GLOBAL
+        // STATE
         // ============================================================
         let firebaseReady = false;
         let firebaseDb = null;
@@ -772,7 +777,6 @@
         let currentExpenseProofs = [];
 
         const DEFAULT_ADMIN_PIN = '123456';
-        // PIN disimpan sebagai hash SHA-256 di localStorage
         let ADMIN_PIN_HASH = localStorage.getItem('kasRtAdminPinHash') || null;
         let isAdmin = sessionStorage.getItem('kasRtIsAdmin') === 'true';
 
@@ -780,14 +784,13 @@
         const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
         // ============================================================
-        // UTIL: HASH PIN (SHA-256)
+        // HASH PIN
         // ============================================================
         async function hashPin(pin) {
             try {
                 const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(pin)));
                 return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
             } catch (e) {
-                // Fallback jika crypto.subtle tidak tersedia (HTTP non-secure)
                 let h = 0;
                 const s = String(pin);
                 for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i) | 0;
@@ -804,7 +807,7 @@
         }
 
         // ============================================================
-        // UTIL: KOMPRES GAMBAR
+        // KOMPRES GAMBAR
         // ============================================================
         function compressImage(file, maxWidth = 1000, quality = 0.7) {
             return new Promise((resolve) => {
@@ -818,12 +821,9 @@
                             const scale = Math.min(1, maxWidth / Math.max(img.width, img.height));
                             canvas.width = Math.round(img.width * scale);
                             canvas.height = Math.round(img.height * scale);
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                            const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                            resolve(dataUrl);
+                            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                            resolve(canvas.toDataURL('image/jpeg', quality));
                         } catch (err) {
-                            console.warn('Kompres gambar gagal, fallback ke data URL asli:', err);
                             resolve(e.target.result);
                         }
                     };
@@ -836,7 +836,7 @@
         }
 
         // ============================================================
-        // UI: TOGGLE & NAVIGASI
+        // UI TOGGLE
         // ============================================================
         window.toggleBankSection = function() {
             const content = document.getElementById('bank-section-content');
@@ -895,7 +895,7 @@
         }
 
         // ============================================================
-        // UTIL: FORMAT
+        // FORMAT UTILS
         // ============================================================
         window.formatRupiah = function(number) {
             return new Intl.NumberFormat('id-ID', {
@@ -949,6 +949,9 @@
             });
         };
 
+        // ============================================================
+        // NAVIGASI
+        // ============================================================
         window.switchMainPage = function(page) {
             const pageDashboard = document.getElementById('page-dashboard');
             const pageHouses = document.getElementById('page-houses');
@@ -1017,68 +1020,90 @@
         };
 
         // ============================================================
-        // ALOKASI PREVIEW
-        // Perbaikan: nominal tetap, bukan proporsional.
-        // Jika nominal input < total alokasi default → proporsional.
-        // Jika nominal input >= total alokasi default → nominal tetap + sisa ke "Kas Umum".
+        // PREVIEW ALOKASI
+        // - Iuran warga (ada No. Rumah) → dialokasikan × jumlah rumah bayar
+        // - Donasi/Infaq (tanpa No. Rumah) → Kas Umum
         // ============================================================
         window.updateAllocationPreview = function(val) {
             const container = document.getElementById('preview-allocation-list');
             const totalNominalEl = document.getElementById('preview-total-nominal');
             const inputVal = parseFloat(val) || 0;
-            
+
             totalNominalEl.textContent = formatRupiah(inputVal);
+
+            const houseInput = document.getElementById('inc-house');
+            const houseNo = (houseInput?.value || '').trim().toUpperCase();
+            const isDonasi = !houseNo;
+
+            if (isDonasi) {
+                container.innerHTML = `
+                    <div class="flex justify-between items-center text-xs py-1 bg-purple-50 px-2 rounded">
+                        <span class="text-purple-800 font-semibold">
+                            <i class="fas fa-gift mr-1"></i> Donasi / Infaq
+                        </span>
+                        <span class="font-bold text-purple-700">${formatRupiah(inputVal)}</span>
+                    </div>
+                    <div class="text-[10px] text-purple-600 italic mt-1">
+                        <i class="fas fa-info-circle"></i> Tanpa No. Rumah → langsung ke <b>Kas Umum</b>, tidak dialokasikan.
+                    </div>
+                `;
+                return;
+            }
 
             if (!feeAllocations || feeAllocations.length === 0) {
                 container.innerHTML = '<span class="text-slate-400 italic">Belum ada rincian alokasi terdaftar.</span>';
                 return;
             }
 
-            const totalDefaultAlloc = feeAllocations.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+            const totalDefaultAlloc = feeAllocations.reduce(
+                (sum, item) => sum + (parseFloat(item.amount) || 0), 0
+            );
+
+            if (totalDefaultAlloc <= 0 || inputVal <= 0) {
+                container.innerHTML = '<span class="text-slate-400 italic">Masukkan nominal untuk melihat rincian...</span>';
+                return;
+            }
+
+            const jumlahRumahBayar = inputVal / totalDefaultAlloc;
 
             let html = '';
-            if (inputVal < totalDefaultAlloc) {
-                // Proporsional: nominal input lebih kecil dari total alokasi
-                feeAllocations.forEach(item => {
-                    const allocatedAmount = totalDefaultAlloc > 0
-                        ? (parseFloat(item.amount) / totalDefaultAlloc) * inputVal
-                        : 0;
-                    html += `
-                        <div class="flex justify-between items-center text-xs py-0.5 border-b border-emerald-100/60 last:border-0">
-                            <span class="text-slate-700">• ${escapeHTML(item.title)}</span>
-                            <span class="font-bold text-emerald-800">${formatRupiah(Math.round(allocatedAmount))}</span>
-                        </div>
-                    `;
-                });
-                html += `<div class="text-[10px] text-amber-700 italic mt-1">*Nominal proporsional karena input kurang dari total alokasi.</div>`;
-            } else {
-                // Nominal tetap
-                let totalTetap = 0;
-                feeAllocations.forEach(item => {
-                    const amt = parseFloat(item.amount) || 0;
-                    totalTetap += amt;
-                    html += `
-                        <div class="flex justify-between items-center text-xs py-0.5 border-b border-emerald-100/60 last:border-0">
-                            <span class="text-slate-700">• ${escapeHTML(item.title)}</span>
-                            <span class="font-bold text-emerald-800">${formatRupiah(amt)}</span>
-                        </div>
-                    `;
-                });
-                const sisa = inputVal - totalTetap;
-                if (sisa > 0) {
-                    html += `
-                        <div class="flex justify-between items-center text-xs py-0.5 border-t border-emerald-200 mt-1 pt-1">
-                            <span class="text-slate-700 font-semibold">• Kas Umum (Sisa)</span>
-                            <span class="font-bold text-blue-700">${formatRupiah(sisa)}</span>
-                        </div>
-                    `;
-                }
+            let totalDibulatkan = 0;
+
+            feeAllocations.forEach(item => {
+                const amt = (parseFloat(item.amount) || 0) * jumlahRumahBayar;
+                const rounded = Math.round(amt);
+                totalDibulatkan += rounded;
+                html += `
+                    <div class="flex justify-between items-center text-xs py-0.5 border-b border-emerald-100/60 last:border-0">
+                        <span class="text-slate-700">• ${escapeHTML(item.title)}
+                            <span class="text-slate-400 text-[10px]">(${formatRupiah(item.amount)} × ${jumlahRumahBayar.toFixed(2)})</span>
+                        </span>
+                        <span class="font-bold text-emerald-800">${formatRupiah(rounded)}</span>
+                    </div>
+                `;
+            });
+
+            const selisih = inputVal - totalDibulatkan;
+            if (Math.abs(selisih) >= 1) {
+                html += `
+                    <div class="flex justify-between items-center text-xs py-0.5 border-t border-emerald-200 mt-1 pt-1">
+                        <span class="text-slate-700 font-semibold">• Kas Umum (pembulatan)</span>
+                        <span class="font-bold text-blue-700">${formatRupiah(selisih)}</span>
+                    </div>
+                `;
             }
+
+            html += `
+                <div class="text-[10px] text-slate-500 italic mt-1 pt-1 border-t border-emerald-100">
+                    <i class="fas fa-calculator"></i> Setara <b>${jumlahRumahBayar.toFixed(2)}</b>× alokasi iuran standar
+                </div>
+            `;
+
             container.innerHTML = html;
         };
 
         // ============================================================
-        // UPLOAD BUKTI (dengan kompresi)
+        // UPLOAD BUKTI (kompresi)
         // ============================================================
         window.handleFilesUpload = async function(type) {
             const fileInput = document.getElementById(type === 'income' ? 'inc-proof' : 'exp-proof');
@@ -1088,14 +1113,12 @@
             try {
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
-                    // Validasi tipe
                     if (!file.type.startsWith('image/')) {
                         showToast(`File ${file.name} bukan gambar, dilewati.`, 'error');
                         continue;
                     }
-                    // Validasi ukuran maksimum 5MB sebelum kompresi
                     if (file.size > 5 * 1024 * 1024) {
-                        showToast(`File ${file.name} terlalu besar (>5MB), dilewati.`, 'error');
+                        showToast(`File ${file.name} > 5MB, dilewati.`, 'error');
                         continue;
                     }
                     const base64 = await compressImage(file);
@@ -1141,7 +1164,7 @@
         };
 
         // ============================================================
-        // RENDER: BANK & ALOKASI
+        // RENDER BANK & ALOKASI
         // ============================================================
         window.renderBankAccounts = function() {
             const container = document.getElementById('bank-accounts-container');
@@ -1198,7 +1221,7 @@
                 card.innerHTML = `
                     <div class="min-w-0 flex-1">
                         <span class="text-slate-500 block truncate">${escapeHTML(item.title)}</span>
-                        <strong class="text-slate-800 text-xs">${formatRupiah(item.amount)}</strong>
+                        <strong class="text-slate-800 text-xs">${formatRupiah(item.amount)} <span class="text-slate-400 font-normal text-[10px]">/ rumah</span></strong>
                     </div>
                     <div class="admin-only flex items-center gap-1 shrink-0 ${isAdmin ? '' : 'hidden'}">
                         <button onclick="editAllocation('${item.id}')" class="text-slate-400 hover:text-amber-600 p-1" title="Edit Rincian">
@@ -1231,6 +1254,12 @@
                 opt.textContent = item.title;
                 select.appendChild(opt);
             });
+
+            // Tambahan kategori Kas Umum untuk pengeluaran dari donasi
+            const optKasUmum = document.createElement('option');
+            optKasUmum.value = 'Kas Umum';
+            optKasUmum.textContent = 'Kas Umum (Donasi)';
+            select.appendChild(optKasUmum);
 
             if (!(feeAllocations || []).some(item => (item.title || '').toLowerCase().includes('lain'))) {
                 const optOther = document.createElement('option');
@@ -1276,9 +1305,8 @@
         window.deleteBank = function(id) {
             if (!requireAdmin()) return;
             if (confirm('Hapus rekening bank ini?')) {
-                if (firebaseReady) {
-                    firebaseDb.ref(`kasRt/banks/${id}`).remove();
-                } else {
+                if (firebaseReady) firebaseDb.ref(`kasRt/banks/${id}`).remove();
+                else {
                     bankAccounts = bankAccounts.filter(b => b.id !== id);
                     saveLocalStorage();
                     scheduleRenderAllViews();
@@ -1317,9 +1345,8 @@
         window.deleteAllocation = function(id) {
             if (!requireAdmin()) return;
             if (confirm('Hapus rincian alokasi ini?')) {
-                if (firebaseReady) {
-                    firebaseDb.ref(`kasRt/allocations/${id}`).remove();
-                } else {
+                if (firebaseReady) firebaseDb.ref(`kasRt/allocations/${id}`).remove();
+                else {
                     feeAllocations = feeAllocations.filter(a => a.id !== id);
                     saveLocalStorage();
                     scheduleRenderAllViews();
@@ -1329,10 +1356,14 @@
         };
 
         // ============================================================
-        // RENDER: DASHBOARD
+        // RENDER DASHBOARD
+        // Alokasi = nominal × jumlah rumah bayar (dari iuran warga saja)
+        // Donasi → Kas Umum (tidak dialokasikan)
         // ============================================================
         window.renderDashboard = function() {
             let totalInc = 0, incCash = 0, incMandiri = 0, incBca = 0, totalExp = 0;
+            let totalIuranWarga = 0;
+            let totalDonasi = 0;
 
             transactions.forEach(t => {
                 const amt = parseFloat(t.amount) || 0;
@@ -1342,6 +1373,13 @@
                     if (m.includes('mandiri')) incMandiri += amt;
                     else if (m.includes('bca')) incBca += amt;
                     else incCash += amt;
+
+                    // Pisahkan iuran warga vs donasi
+                    if (t.houseNumber && t.houseNumber.trim()) {
+                        totalIuranWarga += amt;
+                    } else {
+                        totalDonasi += amt;
+                    }
                 } else if (t.type === 'expense') {
                     totalExp += amt;
                 }
@@ -1354,27 +1392,38 @@
             document.getElementById('income-bca').textContent = formatRupiah(incBca);
             document.getElementById('total-expense').textContent = formatRupiah(totalExp);
 
-            // Alokasi pemasukan per kategori: nominal tetap + sisa ke Kas Umum
-            const totalDefaultAlloc = (feeAllocations || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+            // --- Alokasi iuran warga ---
+            const totalDefaultAlloc = (feeAllocations || []).reduce(
+                (sum, item) => sum + (parseFloat(item.amount) || 0), 0
+            );
+
             const incomeAllocByCategory = {};
-            let totalIncomeAllocatedFixed = 0;
 
-            (feeAllocations || []).forEach(item => {
-                incomeAllocByCategory[item.title] = parseFloat(item.amount) || 0;
-                totalIncomeAllocatedFixed += parseFloat(item.amount) || 0;
-            });
+            if (totalDefaultAlloc > 0 && totalIuranWarga > 0) {
+                const jumlahRumahBayar = totalIuranWarga / totalDefaultAlloc;
 
-            // Proporsional jika total pemasukan < total alokasi tetap
-            if (totalInc < totalDefaultAlloc && totalDefaultAlloc > 0) {
                 (feeAllocations || []).forEach(item => {
-                    incomeAllocByCategory[item.title] = (parseFloat(item.amount) / totalDefaultAlloc) * totalInc;
+                    incomeAllocByCategory[item.title] =
+                        (parseFloat(item.amount) || 0) * jumlahRumahBayar;
                 });
-            } else if (totalInc > totalDefaultAlloc) {
-                // Sisa masuk Kas Umum
-                incomeAllocByCategory['Kas Umum (Sisa)'] = totalInc - totalDefaultAlloc;
+
+                const totalSetelahAlokasi = Object.values(incomeAllocByCategory)
+                    .reduce((s, v) => s + Math.round(v), 0);
+
+                const selisih = totalIuranWarga - totalSetelahAlokasi;
+                if (Math.abs(selisih) >= 1) {
+                    incomeAllocByCategory['Kas Umum (Sisa)'] = selisih;
+                }
+            } else if (totalIuranWarga > 0) {
+                incomeAllocByCategory['Kas Umum'] = totalIuranWarga;
             }
 
-            // Hitung total pengeluaran per kategori
+            // --- Donasi langsung ke Kas Umum ---
+            if (totalDonasi > 0) {
+                incomeAllocByCategory['Kas Umum (Donasi)'] = totalDonasi;
+            }
+
+            // --- Pengeluaran per kategori ---
             const expenseByCategory = {};
             transactions.forEach(t => {
                 if (t.type !== 'expense') return;
@@ -1382,21 +1431,34 @@
                 expenseByCategory[cat] = (expenseByCategory[cat] || 0) + (parseFloat(t.amount) || 0);
             });
 
+            // --- Render alokasi ---
             const allocList = document.getElementById('income-allocation-breakdown-list');
             if (allocList) {
                 const entries = Object.entries(incomeAllocByCategory);
                 if (entries.length === 0) {
-                    allocList.innerHTML = '<span class="text-[11px] text-slate-400 italic">Belum ada rincian alokasi terdaftar.</span>';
+                    allocList.innerHTML = '<span class="text-[11px] text-slate-400 italic">Belum ada pemasukan tercatat.</span>';
                 } else {
-                    allocList.innerHTML = entries.map(([title, amount]) => `
-                        <div class="flex justify-between text-[11px]">
-                            <span class="text-slate-600">• ${escapeHTML(title)}</span>
-                            <span class="font-semibold ${title.includes('Kas Umum') ? 'text-blue-700' : 'text-emerald-700'}">${formatRupiah(Math.round(amount))}</span>
-                        </div>
-                    `).join('');
+                    allocList.innerHTML = entries.map(([title, amount]) => {
+                        let color = 'text-emerald-700';
+                        let icon = '';
+                        if (title.includes('Donasi')) {
+                            color = 'text-purple-700';
+                            icon = '<i class="fas fa-gift mr-1"></i>';
+                        } else if (title.includes('Kas Umum')) {
+                            color = 'text-blue-700';
+                            icon = '<i class="fas fa-vault mr-1"></i>';
+                        }
+                        return `
+                            <div class="flex justify-between text-[11px]">
+                                <span class="text-slate-600">• ${icon}${escapeHTML(title)}</span>
+                                <span class="font-semibold ${color}">${formatRupiah(Math.round(amount))}</span>
+                            </div>
+                        `;
+                    }).join('');
                 }
             }
 
+            // --- Render pengeluaran per kategori ---
             const expCatList = document.getElementById('expense-category-breakdown-list');
             if (expCatList) {
                 const categories = Object.keys(expenseByCategory);
@@ -1422,6 +1484,7 @@
                 }
             }
 
+            // --- Saldo per kategori ---
             const balanceList = document.getElementById('balance-allocation-breakdown-list');
             if (balanceList) {
                 const allCategoryNames = [];
@@ -1452,7 +1515,7 @@
         };
 
         // ============================================================
-        // RENDER: HISTORY
+        // RENDER HISTORY
         // ============================================================
         window.renderHistory = function() {
             const tbody = document.getElementById('history-tbody');
@@ -1507,6 +1570,7 @@
 
             sorted.forEach(t => {
                 const isInc = t.type === 'income';
+                const isDonasi = isInc && (!t.houseNumber || !t.houseNumber.trim());
 
                 let methodBadge = '';
                 if (isInc) {
@@ -1529,7 +1593,8 @@
                 tr.innerHTML = `
                     <td class="px-2 sm:px-3 py-2 font-medium text-slate-500 text-[11px]">${formatDate(t.date)}</td>
                     <td class="px-2 sm:px-3 py-2">
-                        ${t.houseNumber ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200 inline-block">${escapeHTML(t.houseNumber)}</span>` : '<span class="text-slate-300">-</span>'}
+                        ${t.houseNumber ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200 inline-block">${escapeHTML(t.houseNumber)}</span>` 
+                            : (isInc ? `<span class="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-purple-200 inline-block"><i class="fas fa-gift"></i> Donasi</span>` : '<span class="text-slate-300">-</span>')}
                     </td>
                     <td class="px-2 sm:px-3 py-2">
                         <div class="font-semibold text-slate-800 text-xs sm:text-sm leading-tight">${escapeHTML(t.description)}</div>
@@ -1563,7 +1628,8 @@
                     <div class="flex items-center justify-between border-b border-slate-100 pb-1.5">
                         <div class="flex items-center gap-2">
                             <span class="text-[11px] font-semibold text-slate-500"><i class="far fa-calendar-alt mr-1"></i>${formatDate(t.date)}</span>
-                            ${t.houseNumber ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200">${escapeHTML(t.houseNumber)}</span>` : ''}
+                            ${t.houseNumber ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200">${escapeHTML(t.houseNumber)}</span>`
+                                : (isInc ? `<span class="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-purple-200"><i class="fas fa-gift"></i> Donasi</span>` : '')}
                         </div>
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isInc ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
                             ${isInc ? 'Pemasukan' : 'Pengeluaran'}
@@ -1600,13 +1666,12 @@
         };
 
         // ============================================================
-        // RENDER: RECAP
+        // RENDER RECAP
         // ============================================================
         window.renderRecap = function() {
             const tbody = document.getElementById('recap-tbody');
             const emptyEl = document.getElementById('recap-empty');
 
-            // FIX: Hapus tfoot lama terlebih dahulu
             const oldTfoot = document.getElementById('recap-tfoot');
             if (oldTfoot) oldTfoot.remove();
 
@@ -1685,7 +1750,7 @@
         };
 
         // ============================================================
-        // RENDER: HOUSE STATUS
+        // RENDER HOUSE STATUS
         // ============================================================
         window.renderHouseStatus = function() {
             const periodInput = document.getElementById('house-period-filter');
@@ -1804,7 +1869,7 @@
         // ============================================================
         window.exportToExcel = function() {
             if (typeof XLSX === 'undefined') {
-                showToast('Pustaka Excel belum siap. Coba lagi.', 'error');
+                showToast('Pustaka Excel belum siap.', 'error');
                 return;
             }
 
@@ -1816,7 +1881,7 @@
                 const exportData = transactions.map((t, index) => ({
                     "No": index + 1,
                     "Tanggal": t.date || '-',
-                    "Tipe": t.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+                    "Tipe": t.type === 'income' ? (t.houseNumber && t.houseNumber.trim() ? 'Pemasukan (Iuran)' : 'Pemasukan (Donasi)') : 'Pengeluaran',
                     "No. Rumah": t.houseNumber || '-',
                     "Keterangan": t.description || '-',
                     "Metode": t.paymentMethod || '-',
@@ -1869,7 +1934,7 @@
 
         window.exportHouseStatusToExcel = function() {
             if (typeof XLSX === 'undefined') {
-                showToast('Pustaka Excel belum siap. Coba lagi.', 'error');
+                showToast('Pustaka Excel belum siap.', 'error');
                 return;
             }
 
@@ -1938,6 +2003,7 @@
             
             descInput.value = `Iuran Kas Bulan ${monthName}`;
             document.getElementById('inc-amount').focus();
+            updateAllocationPreview(document.getElementById('inc-amount').value);
             showToast(`Mencatat iuran rumah ${houseNo}`);
         };
 
@@ -2048,9 +2114,8 @@
             const house = houses.find(h => h.id === id);
             const houseName = house ? `Rumah ${house.houseNumber}` : 'data ini';
             if (confirm(`Hapus ${houseName}?`)) {
-                if (firebaseReady) {
-                    firebaseDb.ref(`kasRt/houses/${id}`).remove();
-                } else {
+                if (firebaseReady) firebaseDb.ref(`kasRt/houses/${id}`).remove();
+                else {
                     houses = houses.filter(h => h.id !== id);
                     saveLocalStorage();
                     scheduleRenderAllViews();
@@ -2060,7 +2125,7 @@
         };
 
         // ============================================================
-        // MODAL BUKTI
+        // MODAL PROOF
         // ============================================================
         window.openProofModal = function(id) {
             const t = transactions.find(item => item.id === id);
@@ -2154,8 +2219,11 @@
                 `;
                 html += displayRows.map(({ t, saldo }) => {
                     const isInc = t.type === 'income';
+                    const isDonasi = isInc && (!t.houseNumber || !t.houseNumber.trim());
                     const tagBadge = isInc
-                        ? (t.houseNumber ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200">${escapeHTML(t.houseNumber)}</span>` : '')
+                        ? (t.houseNumber
+                            ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200">${escapeHTML(t.houseNumber)}</span>`
+                            : `<span class="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-purple-200"><i class="fas fa-gift"></i> Donasi</span>`)
                         : (t.category ? `<span class="bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded text-[10px] font-semibold border border-rose-200"><i class="fas fa-tag mr-0.5"></i>${escapeHTML(t.category)}</span>` : '');
                     return `
                         <div class="flex items-start justify-between gap-2 p-2.5 rounded-lg border border-slate-100 bg-white shadow-sm">
@@ -2185,7 +2253,7 @@
 
         window.exportRecapDetailToExcel = function() {
             if (typeof XLSX === 'undefined') {
-                showToast('Pustaka Excel belum siap. Coba lagi.', 'error');
+                showToast('Pustaka Excel belum siap.', 'error');
                 return;
             }
             if (!currentRecapExport) {
@@ -2208,7 +2276,9 @@
                 exportData.push({
                     "Tanggal": formatDate(t.date),
                     "Keterangan": t.description || '-',
-                    "No. Rumah / Kategori": isInc ? (t.houseNumber || '-') : (t.category || '-'),
+                    "No. Rumah / Kategori": isInc
+                        ? (t.houseNumber || 'Donasi')
+                        : (t.category || '-'),
                     "Debit (Keluar)": !isInc ? (parseFloat(t.amount) || 0) : '',
                     "Kredit (Masuk)": isInc ? (parseFloat(t.amount) || 0) : '',
                     "Saldo": saldo
@@ -2238,9 +2308,8 @@
             if (!requireAdmin()) return;
             if (confirm('Hapus transaksi ini?')) {
                 if (editingTransactionId === id) cancelEditTransaction();
-                if (firebaseReady) {
-                    firebaseDb.ref(`kasRt/transactions/${id}`).remove();
-                } else {
+                if (firebaseReady) firebaseDb.ref(`kasRt/transactions/${id}`).remove();
+                else {
                     transactions = transactions.filter(t => t.id !== id);
                     saveLocalStorage();
                     scheduleRenderAllViews();
@@ -2322,9 +2391,8 @@
                 firebaseDb = firebase.database();
                 firebaseAuth = firebase.auth();
 
-                // Anonymous auth (opsional, tapi direkomendasikan untuk rules .write: auth != null)
                 firebaseAuth.signInAnonymously().catch((err) => {
-                    console.warn('Anonymous auth gagal (mungkin belum diaktifkan):', err.message);
+                    console.warn('Anonymous auth gagal:', err.message);
                 });
 
                 firebaseReady = true;
@@ -2418,7 +2486,7 @@
                 });
 
             } catch(err) {
-                console.error("Firebase initialization error:", err);
+                console.error("Firebase init error:", err);
                 initApp();
             }
         }
@@ -2428,14 +2496,14 @@
         // ============================================================
         function initApp() {
             firebaseReady = false;
-            document.getElementById('firebase-status').innerHTML = '<span class="text-amber-600"><i class="fas fa-exclamation-triangle"></i> Mode Offline / LocalStorage (Firebase belum dikonfigurasi).</span>';
+            document.getElementById('firebase-status').innerHTML = '<span class="text-amber-600"><i class="fas fa-exclamation-triangle"></i> Mode Offline / LocalStorage.</span>';
             
             houses = JSON.parse(localStorage.getItem('kasRtHouses') || JSON.stringify(defaultHousesArray));
             bankAccounts = JSON.parse(localStorage.getItem('kasRtBanks') || JSON.stringify(defaultBanksArray));
             feeAllocations = JSON.parse(localStorage.getItem('kasRtAllocations') || JSON.stringify(defaultAllocationsArray));
             transactions = JSON.parse(localStorage.getItem('kasRtTransactions') || '[]');
 
-            document.getElementById('online-users-container').innerHTML = '<span class="text-xs text-slate-400">Offline mode. Real-time dinonaktifkan.</span>';
+            document.getElementById('online-users-container').innerHTML = '<span class="text-xs text-slate-400">Offline mode.</span>';
             document.getElementById('online-count-badge').textContent = 'Offline';
 
             scheduleRenderAllViews();
@@ -2450,7 +2518,7 @@
         }
 
         // ============================================================
-        // AUTH ADMIN (HASH)
+        // AUTH
         // ============================================================
         window.openAdminLogin = function() {
             document.getElementById('admin-pin').value = '';
@@ -2559,7 +2627,7 @@
         }
 
         // ============================================================
-        // BACKUP / RESTORE / RESET
+        // BACKUP / RESTORE (TANPA RESET)
         // ============================================================
         window.backupDataJSON = function() {
             const data = { houses, bankAccounts, feeAllocations, transactions, exportedAt: new Date().toISOString() };
@@ -2588,7 +2656,6 @@
                     transactions = data.transactions || [];
 
                     if (firebaseReady) {
-                        // Overwrite di Firebase
                         firebaseDb.ref('kasRt/houses').set(houses.reduce((acc, h) => {
                             const { id, ...rest } = h;
                             acc[id || firebaseDb.ref().push().key] = rest;
@@ -2623,29 +2690,8 @@
             event.target.value = '';
         };
 
-        window.resetAllData = function() {
-            if (!requireAdmin()) return;
-            if (!confirm('PERINGATAN: Semua data (transaksi, warga, bank, alokasi) akan DIHAPUS. Lanjutkan?')) return;
-            if (!confirm('Konfirmasi terakhir: Yakin ingin reset SEMUA data?')) return;
-
-            if (firebaseReady) {
-                firebaseDb.ref('kasRt/transactions').remove();
-                firebaseDb.ref('kasRt/houses').remove();
-                firebaseDb.ref('kasRt/banks').remove();
-                firebaseDb.ref('kasRt/allocations').remove();
-            } else {
-                transactions = [];
-                houses = [];
-                bankAccounts = [];
-                feeAllocations = [];
-                saveLocalStorage();
-                scheduleRenderAllViews();
-            }
-            showToast('Semua data telah direset.', 'delete');
-        };
-
         // ============================================================
-        // FORM SUBMIT LISTENERS
+        // FORM SUBMITS
         // ============================================================
         document.getElementById('form-bank').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -2756,7 +2802,7 @@
             }
 
             cancelEditTransaction();
-            showToast('Pemasukan kas berhasil dicatat!');
+            showToast(houseNumber ? 'Pemasukan iuran berhasil dicatat!' : 'Donasi berhasil dicatat ke Kas Umum!');
         });
 
         document.getElementById('form-expense').addEventListener('submit', function(e) {
@@ -2807,9 +2853,7 @@
                 });
             }
 
-            // Inisialisasi hash PIN
             await getAdminPinHash();
-
             updateAdminUI();
             startFirebaseSync();
         });
