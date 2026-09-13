@@ -121,18 +121,45 @@
         <!-- DASHBOARD KAS & TRANSAKSI -->
         <div id="page-dashboard" class="space-y-4 sm:space-y-6">
             
-            <!-- PANEL INFORMASI REKENING BANK (DIPERECIL) -->
-            <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200">
-                <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-100">
-                    <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                        <i class="fas fa-university text-blue-600 text-[11px]"></i> Informasi Rekening Pembayaran RT
-                    </h3>
-                    <button onclick="openAddBankModal()" class="admin-only px-2 py-0.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-semibold rounded transition-colors flex items-center gap-1 shadow-sm hidden">
-                        <i class="fas fa-plus"></i> Tambah
-                    </button>
-                </div>
-                <div id="bank-accounts-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    <!-- Dinamis dimuat oleh JS -->
+            <!-- TOMBOL AKORDION INFORMASI REKENING BANK & RINCIAN DANA 50RB -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <button onclick="toggleBankSection()" class="w-full p-3 bg-slate-50 hover:bg-slate-100 flex items-center justify-between transition-colors text-left">
+                    <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                        <i class="fas fa-university text-blue-600 text-[11px]"></i> Informasi Rekening Pembayaran RT & Rincian Iuran (Rp 50.000)
+                    </span>
+                    <i id="bank-toggle-icon" class="fas fa-chevron-down text-slate-400 text-xs transition-transform"></i>
+                </button>
+                <div id="bank-section-content" class="p-3 border-t border-slate-100 hidden space-y-3">
+                    <div class="flex justify-between items-center pb-1 border-b border-slate-100">
+                        <span class="text-[11px] font-semibold text-slate-600">Daftar Rekening Tujuan:</span>
+                        <button onclick="openAddBankModal()" class="admin-only px-2 py-0.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-semibold rounded transition-colors flex items-center gap-1 shadow-sm hidden">
+                            <i class="fas fa-plus"></i> Tambah Bank
+                        </button>
+                    </div>
+                    <div id="bank-accounts-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                        <!-- Dinamis dimuat oleh JS -->
+                    </div>
+
+                    <!-- RINCIAN DANA 50 RIBU -->
+                    <div class="mt-3 pt-3 border-t border-slate-100">
+                        <h4 class="font-bold text-slate-800 text-xs mb-1.5 flex items-center gap-1">
+                            <i class="fas fa-wallet text-emerald-600"></i> Rincian Alokasi Iuran Warga (Rp 50.000 / Bulan)
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                                <span class="text-slate-500 block">Keamanan & Pos Satpam</span>
+                                <strong class="text-slate-800 text-xs">Rp 20.000</strong>
+                            </div>
+                            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                                <span class="text-slate-500 block">Kebersihan & Angkut Sampah</span>
+                                <strong class="text-slate-800 text-xs">Rp 20.000</strong>
+                            </div>
+                            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                                <span class="text-slate-500 block">Kas Sosial & Perawatan RT</span>
+                                <strong class="text-slate-800 text-xs">Rp 10.000</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -647,6 +674,18 @@
 
         const now = new Date();
         const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        window.toggleBankSection = function() {
+            const content = document.getElementById('bank-section-content');
+            const icon = document.getElementById('bank-toggle-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        };
 
         function updateHouseDatalist() {
             const datalist = document.getElementById('house-list');
