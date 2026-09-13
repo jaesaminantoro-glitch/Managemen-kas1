@@ -62,15 +62,15 @@
                     </div>
                 </div>
                 
-                <div class="flex items-center shrink-0 sm:hidden">
-                    <button id="admin-login-btn-mb" onclick="openAdminLogin()" class="px-2 py-1 rounded-lg bg-white/15 text-xs font-semibold">
-                        <i class="fas fa-lock"></i>
+                <div class="flex items-center gap-1.5 shrink-0 sm:hidden">
+                    <button id="admin-login-btn-mb" onclick="openAdminLogin()" class="px-2.5 py-1.5 rounded-lg bg-white/15 text-[11px] font-semibold flex items-center gap-1 whitespace-nowrap">
+                        <i class="fas fa-lock"></i> Login
                     </button>
-                    <button id="admin-change-pin-btn-mb" onclick="openChangePin()" class="admin-only ml-1 px-2 py-1 rounded-lg bg-amber-500 text-xs font-semibold hidden">
-                        <i class="fas fa-key"></i>
+                    <button id="admin-change-pin-btn-mb" onclick="openChangePin()" class="admin-only px-2.5 py-1.5 rounded-lg bg-amber-500 text-[11px] font-semibold hidden flex items-center gap-1 whitespace-nowrap">
+                        <i class="fas fa-key"></i> PIN
                     </button>
-                    <button id="admin-logout-btn-mb" onclick="logoutAdmin()" class="admin-only ml-1 px-2 py-1 rounded-lg bg-rose-500 text-xs font-semibold hidden">
-                        <i class="fas fa-sign-out-alt"></i>
+                    <button id="admin-logout-btn-mb" onclick="logoutAdmin()" class="admin-only px-2.5 py-1.5 rounded-lg bg-rose-500 text-[11px] font-semibold hidden flex items-center gap-1 whitespace-nowrap">
+                        <i class="fas fa-sign-out-alt"></i> Keluar
                     </button>
                 </div>
             </div>
@@ -154,7 +154,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5">
-                <div class="bg-gradient-to-br from-blue-700 to-indigo-800 text-white rounded-2xl p-4 sm:p-6 shadow-md relative overflow-hidden flex flex-col justify-between">
+                <div class="bg-gradient-to-br from-blue-700 to-indigo-800 text-white rounded-2xl p-4 sm:p-6 shadow-md relative overflow-hidden flex flex-col justify-between cursor-pointer select-none" onclick="toggleBalanceBreakdown()">
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-[10px] sm:text-xs uppercase tracking-wider text-blue-200 font-semibold">Total Saldo Kas RT</span>
@@ -162,13 +162,26 @@
                         </div>
                         <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1" id="total-balance">Rp 0</h2>
                     </div>
+
+                    <div class="mt-2 flex items-center gap-1 text-[10px] text-blue-200 font-medium">
+                        <i id="balance-breakdown-icon" class="fas fa-chevron-down text-[9px] transition-transform"></i>
+                        <span>Lihat rincian</span>
+                    </div>
+
+                    <div id="balance-breakdown-content" class="mt-2 pt-2 border-t border-white/20 space-y-1 text-xs hidden">
+                        <span class="text-[10px] uppercase tracking-wider text-blue-200 font-bold flex items-center gap-1">
+                            <i class="fas fa-wallet"></i> Saldo per Kategori Alokasi
+                        </span>
+                        <div id="balance-allocation-breakdown-list" class="space-y-1"></div>
+                    </div>
+
                     <div class="mt-3 pt-2 border-t border-white/20 flex justify-between items-center text-[11px] text-blue-100">
                         <span>Status Kas</span>
                         <span class="font-medium text-emerald-300 flex items-center gap-1"><i class="fas fa-check-circle"></i> Seimbang</span>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 flex flex-col justify-between cursor-pointer select-none hover:border-emerald-300 transition-colors" onclick="toggleIncomeBreakdown()">
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-[10px] sm:text-xs uppercase tracking-wider text-slate-500 font-bold">Total Pemasukan</span>
@@ -178,8 +191,13 @@
                         </div>
                         <h3 class="text-xl sm:text-2xl font-bold text-emerald-600" id="total-income">Rp 0</h3>
                     </div>
-                    
-                    <div class="mt-3 pt-2 border-t border-slate-100 space-y-1 text-xs text-slate-600">
+
+                    <div class="mt-2 flex items-center gap-1 text-[10px] text-slate-400 font-medium">
+                        <i id="income-breakdown-icon" class="fas fa-chevron-down text-[9px] transition-transform"></i>
+                        <span>Lihat rincian</span>
+                    </div>
+
+                    <div id="income-breakdown-content" class="mt-2 pt-2 border-t border-slate-100 space-y-1 text-xs text-slate-600 hidden">
                         <div class="flex justify-between text-[11px]">
                             <span><i class="fas fa-money-bill-wave text-amber-500 w-3"></i> Tunai:</span>
                             <span class="font-semibold text-slate-800" id="income-cash">Rp 0</span>
@@ -192,10 +210,17 @@
                             <span><i class="fas fa-credit-card text-indigo-500 w-3"></i> BCA:</span>
                             <span class="font-semibold text-slate-800" id="income-bca">Rp 0</span>
                         </div>
+
+                        <div id="income-allocation-breakdown" class="pt-2 mt-1 border-t border-slate-100 space-y-1">
+                            <span class="text-[10px] uppercase tracking-wider text-slate-400 font-bold flex items-center gap-1">
+                                <i class="fas fa-wallet text-emerald-500"></i> Rincian Alokasi Dana
+                            </span>
+                            <div id="income-allocation-breakdown-list" class="space-y-1"></div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 flex flex-col justify-between cursor-pointer select-none hover:border-rose-300 transition-colors" onclick="toggleExpenseBreakdown()">
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-[10px] sm:text-xs uppercase tracking-wider text-slate-500 font-bold">Total Pengeluaran</span>
@@ -204,6 +229,18 @@
                             </div>
                         </div>
                         <h3 class="text-xl sm:text-2xl font-bold text-rose-600" id="total-expense">Rp 0</h3>
+                    </div>
+
+                    <div class="mt-2 flex items-center gap-1 text-[10px] text-slate-400 font-medium">
+                        <i id="expense-breakdown-icon" class="fas fa-chevron-down text-[9px] transition-transform"></i>
+                        <span>Lihat rincian</span>
+                    </div>
+
+                    <div id="expense-breakdown-content" class="mt-2 pt-2 border-t border-slate-100 space-y-1 text-xs text-slate-600 hidden">
+                        <span class="text-[10px] uppercase tracking-wider text-slate-400 font-bold flex items-center gap-1">
+                            <i class="fas fa-wallet text-rose-500"></i> Rincian per Kategori
+                        </span>
+                        <div id="expense-category-breakdown-list" class="space-y-1"></div>
                     </div>
 
                     <div class="mt-3 pt-2 border-t border-slate-100 text-[10px] sm:text-xs text-slate-500 flex items-center gap-1.5">
@@ -263,7 +300,18 @@
 
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Nominal (Rp) <span class="text-rose-500">*</span></label>
-                            <input type="number" id="inc-amount" min="1" placeholder="50000" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <input type="number" id="inc-amount" min="1" placeholder="50000" oninput="updateAllocationPreview(this.value)" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+
+                        <!-- RINCIAN ALOKASI OTOMATIS DI BAWAH NOMINAL -->
+                        <div id="income-allocation-preview" class="p-2.5 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-1 text-[11px]">
+                            <div class="font-bold text-emerald-800 flex items-center justify-between">
+                                <span class="flex items-center gap-1"><i class="fas fa-wallet text-emerald-600"></i> Rincian Alokasi Dana:</span>
+                                <span id="preview-total-nominal" class="text-emerald-700">Rp 0</span>
+                            </div>
+                            <div id="preview-allocation-list" class="space-y-1 mt-1 text-slate-600">
+                                <span class="text-slate-400 italic">Masukkan nominal untuk melihat rincian...</span>
+                            </div>
                         </div>
 
                         <div>
@@ -287,6 +335,13 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Keterangan Pengeluaran <span class="text-rose-500">*</span></label>
                             <input type="text" id="exp-desc" placeholder="Misal: Perbaikan Lampu Jalan" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori Pengeluaran <span class="text-slate-400 font-normal">(Sesuai Alokasi Dana)</span></label>
+                            <select id="exp-category" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-rose-500 outline-none bg-white">
+                                <option value="">-- Pilih Kategori --</option>
+                            </select>
                         </div>
 
                         <div>
@@ -349,7 +404,7 @@
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider sticky top-0 shadow-sm border-b border-slate-200">
                                         <th class="px-2 sm:px-3 py-2 font-semibold w-20">Tanggal</th>
-                                        <th class="px-2 sm:px-3 py-2 font-semibold w-24">Blok</th>
+                                        <th class="px-2 sm:px-3 py-2 font-semibold w-16">Blok</th>
                                         <th class="px-2 sm:px-3 py-2 font-semibold">Keterangan</th>
                                         <th class="px-2 sm:px-3 py-2 font-semibold text-right w-24 sm:w-28 text-emerald-600">Pemasukan</th>
                                         <th class="px-2 sm:px-3 py-2 font-semibold text-right w-24 sm:w-28 text-rose-600">Pengeluaran</th>
@@ -582,6 +637,41 @@
         </div>
     </div>
 
+    <!-- Modal Rincian Mutasi Rekap Bulanan -->
+    <div id="recap-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-1.5">
+                    <i class="fas fa-list-ul text-blue-600"></i> <span id="recap-detail-title">Rincian Mutasi</span>
+                </h3>
+                <button onclick="closeRecapDetail()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                    <i class="fas fa-times text-base"></i>
+                </button>
+            </div>
+            <div class="px-3 py-2 bg-slate-50/60 border-b border-slate-100 grid grid-cols-3 gap-2 text-center text-[10px] sm:text-xs">
+                <div>
+                    <div class="text-slate-400 font-medium">Masuk</div>
+                    <div id="recap-detail-income" class="font-bold text-emerald-600">Rp 0</div>
+                </div>
+                <div>
+                    <div class="text-slate-400 font-medium">Keluar</div>
+                    <div id="recap-detail-expense" class="font-bold text-rose-600">Rp 0</div>
+                </div>
+                <div>
+                    <div class="text-slate-400 font-medium">Bersih</div>
+                    <div id="recap-detail-net" class="font-bold text-blue-600">Rp 0</div>
+                </div>
+            </div>
+            <div id="recap-detail-list" class="p-3 overflow-y-auto custom-scrollbar flex-1 space-y-2"></div>
+            <div class="p-2 bg-slate-50 flex items-center justify-between gap-2 border-t border-slate-100">
+                <button onclick="exportRecapDetailToExcel()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5">
+                    <i class="fas fa-file-excel"></i> Ekspor Excel
+                </button>
+                <button onclick="closeRecapDetail()" class="px-3 py-1.5 bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Login Admin -->
     <div id="admin-login-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-xs w-full overflow-hidden shadow-2xl">
@@ -663,11 +753,10 @@
             { bankName: 'Bank BCA', accountNumber: '8830112233', accountHolder: 'Bendahara RT 01' }
         ];
 
-        // Rincian alokasi warga ditambah 50.000 (total alokasi disesuaikan menjadi Rp 100.000 atau item baru ditambah 50.000)
         const defaultAllocationsArray = [
-            { title: 'Keamanan & Pos Satpam', amount: 40000 },
-            { title: 'Kebersihan & Angkut Sampah', amount: 40000 },
-            { title: 'Kas Sosial & Perawatan RT', amount: 20000 }
+            { title: 'Keamanan & Pos Satpam', amount: 20000 },
+            { title: 'Kebersihan & Angkut Sampah', amount: 20000 },
+            { title: 'Kas Sosial & Perawatan RT', amount: 10000 }
         ];
 
         const firebaseConfig = {
@@ -688,6 +777,7 @@
         let bankAccounts = [];
         let feeAllocations = [];
         let editingTransactionId = null;
+        let recapMonthlyDataCache = {};
         let userSessionId = 'User_' + Math.random().toString(36).substring(2, 8);
 
         let currentIncomeProofs = [];
@@ -703,6 +793,42 @@
         window.toggleBankSection = function() {
             const content = document.getElementById('bank-section-content');
             const icon = document.getElementById('bank-toggle-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        };
+
+        window.toggleBalanceBreakdown = function() {
+            const content = document.getElementById('balance-breakdown-content');
+            const icon = document.getElementById('balance-breakdown-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        };
+
+        window.toggleIncomeBreakdown = function() {
+            const content = document.getElementById('income-breakdown-content');
+            const icon = document.getElementById('income-breakdown-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        };
+
+        window.toggleExpenseBreakdown = function() {
+            const content = document.getElementById('expense-breakdown-content');
+            const icon = document.getElementById('expense-breakdown-icon');
             if (content.classList.contains('hidden')) {
                 content.classList.remove('hidden');
                 icon.classList.add('rotate-180');
@@ -842,6 +968,37 @@
             }
         };
 
+        window.updateAllocationPreview = function(val) {
+            const container = document.getElementById('preview-allocation-list');
+            const totalNominalEl = document.getElementById('preview-total-nominal');
+            const inputVal = parseFloat(val) || 0;
+            
+            totalNominalEl.textContent = formatRupiah(inputVal);
+
+            if (!feeAllocations || feeAllocations.length === 0) {
+                container.innerHTML = '<span class="text-slate-400 italic">Belum ada rincian alokasi terdaftar.</span>';
+                return;
+            }
+
+            const totalDefaultAlloc = feeAllocations.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+
+            let html = '';
+            feeAllocations.forEach(item => {
+                let allocatedAmount = 0;
+                if (totalDefaultAlloc > 0) {
+                    // Proporsional berdasarkan master alokasi, atau sesuaikan jika persis
+                    allocatedAmount = (parseFloat(item.amount) / totalDefaultAlloc) * inputVal;
+                }
+                html += `
+                    <div class="flex justify-between items-center text-xs py-0.5 border-b border-emerald-100/60 last:border-0">
+                        <span class="text-slate-700">• ${escapeHTML(item.title)}</span>
+                        <span class="font-bold text-emerald-800">${formatRupiah(Math.round(allocatedAmount))}</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        };
+
         window.handleFilesUpload = async function(type) {
             const fileInput = document.getElementById(type === 'income' ? 'inc-proof' : 'exp-proof');
             const files = fileInput.files;
@@ -947,6 +1104,7 @@
 
             if (feeAllocations.length === 0) {
                 container.innerHTML = '<p class="text-[11px] text-slate-400 col-span-full">Belum ada rincian alokasi iuran.</p>';
+                populateExpenseCategoryOptions();
                 return;
             }
 
@@ -969,6 +1127,39 @@
                 `;
                 container.appendChild(card);
             });
+            // Update preview if input already has value
+            const currentAmount = document.getElementById('inc-amount').value;
+            if (currentAmount) updateAllocationPreview(currentAmount);
+
+            populateExpenseCategoryOptions();
+        };
+
+        window.populateExpenseCategoryOptions = function() {
+            const select = document.getElementById('exp-category');
+            if (!select) return;
+
+            const previousValue = select.value;
+            select.innerHTML = '<option value="">-- Pilih Kategori --</option>';
+
+            (feeAllocations || []).forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.title;
+                opt.textContent = item.title;
+                select.appendChild(opt);
+            });
+
+            // Selalu sediakan opsi "Lain-lain" agar pengeluaran di luar alokasi tetap bisa dikategorikan
+            if (!(feeAllocations || []).some(item => (item.title || '').toLowerCase() === 'lain-lain' || (item.title || '').toLowerCase() === 'lain lain')) {
+                const optOther = document.createElement('option');
+                optOther.value = 'Lain-lain';
+                optOther.textContent = 'Lain-lain';
+                select.appendChild(optOther);
+            }
+
+            // Pertahankan pilihan sebelumnya jika masih tersedia (mis. saat sedang mengedit transaksi)
+            if (previousValue && [...select.options].some(o => o.value === previousValue)) {
+                select.value = previousValue;
+            }
         };
 
         window.openAddBankModal = function() {
@@ -1063,6 +1254,103 @@
             document.getElementById('income-mandiri').textContent = formatRupiah(incMandiri);
             document.getElementById('income-bca').textContent = formatRupiah(incBca);
             document.getElementById('total-expense').textContent = formatRupiah(totalExp);
+
+            // Hitung alokasi pemasukan per kategori (proporsional terhadap rincian alokasi)
+            const totalDefaultAlloc = (feeAllocations || []).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+            const incomeAllocByCategory = {};
+            (feeAllocations || []).forEach(item => {
+                incomeAllocByCategory[item.title] = totalDefaultAlloc > 0
+                    ? (parseFloat(item.amount) / totalDefaultAlloc) * totalInc
+                    : 0;
+            });
+
+            // Hitung total pengeluaran per kategori
+            const expenseByCategory = {};
+            transactions.forEach(t => {
+                if (t.type !== 'expense') return;
+                const cat = t.category && t.category.trim() ? t.category.trim() : 'Tanpa Kategori';
+                expenseByCategory[cat] = (expenseByCategory[cat] || 0) + (parseFloat(t.amount) || 0);
+            });
+
+            const allocList = document.getElementById('income-allocation-breakdown-list');
+            if (allocList) {
+                if (!feeAllocations || feeAllocations.length === 0) {
+                    allocList.innerHTML = '<span class="text-[11px] text-slate-400 italic">Belum ada rincian alokasi terdaftar.</span>';
+                } else {
+                    let html = '';
+                    feeAllocations.forEach(item => {
+                        const allocatedAmount = incomeAllocByCategory[item.title] || 0;
+                        html += `
+                            <div class="flex justify-between text-[11px]">
+                                <span class="text-slate-600">• ${escapeHTML(item.title)}</span>
+                                <span class="font-semibold text-emerald-700">${formatRupiah(Math.round(allocatedAmount))}</span>
+                            </div>
+                        `;
+                    });
+                    allocList.innerHTML = html;
+                }
+            }
+
+            const expCatList = document.getElementById('expense-category-breakdown-list');
+            if (expCatList) {
+                const categories = Object.keys(expenseByCategory);
+                if (categories.length === 0) {
+                    expCatList.innerHTML = '<span class="text-[11px] text-slate-400 italic">Belum ada pengeluaran tercatat.</span>';
+                } else {
+                    // Urutkan mengikuti urutan rincian alokasi, kategori lain (mis. Tanpa Kategori) di akhir
+                    const allocOrder = (feeAllocations || []).map(a => a.title);
+                    categories.sort((a, b) => {
+                        const ia = allocOrder.indexOf(a);
+                        const ib = allocOrder.indexOf(b);
+                        if (ia === -1 && ib === -1) return expenseByCategory[b] - expenseByCategory[a];
+                        if (ia === -1) return 1;
+                        if (ib === -1) return -1;
+                        return ia - ib;
+                    });
+
+                    let html = '';
+                    categories.forEach(cat => {
+                        html += `
+                            <div class="flex justify-between text-[11px]">
+                                <span class="text-slate-600">• ${escapeHTML(cat)}</span>
+                                <span class="font-semibold text-rose-700">${formatRupiah(expenseByCategory[cat])}</span>
+                            </div>
+                        `;
+                    });
+                    expCatList.innerHTML = html;
+                }
+            }
+
+            const balanceList = document.getElementById('balance-allocation-breakdown-list');
+            if (balanceList) {
+                // Gabungkan semua kategori dari alokasi pemasukan & pengeluaran (termasuk kategori tak terdaftar)
+                const allCategoryNames = [];
+                (feeAllocations || []).forEach(item => {
+                    if (!allCategoryNames.includes(item.title)) allCategoryNames.push(item.title);
+                });
+                Object.keys(expenseByCategory).forEach(cat => {
+                    if (!allCategoryNames.includes(cat)) allCategoryNames.push(cat);
+                });
+
+                if (allCategoryNames.length === 0) {
+                    balanceList.innerHTML = '<span class="text-[11px] text-blue-200 italic">Belum ada data alokasi.</span>';
+                } else {
+                    let html = '';
+                    allCategoryNames.forEach(cat => {
+                        const allocatedIn = incomeAllocByCategory[cat] || 0;
+                        const spentOut = expenseByCategory[cat] || 0;
+                        const net = allocatedIn - spentOut;
+                        const netColor = net < 0 ? 'text-rose-300' : 'text-white';
+                        html += `
+                            <div class="flex justify-between text-[11px]">
+                                <span class="text-blue-100">• ${escapeHTML(cat)}</span>
+                                <span class="font-semibold ${netColor}">${formatRupiah(Math.round(net))}</span>
+                            </div>
+                        `;
+                    });
+                    balanceList.innerHTML = html;
+                }
+            }
         };
 
         window.renderHistory = function() {
@@ -1127,6 +1415,8 @@
                     else if (m.includes('BCA')) badgeBg = 'bg-indigo-100 text-indigo-700';
                     else badgeBg = 'bg-amber-100 text-amber-800';
                     methodBadge = `<span class="inline-block px-1.5 py-0.2 text-[9px] rounded font-semibold ${badgeBg}">${escapeHTML(m)}</span>`;
+                } else if (t.category) {
+                    methodBadge = `<span class="inline-block px-1.5 py-0.2 text-[9px] rounded font-semibold bg-rose-100 text-rose-700"><i class="fas fa-tag mr-0.5"></i>${escapeHTML(t.category)}</span>`;
                 }
 
                 let proofsCount = 0;
@@ -1143,7 +1433,7 @@
                         ${formatDate(t.date)}
                     </td>
                     <td class="px-2 sm:px-3 py-2">
-                        ${t.houseNumber ? `<span class="bg-blue-600 text-white px-2 py-1 rounded-md text-xs font-extrabold shadow-sm tracking-wide inline-block">${escapeHTML(t.houseNumber)}</span>` : '<span class="text-slate-300">-</span>'}
+                        ${t.houseNumber ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200 inline-block">${escapeHTML(t.houseNumber)}</span>` : '<span class="text-slate-300">-</span>'}
                     </td>
                     <td class="px-2 sm:px-3 py-2">
                         <div class="font-semibold text-slate-800 text-xs sm:text-sm leading-tight">${escapeHTML(t.description)}</div>
@@ -1181,7 +1471,7 @@
                     <div class="flex items-center justify-between border-b border-slate-100 pb-1.5">
                         <div class="flex items-center gap-2">
                             <span class="text-[11px] font-semibold text-slate-500"><i class="far fa-calendar-alt mr-1"></i>${formatDate(t.date)}</span>
-                            ${t.houseNumber ? `<span class="bg-blue-600 text-white px-2 py-0.5 rounded-md text-xs font-extrabold shadow-sm">${escapeHTML(t.houseNumber)}</span>` : ''}
+                            ${t.houseNumber ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200">${escapeHTML(t.houseNumber)}</span>` : ''}
                         </div>
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isInc ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
                             ${isInc ? 'Pemasukan' : 'Pengeluaran'}
@@ -1246,7 +1536,7 @@
                 
                 const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                 if (!monthlyData[key]) {
-                    monthlyData[key] = { income: 0, expense: 0, dateObj: new Date(d.getFullYear(), d.getMonth(), 1) };
+                    monthlyData[key] = { income: 0, expense: 0, dateObj: new Date(d.getFullYear(), d.getMonth(), 1), transactions: [] };
                 }
 
                 const amt = parseFloat(t.amount) || 0;
@@ -1257,7 +1547,10 @@
                     monthlyData[key].expense += amt;
                     grandTotalExpense += amt;
                 }
+                monthlyData[key].transactions.push(t);
             });
+
+            recapMonthlyDataCache = monthlyData;
 
             const sortedKeys = Object.keys(monthlyData).sort().reverse();
 
@@ -1267,10 +1560,13 @@
                 const monthName = item.dateObj.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.className = "hover:bg-blue-50/60 transition-colors cursor-pointer";
+                tr.onclick = () => openRecapDetail(key);
 
                 tr.innerHTML = `
-                    <td class="px-3 py-2 font-bold text-slate-800 text-[11px] sm:text-xs">${monthName}</td>
+                    <td class="px-3 py-2 font-bold text-slate-800 text-[11px] sm:text-xs">
+                        ${monthName} <i class="fas fa-chevron-right text-[9px] text-slate-300 ml-1"></i>
+                    </td>
                     <td class="px-2 py-2 text-right font-semibold text-emerald-600 text-[11px] sm:text-xs">${formatRupiah(item.income)}</td>
                     <td class="px-2 py-2 text-right font-semibold text-rose-600 text-[11px] sm:text-xs">${formatRupiah(item.expense)}</td>
                     <td class="px-3 py-2 text-right font-bold text-[11px] sm:text-xs ${net >= 0 ? 'text-blue-600' : 'text-rose-600'}">${formatRupiah(net)}</td>
@@ -1429,6 +1725,7 @@
                     "No. Rumah": t.houseNumber || '-',
                     "Keterangan": t.description || '-',
                     "Metode": t.paymentMethod || '-',
+                    "Kategori": t.type === 'expense' ? (t.category || '-') : '-',
                     "Pemasukan (Rp)": t.type === 'income' ? (parseFloat(t.amount) || 0) : 0,
                     "Pengeluaran (Rp)": t.type === 'expense' ? (parseFloat(t.amount) || 0) : 0
                 }));
@@ -1566,6 +1863,7 @@
                 document.getElementById('inc-house').value = t.houseNumber || '';
                 document.getElementById('inc-desc').value = t.description || '';
                 document.getElementById('inc-amount').value = t.amount || '';
+                updateAllocationPreview(t.amount || 0);
                 document.getElementById('inc-submit-btn').innerHTML = '<i class="fas fa-save"></i> Perbarui Pemasukan';
 
                 currentIncomeProofs = Array.isArray(t.proofs) ? [...t.proofs] : (t.proof ? [t.proof] : []);
@@ -1577,6 +1875,7 @@
                 document.getElementById('exp-id').value = t.id;
                 document.getElementById('exp-date').value = t.date || '';
                 document.getElementById('exp-desc').value = t.description || '';
+                document.getElementById('exp-category').value = t.category || '';
                 document.getElementById('exp-amount').value = t.amount || '';
                 document.getElementById('exp-submit-btn').innerHTML = '<i class="fas fa-save"></i> Perbarui Pengeluaran';
 
@@ -1597,6 +1896,7 @@
             formInc.reset();
             document.getElementById('inc-id').value = '';
             document.getElementById('inc-submit-btn').innerHTML = '<i class="fas fa-save"></i> Simpan Pemasukan';
+            updateAllocationPreview(0);
             currentIncomeProofs = [];
             renderPreviews('income');
 
@@ -1683,9 +1983,155 @@
             document.getElementById('proof-modal').classList.add('hidden');
         };
 
+        let currentRecapExport = null;
+
+        window.openRecapDetail = function(monthKey) {
+            const monthData = recapMonthlyDataCache[monthKey];
+            if (!monthData) return;
+
+            const monthName = monthData.dateObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+            document.getElementById('recap-detail-title').textContent = `Rincian Mutasi - ${monthName}`;
+
+            const net = monthData.income - monthData.expense;
+            document.getElementById('recap-detail-income').textContent = formatRupiah(monthData.income);
+            document.getElementById('recap-detail-expense').textContent = formatRupiah(monthData.expense);
+            const netEl = document.getElementById('recap-detail-net');
+            netEl.textContent = formatRupiah(net);
+            netEl.className = `font-bold ${net >= 0 ? 'text-blue-600' : 'text-rose-600'}`;
+
+            // Saldo awal bulan = akumulasi seluruh transaksi sebelum bulan ini (seperti mutasi rekening bank)
+            const monthStart = monthData.dateObj;
+            let openingBalance = 0;
+            transactions.forEach(t => {
+                const d = new Date(t.date);
+                if (isNaN(d.getTime()) || d >= monthStart) return;
+                const amt = parseFloat(t.amount) || 0;
+                openingBalance += (t.type === 'income' ? amt : -amt);
+            });
+
+            // Urutkan kronologis (lama -> baru) untuk menghitung saldo berjalan tiap transaksi
+            const chronological = [...(monthData.transactions || [])].sort((a, b) => {
+                const dateDiff = new Date(a.date) - new Date(b.date);
+                if (dateDiff !== 0) return dateDiff;
+                return (a.id || '').localeCompare(b.id || '');
+            });
+
+            let running = openingBalance;
+            const rows = chronological.map(t => {
+                const amt = parseFloat(t.amount) || 0;
+                running += (t.type === 'income' ? amt : -amt);
+                return { t, saldo: running };
+            });
+
+            // Simpan untuk kebutuhan ekspor Excel (urutan kronologis, lengkap dengan saldo awal & berjalan)
+            currentRecapExport = { monthKey, monthName, openingBalance, closingBalance: running, rows };
+
+            const listEl = document.getElementById('recap-detail-list');
+
+            if (rows.length === 0) {
+                listEl.innerHTML = `
+                    <div class="flex justify-between items-center px-2.5 py-2 rounded-lg bg-slate-100 text-[11px] font-semibold text-slate-600 mb-1">
+                        <span><i class="fas fa-flag mr-1 text-slate-400"></i> Saldo Awal</span>
+                        <span>${formatRupiah(openingBalance)}</span>
+                    </div>
+                    <p class="text-slate-400 text-xs text-center py-4">Tidak ada mutasi pada periode ini.</p>
+                `;
+            } else {
+                // Tampilkan seperti mutasi bank: terbaru di atas, saldo berjalan di tiap baris
+                const displayRows = [...rows].reverse();
+                let html = `
+                    <div class="flex justify-between items-center px-2.5 py-2 rounded-lg bg-slate-100 text-[11px] font-semibold text-slate-600 mb-1">
+                        <span><i class="fas fa-flag mr-1 text-slate-400"></i> Saldo Awal</span>
+                        <span>${formatRupiah(openingBalance)}</span>
+                    </div>
+                `;
+                html += displayRows.map(({ t, saldo }) => {
+                    const isInc = t.type === 'income';
+                    const tagBadge = isInc
+                        ? (t.houseNumber ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200">${escapeHTML(t.houseNumber)}</span>` : '')
+                        : (t.category ? `<span class="bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded text-[10px] font-semibold border border-rose-200"><i class="fas fa-tag mr-0.5"></i>${escapeHTML(t.category)}</span>` : '');
+                    return `
+                        <div class="flex items-start justify-between gap-2 p-2.5 rounded-lg border border-slate-100 bg-white shadow-sm">
+                            <div class="min-w-0 flex-1">
+                                <div class="text-[10px] text-slate-400 font-medium">${formatDate(t.date)}</div>
+                                <div class="font-semibold text-slate-800 text-xs leading-snug">${escapeHTML(t.description)}</div>
+                                <div class="mt-1">${tagBadge}</div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <div class="font-bold text-xs ${isInc ? 'text-emerald-600' : 'text-rose-600'}">
+                                    ${isInc ? '+' : '-'}${formatRupiah(t.amount)}
+                                </div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">Saldo: ${formatRupiah(saldo)}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                listEl.innerHTML = html;
+            }
+
+            document.getElementById('recap-detail-modal').classList.remove('hidden');
+        };
+
+        window.closeRecapDetail = function() {
+            document.getElementById('recap-detail-modal').classList.add('hidden');
+        };
+
+        window.exportRecapDetailToExcel = function() {
+            if (typeof XLSX === 'undefined') {
+                showToast('Pustaka Excel belum siap. Coba lagi.', 'error');
+                return;
+            }
+            if (!currentRecapExport) {
+                showToast('Tidak ada data mutasi untuk diekspor.', 'error');
+                return;
+            }
+
+            const { monthName, openingBalance, closingBalance, rows } = currentRecapExport;
+
+            const exportData = [];
+            exportData.push({
+                "Tanggal": "-",
+                "Keterangan": "SALDO AWAL",
+                "No. Rumah / Kategori": "-",
+                "Debit (Keluar)": "",
+                "Kredit (Masuk)": "",
+                "Saldo": openingBalance
+            });
+
+            rows.forEach(({ t, saldo }) => {
+                const isInc = t.type === 'income';
+                exportData.push({
+                    "Tanggal": formatDate(t.date),
+                    "Keterangan": t.description || '-',
+                    "No. Rumah / Kategori": isInc ? (t.houseNumber || '-') : (t.category || '-'),
+                    "Debit (Keluar)": !isInc ? (parseFloat(t.amount) || 0) : '',
+                    "Kredit (Masuk)": isInc ? (parseFloat(t.amount) || 0) : '',
+                    "Saldo": saldo
+                });
+            });
+
+            exportData.push({
+                "Tanggal": "-",
+                "Keterangan": "SALDO AKHIR",
+                "No. Rumah / Kategori": "-",
+                "Debit (Keluar)": "",
+                "Kredit (Masuk)": "",
+                "Saldo": closingBalance
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            worksheet['!cols'] = [{ wch: 12 }, { wch: 32 }, { wch: 20 }, { wch: 14 }, { wch: 14 }, { wch: 14 }];
+            const workbook = XLSX.utils.book_new();
+            const sheetName = monthName.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 31) || 'Mutasi';
+            XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+            XLSX.writeFile(workbook, `Mutasi_Kas_RT_${monthName.replace(/\s+/g, '_')}.xlsx`);
+            showToast('Rincian mutasi berhasil diekspor!');
+        };
+
         window.deleteTransaction = function(id) { 
             if (!requireAdmin()) return;
             if (confirm('Hapus transaksi ini?')) {
+                if (editingTransactionId === id) cancelEditTransaction();
                 if (firebaseReady) {
                     firebaseDb.ref(`kasRt/transactions/${id}`).remove();
                 }
@@ -1693,13 +2139,198 @@
             }
         };
 
-        window.openAdminLogin = function() {
-            if (isAdmin) {
-                if (confirm('Logout dari akun admin?')) {
-                    logoutAdmin();
-                }
+        let renderScheduled = false;
+
+        function scheduleRenderAllViews() {
+            if (renderScheduled) return;
+            renderScheduled = true;
+
+            const runRender = () => {
+                renderScheduled = false;
+                renderAllViews();
+            };
+
+            if (window.requestAnimationFrame) {
+                requestAnimationFrame(runRender);
+            } else {
+                setTimeout(runRender, 0);
+            }
+        }
+
+        function renderAllViews() {
+            updateHouseDatalist();
+            renderBankAccounts();
+            renderFeeAllocations();
+            renderDashboard();
+            renderHistory();
+            renderRecap();
+            renderHouseStatus();
+        }
+
+        function addHouseToFirebase(houseData) {
+            if (!firebaseReady) return;
+            const newRef = firebaseDb.ref('kasRt/houses').push();
+            newRef.set({
+                houseNumber: houseData.houseNumber,
+                ownerName: houseData.ownerName,
+                phone: houseData.phone || ''
+            });
+        }
+
+        function addBankToFirebase(bankData) {
+            if (!firebaseReady) return;
+            const newRef = firebaseDb.ref('kasRt/banks').push();
+            newRef.set({
+                bankName: bankData.bankName,
+                accountNumber: bankData.accountNumber,
+                accountHolder: bankData.accountHolder
+            });
+        }
+
+        function addAllocationToFirebase(allocData) {
+            if (!firebaseReady) return;
+            const newRef = firebaseDb.ref('kasRt/allocations').push();
+            newRef.set({
+                title: allocData.title,
+                amount: allocData.amount
+            });
+        }
+
+        function isFirebaseConfigured() {
+            return firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('ISI_');
+        }
+
+        function startFirebaseSync() {
+            if (!isFirebaseConfigured()) {
+                initApp();
                 return;
             }
+            try {
+                firebase.initializeApp(firebaseConfig);
+                firebaseDb = firebase.database();
+                firebaseReady = true;
+
+                const myPresenceRef = firebaseDb.ref(`kasRt/presence/${userSessionId}`);
+                const connectedRef = firebaseDb.ref('.info/connected');
+
+                connectedRef.on('value', (snap) => {
+                    if (snap.val() === true) {
+                        myPresenceRef.onDisconnect().remove();
+                        myPresenceRef.set({
+                            joinedAt: firebase.database.ServerValue.TIMESTAMP,
+                            device: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
+                        });
+                    }
+                });
+
+                window.addEventListener('beforeunload', () => {
+                    if (firebaseReady) {
+                        myPresenceRef.remove();
+                    }
+                });
+
+                firebaseDb.ref('kasRt/presence').on('value', (snap) => {
+                    const presenceObj = snap.val() || {};
+                    const container = document.getElementById('online-users-container');
+                    const countBadge = document.getElementById('online-count-badge');
+                    if (!container) return;
+
+                    container.innerHTML = '';
+                    const keys = Object.keys(presenceObj);
+                    countBadge.textContent = `${keys.length} Online`;
+
+                    if (keys.length === 0) {
+                        container.innerHTML = '<span class="text-xs text-slate-400">Belum ada pengunjung online.</span>';
+                        return;
+                    }
+
+                    keys.forEach((key, index) => {
+                        const user = presenceObj[key];
+                        const isMe = key === userSessionId;
+                        const badge = document.createElement('div');
+                        badge.className = "flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-xl text-xs font-medium shadow-xs";
+                        badge.innerHTML = `
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span>${isMe ? 'Anda (Admin)' : 'Pengunjung ' + (index + 1)}</span>
+                        `;
+                        container.appendChild(badge);
+                    });
+                });
+
+                firebaseDb.ref('kasRt/houses').on('value', (snap) => {
+                    const val = snap.val();
+                    if (!val) {
+                        houses = [...defaultHousesArray];
+                        // Seed default
+                        houses.forEach(h => addHouseToFirebase(h));
+                    } else {
+                        houses = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                    }
+                    scheduleRenderAllViews();
+                });
+
+                firebaseDb.ref('kasRt/banks').on('value', (snap) => {
+                    const val = snap.val();
+                    if (!val) {
+                        bankAccounts = [...defaultBanksArray];
+                        bankAccounts.forEach(b => addBankToFirebase(b));
+                    } else {
+                        bankAccounts = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                    }
+                    scheduleRenderAllViews();
+                });
+
+                firebaseDb.ref('kasRt/allocations').on('value', (snap) => {
+                    const val = snap.val();
+                    if (!val) {
+                        feeAllocations = [...defaultAllocationsArray];
+                        feeAllocations.forEach(a => addAllocationToFirebase(a));
+                    } else {
+                        feeAllocations = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                    }
+                    scheduleRenderAllViews();
+                });
+
+                firebaseDb.ref('kasRt/transactions').on('value', (snap) => {
+                    const val = snap.val();
+                    if (!val) {
+                        transactions = [];
+                    } else {
+                        transactions = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                    }
+                    scheduleRenderAllViews();
+                });
+
+            } catch(err) {
+                console.error("Firebase initialization error:", err);
+                initApp();
+            }
+        }
+
+        function initApp() {
+            firebaseReady = false;
+            document.getElementById('firebase-status').innerHTML = '<span class="text-amber-600"><i class="fas fa-exclamation-triangle"></i> Mode Offline / LocalStorage (Firebase belum dikonfigurasi).</span>';
+            
+            houses = JSON.parse(localStorage.getItem('kasRtHouses') || JSON.stringify(defaultHousesArray));
+            bankAccounts = JSON.parse(localStorage.getItem('kasRtBanks') || JSON.stringify(defaultBanksArray));
+            feeAllocations = JSON.parse(localStorage.getItem('kasRtAllocations') || JSON.stringify(defaultAllocationsArray));
+            transactions = JSON.parse(localStorage.getItem('kasRtTransactions') || '[]');
+
+            document.getElementById('online-users-container').innerHTML = '<span class="text-xs text-slate-400">Offline mode. Real-time dinonaktifkan.</span>';
+            document.getElementById('online-count-badge').textContent = 'Offline';
+
+            scheduleRenderAllViews();
+        }
+
+        function saveLocalStorage() {
+            if (firebaseReady) return;
+            localStorage.setItem('kasRtHouses', JSON.stringify(houses));
+            localStorage.setItem('kasRtBanks', JSON.stringify(bankAccounts));
+            localStorage.setItem('kasRtAllocations', JSON.stringify(feeAllocations));
+            localStorage.setItem('kasRtTransactions', JSON.stringify(transactions));
+        }
+
+        window.openAdminLogin = function() {
             document.getElementById('admin-pin').value = '';
             document.getElementById('admin-login-modal').classList.remove('hidden');
             setTimeout(() => document.getElementById('admin-pin').focus(), 100);
@@ -1717,9 +2348,9 @@
                 sessionStorage.setItem('kasRtIsAdmin', 'true');
                 closeAdminLogin();
                 updateAdminUI();
-                showToast('Berhasil Login sebagai Pengurus RT!');
+                showToast('Berhasil login sebagai Admin RT!');
             } else {
-                showToast('PIN Admin Salah!', 'error');
+                showToast('PIN Admin salah!', 'error');
                 document.getElementById('admin-pin').value = '';
             }
         };
@@ -1728,15 +2359,8 @@
             isAdmin = false;
             sessionStorage.removeItem('kasRtIsAdmin');
             updateAdminUI();
-            showToast('Berhasil Logout Admin');
-        };
-
-        window.requireAdmin = function() {
-            if (!isAdmin) {
-                openAdminLogin();
-                return false;
-            }
-            return true;
+            cancelEditTransaction();
+            showToast('Anda telah logout dari mode admin.');
         };
 
         window.openChangePin = function() {
@@ -1758,15 +2382,15 @@
             const confirmPin = document.getElementById('confirm-pin').value;
 
             if (oldPin !== ADMIN_PIN) {
-                showToast('PIN Lama salah!', 'error');
+                showToast('PIN Lama tidak sesuai!', 'error');
                 return;
             }
-            if (newPin.length < 4) {
-                showToast('PIN Baru minimal 4 digit!', 'error');
+            if (newPin.length < 6) {
+                showToast('PIN Baru minimal 6 karakter/digit!', 'error');
                 return;
             }
             if (newPin !== confirmPin) {
-                showToast('Konfirmasi PIN baru tidak cocok!', 'error');
+                showToast('Konfirmasi PIN Baru tidak sama!', 'error');
                 return;
             }
 
@@ -1776,9 +2400,17 @@
             showToast('PIN Admin berhasil diperbarui!');
         };
 
-        window.updateAdminUI = function() {
-            const adminElements = document.querySelectorAll('.admin-only');
-            adminElements.forEach(el => {
+        function requireAdmin() {
+            if (!isAdmin) {
+                openAdminLogin();
+                return false;
+            }
+            return true;
+        }
+
+        function updateAdminUI() {
+            const adminOnlyElements = document.querySelectorAll('.admin-only');
+            adminOnlyElements.forEach(el => {
                 if (isAdmin) {
                     el.classList.remove('hidden');
                 } else {
@@ -1789,217 +2421,16 @@
             const loginBtn = document.getElementById('admin-login-btn');
             const loginBtnMb = document.getElementById('admin-login-btn-mb');
             if (isAdmin) {
-                if (loginBtn) loginBtn.innerHTML = '<i class="fas fa-user-shield mr-1"></i> Admin Aktif';
-                if (loginBtnMb) loginBtnMb.innerHTML = '<i class="fas fa-user-shield"></i>';
+                if (loginBtn) loginBtn.classList.add('hidden');
+                if (loginBtnMb) loginBtnMb.classList.add('hidden');
             } else {
-                if (loginBtn) loginBtn.innerHTML = '<i class="fas fa-lock mr-1"></i> Login Admin';
-                if (loginBtnMb) loginBtnMb.innerHTML = '<i class="fas fa-lock"></i>';
+                if (loginBtn) loginBtn.classList.remove('hidden');
+                if (loginBtnMb) loginBtnMb.classList.remove('hidden');
             }
-
-            renderHistory();
-            renderHouseStatus();
-            renderBankAccounts();
-            renderFeeAllocations();
-        };
-
-        function initFirebase() {
-            try {
-                firebase.initializeApp(firebaseConfig);
-                firebaseDb = firebase.database();
-                firebaseReady = true;
-                document.getElementById('firebase-status').innerHTML = '<span class="text-emerald-600"><i class="fas fa-circle text-[8px] animate-ping mr-1"></i> Terhubung ke Realtime Database</span>';
-                
-                setupFirebaseListeners();
-            } catch (err) {
-                console.error("Firebase init error:", err);
-                document.getElementById('firebase-status').innerHTML = '<span class="text-rose-500">Gagal terhubung ke database. Mode offline.</span>';
-                loadDefaultDataLocally();
-            }
+            renderAllViews();
         }
 
-        function setupFirebaseListeners() {
-            const dbRef = firebaseDb.ref('kasRt');
-
-            dbRef.child('houses').on('value', (snapshot) => {
-                const val = snapshot.val();
-                if (val) {
-                    houses = Object.keys(val).map(key => ({ id: key, ...val[key] }));
-                } else {
-                    const defaultObj = {};
-                    defaultHousesArray.forEach(h => {
-                        const newKey = firebaseDb.ref('kasRt/houses').push().key;
-                        defaultObj[newKey] = h;
-                    });
-                    firebaseDb.ref('kasRt/houses').set(defaultObj);
-                    return;
-                }
-                updateHouseDatalist();
-                renderHouseStatus();
-            });
-
-            dbRef.child('banks').on('value', (snapshot) => {
-                const val = snapshot.val();
-                if (val) {
-                    bankAccounts = Object.keys(val).map(key => ({ id: key, ...val[key] }));
-                } else {
-                    const defaultObj = {};
-                    defaultBanksArray.forEach(b => {
-                        const newKey = firebaseDb.ref('kasRt/banks').push().key;
-                        defaultObj[newKey] = b;
-                    });
-                    firebaseDb.ref('kasRt/banks').set(defaultObj);
-                    return;
-                }
-                renderBankAccounts();
-            });
-
-            dbRef.child('allocations').on('value', (snapshot) => {
-                const val = snapshot.val();
-                if (val) {
-                    feeAllocations = Object.keys(val).map(key => ({ id: key, ...val[key] }));
-                } else {
-                    const defaultObj = {};
-                    defaultAllocationsArray.forEach(a => {
-                        const newKey = firebaseDb.ref('kasRt/allocations').push().key;
-                        defaultObj[newKey] = a;
-                    });
-                    firebaseDb.ref('kasRt/allocations').set(defaultObj);
-                    return;
-                }
-                renderFeeAllocations();
-            });
-
-            dbRef.child('transactions').on('value', (snapshot) => {
-                const val = snapshot.val();
-                if (val) {
-                    transactions = Object.keys(val).map(key => ({ id: key, ...val[key] }));
-                } else {
-                    transactions = [];
-                }
-                renderDashboard();
-                renderHistory();
-                renderHouseStatus();
-                if (currentActiveTab === 'recap') renderRecap();
-            });
-
-            const presenceRef = firebaseDb.ref(`kasRt/presence/${userSessionId}`);
-            presenceRef.set({ online: true, lastSeen: firebase.database.ServerValue.TIMESTAMP });
-            presenceRef.onDisconnect().remove();
-
-            firebaseDb.ref('kasRt/presence').on('value', (snapshot) => {
-                const val = snapshot.val();
-                const container = document.getElementById('online-users-container');
-                const badge = document.getElementById('online-count-badge');
-                if (!container) return;
-                container.innerHTML = '';
-
-                if (val) {
-                    const keys = Object.keys(val);
-                    if (badge) badge.textContent = `${keys.length} Online`;
-                    keys.forEach(k => {
-                        const tag = document.createElement('span');
-                        tag.className = "px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-medium rounded-full flex items-center gap-1";
-                        tag.innerHTML = `<i class="fas fa-circle text-[6px] text-emerald-500"></i> ${k === userSessionId ? 'Anda (Pengunjung)' : k}`;
-                        container.appendChild(tag);
-                    });
-                } else {
-                    if (badge) badge.textContent = '1 Online';
-                }
-            });
-        }
-
-        function loadDefaultDataLocally() {
-            houses = defaultHousesArray.map((h, i) => ({ id: 'h_' + i, ...h }));
-            bankAccounts = defaultBanksArray.map((b, i) => ({ id: 'b_' + i, ...b }));
-            feeAllocations = defaultAllocationsArray.map((a, i) => ({ id: 'a_' + i, ...a }));
-            transactions = [];
-            
-            updateHouseDatalist();
-            renderDashboard();
-            renderHistory();
-            renderHouseStatus();
-            renderBankAccounts();
-            renderFeeAllocations();
-        }
-
-        document.getElementById('form-income').addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (!requireAdmin()) return;
-
-            const id = document.getElementById('inc-id').value;
-            const date = document.getElementById('inc-date').value;
-            const method = document.getElementById('inc-method').value;
-            const house = document.getElementById('inc-house').value.trim().toUpperCase();
-            const desc = document.getElementById('inc-desc').value.trim();
-            const amount = parseFloat(document.getElementById('inc-amount').value);
-
-            if (!date || !desc || isNaN(amount) || amount <= 0) {
-                showToast('Mohon lengkapi form dengan benar', 'error');
-                return;
-            }
-
-            const payload = {
-                type: 'income',
-                date,
-                paymentMethod: method,
-                houseNumber: house,
-                description: desc,
-                amount,
-                proofs: currentIncomeProofs,
-                updatedAt: new Date().toISOString()
-            };
-
-            if (firebaseReady) {
-                if (id) {
-                    firebaseDb.ref(`kasRt/transactions/${id}`).update(payload);
-                    showToast('Pemasukan berhasil diperbarui');
-                } else {
-                    firebaseDb.ref(`kasRt/transactions`).push(payload);
-                    showToast('Pemasukan berhasil disimpan');
-                }
-            }
-
-            cancelEditTransaction();
-        });
-
-        document.getElementById('form-expense').addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (!requireAdmin()) return;
-
-            const id = document.getElementById('exp-id').value;
-            const date = document.getElementById('exp-date').value;
-            const desc = document.getElementById('exp-desc').value.trim();
-            const amount = parseFloat(document.getElementById('exp-amount').value);
-
-            if (!date || !desc || isNaN(amount) || amount <= 0) {
-                showToast('Mohon lengkapi form dengan benar', 'error');
-                return;
-            }
-
-            const payload = {
-                type: 'expense',
-                date,
-                paymentMethod: 'Cash',
-                houseNumber: '',
-                description: desc,
-                amount,
-                proofs: currentExpenseProofs,
-                updatedAt: new Date().toISOString()
-            };
-
-            if (firebaseReady) {
-                if (id) {
-                    firebaseDb.ref(`kasRt/transactions/${id}`).update(payload);
-                    showToast('Pengeluaran berhasil diperbarui');
-                } else {
-                    firebaseDb.ref(`kasRt/transactions`).push(payload);
-                    showToast('Pengeluaran berhasil disimpan');
-                }
-            }
-
-            cancelEditTransaction();
-        });
-
+        // Form Submit Listeners
         document.getElementById('form-bank').addEventListener('submit', function(e) {
             e.preventDefault();
             if (!requireAdmin()) return;
@@ -2009,20 +2440,25 @@
             const accountNumber = document.getElementById('modal-bank-number').value.trim();
             const accountHolder = document.getElementById('modal-bank-holder').value.trim();
 
-            if (!bankName || !accountNumber || !accountHolder) return;
-
-            const payload = { bankName, accountNumber, accountHolder };
-
             if (firebaseReady) {
                 if (id) {
-                    firebaseDb.ref(`kasRt/banks/${id}`).update(payload);
-                    showToast('Rekening bank diperbarui');
+                    firebaseDb.ref(`kasRt/banks/${id}`).update({ bankName, accountNumber, accountHolder });
                 } else {
-                    firebaseDb.ref(`kasRt/banks`).push(payload);
-                    showToast('Rekening bank ditambahkan');
+                    firebaseDb.ref('kasRt/banks').push({ bankName, accountNumber, accountHolder });
                 }
+            } else {
+                if (id) {
+                    const idx = bankAccounts.findIndex(b => b.id === id);
+                    if (idx !== -1) bankAccounts[idx] = { id, bankName, accountNumber, accountHolder };
+                } else {
+                    bankAccounts.push({ id: 'b_' + Date.now(), bankName, accountNumber, accountHolder });
+                }
+                saveLocalStorage();
+                scheduleRenderAllViews();
             }
+
             closeBankModal();
+            showToast('Data rekening berhasil disimpan!');
         });
 
         document.getElementById('form-allocation').addEventListener('submit', function(e) {
@@ -2031,22 +2467,27 @@
 
             const id = document.getElementById('modal-allocation-id').value;
             const title = document.getElementById('modal-allocation-title').value.trim();
-            const amount = parseFloat(document.getElementById('modal-allocation-amount').value);
-
-            if (!title || isNaN(amount)) return;
-
-            const payload = { title, amount };
+            const amount = parseFloat(document.getElementById('modal-allocation-amount').value) || 0;
 
             if (firebaseReady) {
                 if (id) {
-                    firebaseDb.ref(`kasRt/allocations/${id}`).update(payload);
-                    showToast('Rincian alokasi diperbarui');
+                    firebaseDb.ref(`kasRt/allocations/${id}`).update({ title, amount });
                 } else {
-                    firebaseDb.ref(`kasRt/allocations`).push(payload);
-                    showToast('Rincian alokasi ditambahkan');
+                    firebaseDb.ref('kasRt/allocations').push({ title, amount });
                 }
+            } else {
+                if (id) {
+                    const idx = feeAllocations.findIndex(a => a.id === id);
+                    if (idx !== -1) feeAllocations[idx] = { id, title, amount };
+                } else {
+                    feeAllocations.push({ id: 'a_' + Date.now(), title, amount });
+                }
+                saveLocalStorage();
+                scheduleRenderAllViews();
             }
+
             closeAllocationModal();
+            showToast('Rincian alokasi berhasil disimpan!');
         });
 
         document.getElementById('form-house').addEventListener('submit', function(e) {
@@ -2058,31 +2499,111 @@
             const ownerName = document.getElementById('modal-house-owner').value.trim();
             const phone = document.getElementById('modal-house-phone').value.trim();
 
-            if (!houseNumber || !ownerName) return;
+            if (firebaseReady) {
+                if (id) {
+                    firebaseDb.ref(`kasRt/houses/${id}`).update({ houseNumber, ownerName, phone });
+                } else {
+                    firebaseDb.ref('kasRt/houses').push({ houseNumber, ownerName, phone });
+                }
+            } else {
+                if (id) {
+                    const idx = houses.findIndex(h => h.id === id);
+                    if (idx !== -1) houses[idx] = { id, houseNumber, ownerName, phone };
+                } else {
+                    houses.push({ id: 'h_' + Date.now(), houseNumber, ownerName, phone });
+                }
+                saveLocalStorage();
+                scheduleRenderAllViews();
+            }
 
-            const payload = { houseNumber, ownerName, phone };
+            closeHouseModal();
+            showToast('Data warga berhasil disimpan!');
+        });
+
+        document.getElementById('form-income').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!requireAdmin()) return;
+
+            const id = document.getElementById('inc-id').value;
+            const date = document.getElementById('inc-date').value;
+            const paymentMethod = document.getElementById('inc-method').value;
+            const houseNumber = document.getElementById('inc-house').value.trim().toUpperCase();
+            const description = document.getElementById('inc-desc').value.trim();
+            const amount = parseFloat(document.getElementById('inc-amount').value) || 0;
+            const proofs = [...currentIncomeProofs];
+
+            const txData = { type: 'income', date, paymentMethod, houseNumber, description, amount, proofs };
 
             if (firebaseReady) {
                 if (id) {
-                    firebaseDb.ref(`kasRt/houses/${id}`).update(payload);
-                    showToast('Data warga diperbarui');
+                    firebaseDb.ref(`kasRt/transactions/${id}`).update(txData);
                 } else {
-                    firebaseDb.ref(`kasRt/houses`).push(payload);
-                    showToast('Data warga ditambahkan');
+                    firebaseDb.ref('kasRt/transactions').push(txData);
                 }
+            } else {
+                if (id) {
+                    const idx = transactions.findIndex(t => t.id === id);
+                    if (idx !== -1) transactions[idx] = { id, ...txData };
+                } else {
+                    transactions.push({ id: 't_' + Date.now(), ...txData });
+                }
+                saveLocalStorage();
+                scheduleRenderAllViews();
             }
-            closeHouseModal();
+
+            cancelEditTransaction();
+            showToast('Pemasukan kas berhasil dicatat!');
         });
 
-        window.onload = function() {
-            const todayISO = new Date().toISOString().split('T')[0];
-            document.getElementById('inc-date').value = todayISO;
-            document.getElementById('exp-date').value = todayISO;
-            document.getElementById('current-date').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('form-expense').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!requireAdmin()) return;
+
+            const id = document.getElementById('exp-id').value;
+            const date = document.getElementById('exp-date').value;
+            const description = document.getElementById('exp-desc').value.trim();
+            const category = document.getElementById('exp-category').value;
+            const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
+            const proofs = [...currentExpenseProofs];
+
+            const txData = { type: 'expense', date, description, category, amount, proofs };
+
+            if (firebaseReady) {
+                if (id) {
+                    firebaseDb.ref(`kasRt/transactions/${id}`).update(txData);
+                } else {
+                    firebaseDb.ref('kasRt/transactions').push(txData);
+                }
+            } else {
+                if (id) {
+                    const idx = transactions.findIndex(t => t.id === id);
+                    if (idx !== -1) transactions[idx] = { id, ...txData };
+                } else {
+                    transactions.push({ id: 't_' + Date.now(), ...txData });
+                }
+                saveLocalStorage();
+                scheduleRenderAllViews();
+            }
+
+            cancelEditTransaction();
+            showToast('Pengeluaran kas berhasil dicatat!');
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const incDateEl = document.getElementById('inc-date');
+            const expDateEl = document.getElementById('exp-date');
+            if (incDateEl) incDateEl.value = todayStr;
+            if (expDateEl) expDateEl.value = todayStr;
+
+            const dateContainer = document.getElementById('current-date');
+            if (dateContainer) {
+                dateContainer.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            }
 
             updateAdminUI();
-            initFirebase();
-        };
+            startFirebaseSync();
+        });
     </script>
 </body>
 </html>
