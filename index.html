@@ -80,7 +80,7 @@
         
         <div id="firebase-status" class="text-[11px] text-slate-500 font-medium px-1"></div>
 
-        <!-- PANEL ADMIN -->
+        <!-- PANEL ADMIN: PENGUNJUNG ONLINE -->
         <div id="admin-online-panel" class="admin-only bg-white rounded-2xl p-4 shadow-sm border border-slate-200 hidden">
             <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
                 <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-2">
@@ -104,9 +104,34 @@
             </div>
         </div>
 
-        <!-- DASHBOARD -->
+        <!-- DASHBOARD KAS & TRANSAKSI -->
         <div id="page-dashboard" class="space-y-4 sm:space-y-6">
+
+            <!-- PANEL ADMIN: SALDO PER METODE PEMBAYARAN -->
+            <div id="admin-method-balance-panel" class="admin-only bg-white rounded-2xl p-4 shadow-sm border border-slate-200 hidden">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-2">
+                        <i class="fas fa-wallet text-indigo-500"></i> Saldo Per Metode Pembayaran
+                        <span class="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">Admin</span>
+                    </h3>
+                    <span class="text-[10px] text-slate-400">Real-time</span>
+                </div>
+                <div id="method-balance-container" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+            </div>
+
+            <!-- BANNER PERINGATAN KATEGORI YATIM PIATU -->
+            <div id="orphan-category-alert" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-amber-800">
+                <div class="flex items-start gap-2">
+                    <i class="fas fa-exclamation-triangle text-amber-600 mt-0.5"></i>
+                    <div class="flex-1">
+                        <div class="font-bold mb-1">Kategori Pengeluaran Tidak Cocok dengan Alokasi</div>
+                        <div id="orphan-category-list" class="text-[11px]"></div>
+                        <div class="mt-2 text-[10px] italic">Solusi: Edit alokasi yang relevan → akan muncul opsi rename otomatis.</div>
+                    </div>
+                </div>
+            </div>
             
+            <!-- INFO REKENING BANK -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <button onclick="toggleBankSection()" class="w-full p-3 bg-slate-50 hover:bg-slate-100 flex items-center justify-between transition-colors text-left">
                     <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
@@ -137,6 +162,7 @@
                 </div>
             </div>
 
+            <!-- KARTU TOTAL -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5">
                 <div class="bg-gradient-to-br from-blue-700 to-indigo-800 text-white rounded-2xl p-4 sm:p-6 shadow-md relative overflow-hidden flex flex-col justify-between cursor-pointer select-none" onclick="toggleBalanceBreakdown()">
                     <div>
@@ -234,6 +260,7 @@
                 </div>
             </div>
 
+            <!-- FORM & RIWAYAT -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 <div id="transaction-form-container" class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 flex flex-col admin-only hidden">
                     <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
@@ -254,6 +281,7 @@
                         </button>
                     </div>
 
+                    <!-- FORM PEMASUKAN -->
                     <form id="form-income" class="space-y-3">
                         <input type="hidden" id="inc-id" value="">
                         <div>
@@ -310,11 +338,21 @@
                         </button>
                     </form>
 
+                    <!-- FORM PENGELUARAN -->
                     <form id="form-expense" class="space-y-3 hidden">
                         <input type="hidden" id="exp-id" value="">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Transaksi <span class="text-rose-500">*</span></label>
                             <input type="date" id="exp-date" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Metode Pembayaran <span class="text-rose-500">*</span></label>
+                            <select id="exp-method" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-rose-500 outline-none bg-white">
+                                <option value="Cash">Cash / Tunai</option>
+                                <option value="Bank Mandiri">Bank Mandiri</option>
+                                <option value="Bank BCA">Bank BCA</option>
+                            </select>
                         </div>
 
                         <div>
@@ -433,7 +471,7 @@
             </div>
         </div>
 
-        <!-- STATUS IURAN -->
+        <!-- HALAMAN STATUS IURAN -->
         <div id="page-houses" class="hidden space-y-4">
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm">
@@ -895,7 +933,7 @@
         }
 
         // ============================================================
-        // FORMAT UTILS
+        // FORMAT
         // ============================================================
         window.formatRupiah = function(number) {
             return new Intl.NumberFormat('id-ID', {
@@ -1021,8 +1059,6 @@
 
         // ============================================================
         // PREVIEW ALOKASI
-        // - Iuran warga (ada No. Rumah) → dialokasikan × jumlah rumah bayar
-        // - Donasi/Infaq (tanpa No. Rumah) → Kas Umum
         // ============================================================
         window.updateAllocationPreview = function(val) {
             const container = document.getElementById('preview-allocation-list');
@@ -1103,7 +1139,7 @@
         };
 
         // ============================================================
-        // UPLOAD BUKTI (kompresi)
+        // UPLOAD BUKTI
         // ============================================================
         window.handleFilesUpload = async function(type) {
             const fileInput = document.getElementById(type === 'income' ? 'inc-proof' : 'exp-proof');
@@ -1114,7 +1150,7 @@
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     if (!file.type.startsWith('image/')) {
-                        showToast(`File ${file.name} bukan gambar, dilewati.`, 'error');
+                        showToast(`File ${file.name} bukan gambar.`, 'error');
                         continue;
                     }
                     if (file.size > 5 * 1024 * 1024) {
@@ -1172,7 +1208,7 @@
             container.innerHTML = '';
 
             if (bankAccounts.length === 0) {
-                container.innerHTML = '<p class="text-[11px] text-slate-400 col-span-full">Belum ada nomor rekening bank yang terdaftar.</p>';
+                container.innerHTML = '<p class="text-[11px] text-slate-400 col-span-full">Belum ada nomor rekening bank terdaftar.</p>';
                 return;
             }
 
@@ -1255,7 +1291,7 @@
                 select.appendChild(opt);
             });
 
-            // Tambahan kategori Kas Umum untuk pengeluaran dari donasi
+            // Tambahan Kas Umum
             const optKasUmum = document.createElement('option');
             optKasUmum.value = 'Kas Umum';
             optKasUmum.textContent = 'Kas Umum (Donasi)';
@@ -1357,8 +1393,6 @@
 
         // ============================================================
         // RENDER DASHBOARD
-        // Alokasi = nominal × jumlah rumah bayar (dari iuran warga saja)
-        // Donasi → Kas Umum (tidak dialokasikan)
         // ============================================================
         window.renderDashboard = function() {
             let totalInc = 0, incCash = 0, incMandiri = 0, incBca = 0, totalExp = 0;
@@ -1374,7 +1408,6 @@
                     else if (m.includes('bca')) incBca += amt;
                     else incCash += amt;
 
-                    // Pisahkan iuran warga vs donasi
                     if (t.houseNumber && t.houseNumber.trim()) {
                         totalIuranWarga += amt;
                     } else {
@@ -1392,7 +1425,6 @@
             document.getElementById('income-bca').textContent = formatRupiah(incBca);
             document.getElementById('total-expense').textContent = formatRupiah(totalExp);
 
-            // --- Alokasi iuran warga ---
             const totalDefaultAlloc = (feeAllocations || []).reduce(
                 (sum, item) => sum + (parseFloat(item.amount) || 0), 0
             );
@@ -1418,12 +1450,10 @@
                 incomeAllocByCategory['Kas Umum'] = totalIuranWarga;
             }
 
-            // --- Donasi langsung ke Kas Umum ---
             if (totalDonasi > 0) {
                 incomeAllocByCategory['Kas Umum (Donasi)'] = totalDonasi;
             }
 
-            // --- Pengeluaran per kategori ---
             const expenseByCategory = {};
             transactions.forEach(t => {
                 if (t.type !== 'expense') return;
@@ -1431,7 +1461,6 @@
                 expenseByCategory[cat] = (expenseByCategory[cat] || 0) + (parseFloat(t.amount) || 0);
             });
 
-            // --- Render alokasi ---
             const allocList = document.getElementById('income-allocation-breakdown-list');
             if (allocList) {
                 const entries = Object.entries(incomeAllocByCategory);
@@ -1458,7 +1487,6 @@
                 }
             }
 
-            // --- Render pengeluaran per kategori ---
             const expCatList = document.getElementById('expense-category-breakdown-list');
             if (expCatList) {
                 const categories = Object.keys(expenseByCategory);
@@ -1484,7 +1512,6 @@
                 }
             }
 
-            // --- Saldo per kategori ---
             const balanceList = document.getElementById('balance-allocation-breakdown-list');
             if (balanceList) {
                 const allCategoryNames = [];
@@ -1512,6 +1539,88 @@
                     }).join('');
                 }
             }
+
+            // === BANNER KATEGORI YATIM PIATU ===
+            const allocTitles = (feeAllocations || []).map(a => a.title);
+            const orphanCategories = Object.keys(expenseByCategory).filter(cat => {
+                if (cat === 'Tanpa Kategori' || cat === 'Kas Umum' || cat === 'Lain-lain') return false;
+                return !allocTitles.includes(cat);
+            });
+
+            const orphanAlert = document.getElementById('orphan-category-alert');
+            const orphanList = document.getElementById('orphan-category-list');
+            if (orphanAlert && orphanList) {
+                if (orphanCategories.length > 0) {
+                    orphanAlert.classList.remove('hidden');
+                    orphanList.innerHTML = orphanCategories.map(cat => {
+                        const amt = expenseByCategory[cat];
+                        return `<div>• <b>${escapeHTML(cat)}</b> — Rp ${amt.toLocaleString('id-ID')} (tidak ada di master alokasi)</div>`;
+                    }).join('');
+                } else {
+                    orphanAlert.classList.add('hidden');
+                }
+            }
+        };
+
+        // ============================================================
+        // RENDER SALDO PER METODE
+        // ============================================================
+        window.renderMethodBalances = function() {
+            const container = document.getElementById('method-balance-container');
+            if (!container) return;
+
+            const methods = {
+                'Cash':         { label: 'Tunai',   icon: 'fas fa-money-bill-wave', color: 'amber',  income: 0, expense: 0 },
+                'Bank Mandiri': { label: 'Mandiri', icon: 'fas fa-university',     color: 'blue',   income: 0, expense: 0 },
+                'Bank BCA':     { label: 'BCA',     icon: 'fas fa-credit-card',    color: 'indigo', income: 0, expense: 0 }
+            };
+
+            transactions.forEach(t => {
+                const amt = parseFloat(t.amount) || 0;
+                const m = t.paymentMethod || 'Cash';
+                if (!methods[m]) return;
+                if (t.type === 'income') methods[m].income += amt;
+                else if (t.type === 'expense') methods[m].expense += amt;
+            });
+
+            container.innerHTML = Object.entries(methods).map(([key, data]) => {
+                const saldo = data.income - data.expense;
+                const isNegative = saldo < 0;
+
+                const colorMap = {
+                    amber:  { bg: 'from-amber-500 to-amber-600',   text: 'text-amber-100',   icon: 'text-amber-200' },
+                    blue:   { bg: 'from-blue-500 to-blue-600',     text: 'text-blue-100',    icon: 'text-blue-200' },
+                    indigo: { bg: 'from-indigo-500 to-indigo-600', text: 'text-indigo-100',  icon: 'text-indigo-200' }
+                };
+                const c = colorMap[data.color];
+
+                return `
+                    <div class="bg-gradient-to-br ${c.bg} rounded-xl p-3 text-white shadow-sm">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-1.5">
+                                <i class="${data.icon} ${c.icon} text-sm"></i>
+                                <span class="text-[11px] font-bold uppercase tracking-wider">${data.label}</span>
+                            </div>
+                            <span class="text-[9px] bg-white/20 px-1.5 py-0.5 rounded font-semibold">${key}</span>
+                        </div>
+
+                        <div class="text-lg sm:text-xl font-extrabold tracking-tight mb-2 ${isNegative ? 'text-rose-200' : ''}">
+                            ${formatRupiah(saldo)}
+                        </div>
+
+                        <div class="space-y-0.5 pt-2 border-t border-white/20 text-[10px]">
+                            <div class="flex justify-between items-center ${c.text}">
+                                <span><i class="fas fa-arrow-down mr-1"></i> Masuk</span>
+                                <span class="font-semibold text-white">${formatRupiah(data.income)}</span>
+                            </div>
+                            <div class="flex justify-between items-center ${c.text}">
+                                <span><i class="fas fa-arrow-up mr-1"></i> Keluar</span>
+                                <span class="font-semibold text-white">${formatRupiah(data.expense)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         };
 
         // ============================================================
@@ -1580,8 +1689,15 @@
                     else if (m.includes('BCA')) badgeBg = 'bg-indigo-100 text-indigo-700';
                     else badgeBg = 'bg-amber-100 text-amber-800';
                     methodBadge = `<span class="inline-block px-1.5 py-0.2 text-[9px] rounded font-semibold ${badgeBg}">${escapeHTML(m)}</span>`;
-                } else if (t.category) {
-                    methodBadge = `<span class="inline-block px-1.5 py-0.2 text-[9px] rounded font-semibold bg-rose-100 text-rose-700"><i class="fas fa-tag mr-0.5"></i>${escapeHTML(t.category)}</span>`;
+                } else {
+                    const m = t.paymentMethod || 'Cash';
+                    let badgeBg = 'bg-slate-100 text-slate-700';
+                    if (m.includes('Mandiri')) badgeBg = 'bg-blue-100 text-blue-700';
+                    else if (m.includes('BCA')) badgeBg = 'bg-indigo-100 text-indigo-700';
+                    else badgeBg = 'bg-amber-100 text-amber-800';
+                    const methodTag = `<span class="inline-block px-1.5 py-0.2 text-[9px] rounded font-semibold ${badgeBg}">${escapeHTML(m)}</span>`;
+                    const catTag = t.category ? `<span class="inline-block px-1.5 py-0.2 text-[9px] rounded font-semibold bg-rose-100 text-rose-700"><i class="fas fa-tag mr-0.5"></i>${escapeHTML(t.category)}</span>` : '';
+                    methodBadge = methodTag + ' ' + catTag;
                 }
 
                 let proofsCount = 0;
@@ -2041,6 +2157,7 @@
                 document.getElementById('form-title').innerHTML = '<i class="fas fa-edit text-amber-500"></i> Edit Pengeluaran';
                 document.getElementById('exp-id').value = t.id;
                 document.getElementById('exp-date').value = t.date || '';
+                document.getElementById('exp-method').value = t.paymentMethod || 'Cash';
                 document.getElementById('exp-desc').value = t.description || '';
                 document.getElementById('exp-category').value = t.category || '';
                 document.getElementById('exp-amount').value = t.amount || '';
@@ -2070,6 +2187,7 @@
             const formExp = document.getElementById('form-expense');
             formExp.reset();
             document.getElementById('exp-id').value = '';
+            document.getElementById('exp-method').value = 'Cash';
             document.getElementById('exp-submit-btn').innerHTML = '<i class="fas fa-save"></i> Simpan Pengeluaran';
             currentExpenseProofs = [];
             renderPreviews('expense');
@@ -2219,7 +2337,6 @@
                 `;
                 html += displayRows.map(({ t, saldo }) => {
                     const isInc = t.type === 'income';
-                    const isDonasi = isInc && (!t.houseNumber || !t.houseNumber.trim());
                     const tagBadge = isInc
                         ? (t.houseNumber
                             ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200">${escapeHTML(t.houseNumber)}</span>`
@@ -2276,9 +2393,7 @@
                 exportData.push({
                     "Tanggal": formatDate(t.date),
                     "Keterangan": t.description || '-',
-                    "No. Rumah / Kategori": isInc
-                        ? (t.houseNumber || 'Donasi')
-                        : (t.category || '-'),
+                    "No. Rumah / Kategori": isInc ? (t.houseNumber || 'Donasi') : (t.category || '-'),
                     "Debit (Keluar)": !isInc ? (parseFloat(t.amount) || 0) : '',
                     "Kredit (Masuk)": isInc ? (parseFloat(t.amount) || 0) : '',
                     "Saldo": saldo
@@ -2341,13 +2456,14 @@
             renderBankAccounts();
             renderFeeAllocations();
             renderDashboard();
+            renderMethodBalances();
             renderHistory();
             if (currentActiveTab === 'recap') renderRecap();
             renderHouseStatus();
         }
 
         // ============================================================
-        // FIREBASE HELPERS
+        // FIREBASE
         // ============================================================
         function addHouseToFirebase(houseData) {
             if (!firebaseReady) return;
@@ -2627,7 +2743,7 @@
         }
 
         // ============================================================
-        // BACKUP / RESTORE (TANPA RESET)
+        // BACKUP / RESTORE
         // ============================================================
         window.backupDataJSON = function() {
             const data = { houses, bankAccounts, feeAllocations, transactions, exportedAt: new Date().toISOString() };
@@ -2720,13 +2836,56 @@
             showToast('Data rekening berhasil disimpan!');
         });
 
-        document.getElementById('form-allocation').addEventListener('submit', function(e) {
+        // ALOKASI: dengan fitur rename massal
+        document.getElementById('form-allocation').addEventListener('submit', async function(e) {
             e.preventDefault();
             if (!requireAdmin()) return;
 
             const id = document.getElementById('modal-allocation-id').value;
             const title = document.getElementById('modal-allocation-title').value.trim();
             const amount = parseFloat(document.getElementById('modal-allocation-amount').value) || 0;
+
+            // Cek apakah ini EDIT (bukan tambah baru)
+            if (id) {
+                const oldAlloc = feeAllocations.find(a => a.id === id);
+                const oldTitle = oldAlloc ? oldAlloc.title : null;
+
+                if (oldTitle && oldTitle !== title) {
+                    const affectedExpenses = transactions.filter(t =>
+                        t.type === 'expense' && t.category === oldTitle
+                    ).length;
+
+                    if (affectedExpenses > 0) {
+                        const doUpdate = confirm(
+                            `Nama alokasi berubah dari "${oldTitle}" menjadi "${title}".\n\n` +
+                            `Ada ${affectedExpenses} transaksi pengeluaran dengan kategori "${oldTitle}".\n\n` +
+                            `Update semua transaksi tersebut ke kategori baru "${title}"?`
+                        );
+
+                        if (doUpdate) {
+                            if (firebaseReady) {
+                                const updates = {};
+                                transactions.forEach(t => {
+                                    if (t.type === 'expense' && t.category === oldTitle) {
+                                        updates[`kasRt/transactions/${t.id}/category`] = title;
+                                    }
+                                });
+                                if (Object.keys(updates).length > 0) {
+                                    await firebaseDb.ref().update(updates);
+                                }
+                            } else {
+                                transactions.forEach(t => {
+                                    if (t.type === 'expense' && t.category === oldTitle) {
+                                        t.category = title;
+                                    }
+                                });
+                                saveLocalStorage();
+                            }
+                            showToast(`${affectedExpenses} transaksi diperbarui ke "${title}"`);
+                        }
+                    }
+                }
+            }
 
             if (firebaseReady) {
                 if (id) firebaseDb.ref(`kasRt/allocations/${id}`).update({ title, amount });
@@ -2811,12 +2970,13 @@
 
             const id = document.getElementById('exp-id').value;
             const date = document.getElementById('exp-date').value;
+            const paymentMethod = document.getElementById('exp-method').value;
             const description = document.getElementById('exp-desc').value.trim();
             const category = document.getElementById('exp-category').value;
             const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
             const proofs = [...currentExpenseProofs];
 
-            const txData = { type: 'expense', date, description, category, amount, proofs };
+            const txData = { type: 'expense', date, paymentMethod, description, category, amount, proofs };
 
             if (firebaseReady) {
                 if (id) firebaseDb.ref(`kasRt/transactions/${id}`).update(txData);
