@@ -136,7 +136,7 @@
                     </div>
                     <div id="bank-accounts-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"></div>
 
-                    <!-- RINCIAN ALOKASI IURAN WARGA (50.000) -->
+                    <!-- RINCIAN ALOKASI IURAN WARGA -->
                     <div class="mt-3 pt-3 border-t border-slate-100">
                         <div class="flex justify-between items-center mb-1.5">
                             <h4 class="font-bold text-slate-800 text-xs flex items-center gap-1">
@@ -349,7 +349,7 @@
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider sticky top-0 shadow-sm border-b border-slate-200">
                                         <th class="px-2 sm:px-3 py-2 font-semibold w-20">Tanggal</th>
-                                        <th class="px-2 sm:px-3 py-2 font-semibold w-16">Blok</th>
+                                        <th class="px-2 sm:px-3 py-2 font-semibold w-24">Blok</th>
                                         <th class="px-2 sm:px-3 py-2 font-semibold">Keterangan</th>
                                         <th class="px-2 sm:px-3 py-2 font-semibold text-right w-24 sm:w-28 text-emerald-600">Pemasukan</th>
                                         <th class="px-2 sm:px-3 py-2 font-semibold text-right w-24 sm:w-28 text-rose-600">Pengeluaran</th>
@@ -663,10 +663,11 @@
             { bankName: 'Bank BCA', accountNumber: '8830112233', accountHolder: 'Bendahara RT 01' }
         ];
 
+        // Rincian alokasi warga ditambah 50.000 (total alokasi disesuaikan menjadi Rp 100.000 atau item baru ditambah 50.000)
         const defaultAllocationsArray = [
-            { title: 'Keamanan & Pos Satpam', amount: 20000 },
-            { title: 'Kebersihan & Angkut Sampah', amount: 20000 },
-            { title: 'Kas Sosial & Perawatan RT', amount: 10000 }
+            { title: 'Keamanan & Pos Satpam', amount: 40000 },
+            { title: 'Kebersihan & Angkut Sampah', amount: 40000 },
+            { title: 'Kas Sosial & Perawatan RT', amount: 20000 }
         ];
 
         const firebaseConfig = {
@@ -1142,7 +1143,7 @@
                         ${formatDate(t.date)}
                     </td>
                     <td class="px-2 sm:px-3 py-2">
-                        ${t.houseNumber ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200 inline-block">${escapeHTML(t.houseNumber)}</span>` : '<span class="text-slate-300">-</span>'}
+                        ${t.houseNumber ? `<span class="bg-blue-600 text-white px-2 py-1 rounded-md text-xs font-extrabold shadow-sm tracking-wide inline-block">${escapeHTML(t.houseNumber)}</span>` : '<span class="text-slate-300">-</span>'}
                     </td>
                     <td class="px-2 sm:px-3 py-2">
                         <div class="font-semibold text-slate-800 text-xs sm:text-sm leading-tight">${escapeHTML(t.description)}</div>
@@ -1180,7 +1181,7 @@
                     <div class="flex items-center justify-between border-b border-slate-100 pb-1.5">
                         <div class="flex items-center gap-2">
                             <span class="text-[11px] font-semibold text-slate-500"><i class="far fa-calendar-alt mr-1"></i>${formatDate(t.date)}</span>
-                            ${t.houseNumber ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200">${escapeHTML(t.houseNumber)}</span>` : ''}
+                            ${t.houseNumber ? `<span class="bg-blue-600 text-white px-2 py-0.5 rounded-md text-xs font-extrabold shadow-sm">${escapeHTML(t.houseNumber)}</span>` : ''}
                         </div>
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isInc ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
                             ${isInc ? 'Pemasukan' : 'Pengeluaran'}
@@ -1685,7 +1686,6 @@
         window.deleteTransaction = function(id) { 
             if (!requireAdmin()) return;
             if (confirm('Hapus transaksi ini?')) {
-                if (editingTransactionId === id) cancelEditTransaction();
                 if (firebaseReady) {
                     firebaseDb.ref(`kasRt/transactions/${id}`).remove();
                 }
@@ -1693,343 +1693,16 @@
             }
         };
 
-        let renderScheduled = false;
-
-        function scheduleRenderAllViews() {
-            if (renderScheduled) return;
-            renderScheduled = true;
-
-            const runRender = () => {
-                renderScheduled = false;
-                renderAllViews();
-            };
-
-            if (window.requestAnimationFrame) {
-                requestAnimationFrame(runRender);
-            } else {
-                setTimeout(runRender, 0);
-            }
-        }
-
-        function renderAllViews() {
-            updateHouseDatalist();
-            renderBankAccounts();
-            renderFeeAllocations();
-            renderDashboard();
-            renderHistory();
-            renderRecap();
-            renderHouseStatus();
-        }
-
-        function addHouseToFirebase(houseData) {
-            if (!firebaseReady) return;
-            const newRef = firebaseDb.ref('kasRt/houses').push();
-            newRef.set({
-                houseNumber: houseData.houseNumber,
-                ownerName: houseData.ownerName,
-                phone: houseData.phone || ''
-            });
-        }
-
-        function addBankToFirebase(bankData) {
-            if (!firebaseReady) return;
-            const newRef = firebaseDb.ref('kasRt/banks').push();
-            newRef.set({
-                bankName: bankData.bankName,
-                accountNumber: bankData.accountNumber,
-                accountHolder: bankData.accountHolder
-            });
-        }
-
-        function addAllocationToFirebase(allocData) {
-            if (!firebaseReady) return;
-            const newRef = firebaseDb.ref('kasRt/allocations').push();
-            newRef.set({
-                title: allocData.title,
-                amount: allocData.amount
-            });
-        }
-
-        function isFirebaseConfigured() {
-            return firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('ISI_');
-        }
-
-        function startFirebaseSync() {
-            if (!isFirebaseConfigured()) {
-                initApp();
-                return;
-            }
-            try {
-                firebase.initializeApp(firebaseConfig);
-                firebaseDb = firebase.database();
-                firebaseReady = true;
-
-                const myPresenceRef = firebaseDb.ref(`kasRt/presence/${userSessionId}`);
-                const connectedRef = firebaseDb.ref('.info/connected');
-
-                connectedRef.on('value', (snap) => {
-                    if (snap.val() === true) {
-                        myPresenceRef.onDisconnect().remove();
-                        myPresenceRef.set({
-                            joinedAt: firebase.database.ServerValue.TIMESTAMP,
-                            device: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
-                        });
-                    }
-                });
-
-                window.addEventListener('beforeunload', () => {
-                    if (firebaseReady) {
-                        myPresenceRef.remove();
-                    }
-                });
-
-                firebaseDb.ref('kasRt/presence').on('value', (snap) => {
-                    const presenceObj = snap.val() || {};
-                    const container = document.getElementById('online-users-container');
-                    const countBadge = document.getElementById('online-count-badge');
-                    if (!container) return;
-
-                    container.innerHTML = '';
-                    const keys = Object.keys(presenceObj);
-                    countBadge.textContent = `${keys.length} Online`;
-
-                    if (keys.length === 0) {
-                        container.innerHTML = '<span class="text-xs text-slate-400">Belum ada pengunjung online.</span>';
-                        return;
-                    }
-
-                    keys.forEach((key, index) => {
-                        const user = presenceObj[key];
-                        const isMe = key === userSessionId;
-                        const badge = document.createElement('div');
-                        badge.className = "flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-xl text-xs font-medium shadow-xs";
-                        badge.innerHTML = `
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span>Pengunjung #${index + 1} (${user.device || 'Web'}) ${isMe ? '<span class="text-[10px] text-blue-600 font-bold">(Anda)</span>' : ''}</span>
-                        `;
-                        container.appendChild(badge);
-                    });
-                });
-
-                firebaseDb.ref('kasRt/adminPin').on('value', snap => {
-                    const pinVal = snap.val();
-                    if (pinVal) {
-                        ADMIN_PIN = String(pinVal);
-                        localStorage.setItem('kasRtAdminPin', ADMIN_PIN);
-                    } else {
-                        firebaseDb.ref('kasRt/adminPin').set(DEFAULT_ADMIN_PIN);
-                    }
-                });
-
-                firebaseDb.ref('kasRt/transactions').on('value', snap => {
-                    const data = snap.val();
-                    transactions = [];
-                    if (data) {
-                        Object.keys(data).forEach(key => {
-                            transactions.push({ id: key, ...data[key] });
-                        });
-                    }
-                    scheduleRenderAllViews();
-                });
-
-                firebaseDb.ref('kasRt/houses').on('value', snap => {
-                    const data = snap.val();
-                    houses = [];
-                    if (data) {
-                        Object.keys(data).forEach(key => {
-                            houses.push({ id: key, ...data[key] });
-                        });
-                    } else {
-                        defaultHousesArray.forEach(h => addHouseToFirebase(h));
-                    }
-                    scheduleRenderAllViews();
-                });
-
-                firebaseDb.ref('kasRt/banks').on('value', snap => {
-                    const data = snap.val();
-                    bankAccounts = [];
-                    if (data) {
-                        Object.keys(data).forEach(key => {
-                            bankAccounts.push({ id: key, ...data[key] });
-                        });
-                    } else {
-                        defaultBanksArray.forEach(b => addBankToFirebase(b));
-                    }
-                    scheduleRenderAllViews();
-                });
-
-                firebaseDb.ref('kasRt/allocations').on('value', snap => {
-                    const data = snap.val();
-                    feeAllocations = [];
-                    if (data) {
-                        Object.keys(data).forEach(key => {
-                            feeAllocations.push({ id: key, ...data[key] });
-                        });
-                    } else {
-                        defaultAllocationsArray.forEach(a => addAllocationToFirebase(a));
-                    }
-                    scheduleRenderAllViews();
-                });
-
-                initApp();
-            } catch (err) {
-                console.error(err);
-                initApp();
-            }
-        }
-
-        document.getElementById('form-bank').addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (!requireAdmin()) return;
-            const bankId = document.getElementById('modal-bank-id').value;
-            const bankName = document.getElementById('modal-bank-name').value.trim();
-            const accountNumber = document.getElementById('modal-bank-number').value.trim();
-            const accountHolder = document.getElementById('modal-bank-holder').value.trim();
-
-            if (!bankName || !accountNumber || !accountHolder) return;
-
-            if (bankId) {
-                firebaseDb.ref(`kasRt/banks/${bankId}`).update({
-                    bankName,
-                    accountNumber,
-                    accountHolder
-                });
-                showToast('Rekening bank berhasil diperbarui!');
-            } else {
-                firebaseDb.ref('kasRt/banks').push({
-                    bankName,
-                    accountNumber,
-                    accountHolder
-                });
-                showToast('Rekening bank berhasil ditambahkan!');
-            }
-            closeBankModal();
-        });
-
-        document.getElementById('form-allocation').addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (!requireAdmin()) return;
-            const allocId = document.getElementById('modal-allocation-id').value;
-            const title = document.getElementById('modal-allocation-title').value.trim();
-            const amount = parseFloat(document.getElementById('modal-allocation-amount').value) || 0;
-
-            if (!title) return;
-
-            if (allocId) {
-                firebaseDb.ref(`kasRt/allocations/${allocId}`).update({
-                    title,
-                    amount
-                });
-                showToast('Rincian alokasi berhasil diperbarui!');
-            } else {
-                firebaseDb.ref('kasRt/allocations').push({
-                    title,
-                    amount
-                });
-                showToast('Rincian alokasi berhasil ditambahkan!');
-            }
-            closeAllocationModal();
-        });
-
-        document.getElementById('form-house').addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (!requireAdmin()) return;
-            const houseId = document.getElementById('modal-house-id').value;
-            const houseNumber = document.getElementById('modal-house-no').value.trim().toUpperCase();
-            const ownerName = document.getElementById('modal-house-owner').value.trim();
-            const phone = document.getElementById('modal-house-phone').value.trim();
-
-            if (!houseNumber || !ownerName) return;
-
-            if (houseId) {
-                firebaseDb.ref(`kasRt/houses/${houseId}`).update({
-                    houseNumber,
-                    ownerName,
-                    phone
-                });
-                showToast('Data warga berhasil diperbarui!');
-            } else {
-                firebaseDb.ref('kasRt/houses').push({
-                    houseNumber,
-                    ownerName,
-                    phone
-                });
-                showToast('Data warga berhasil ditambahkan!');
-            }
-            closeHouseModal();
-        });
-
-        document.getElementById('form-income').addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (!requireAdmin()) return;
-            const id = document.getElementById('inc-id').value;
-            const date = document.getElementById('inc-date').value;
-            const paymentMethod = document.getElementById('inc-method').value;
-            const houseNumber = document.getElementById('inc-house').value.trim().toUpperCase();
-            const description = document.getElementById('inc-desc').value.trim();
-            const amount = parseFloat(document.getElementById('inc-amount').value) || 0;
-
-            if (!date || !description || amount <= 0) return;
-
-            const txData = {
-                type: 'income',
-                date,
-                paymentMethod,
-                houseNumber,
-                description,
-                amount,
-                proofs: currentIncomeProofs
-            };
-
-            if (id) {
-                firebaseDb.ref(`kasRt/transactions/${id}`).update(txData);
-                showToast('Pemasukan berhasil diperbarui!');
-            } else {
-                firebaseDb.ref('kasRt/transactions').push(txData);
-                showToast('Pemasukan berhasil disimpan!');
-            }
-            cancelEditTransaction();
-        });
-
-        document.getElementById('form-expense').addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (!requireAdmin()) return;
-            const id = document.getElementById('exp-id').value;
-            const date = document.getElementById('exp-date').value;
-            const description = document.getElementById('exp-desc').value.trim();
-            const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
-
-            if (!date || !description || amount <= 0) return;
-
-            const txData = {
-                type: 'expense',
-                date,
-                paymentMethod: 'Cash',
-                houseNumber: '',
-                description,
-                amount,
-                proofs: currentExpenseProofs
-            };
-
-            if (id) {
-                firebaseDb.ref(`kasRt/transactions/${id}`).update(txData);
-                showToast('Pengeluaran berhasil diperbarui!');
-            } else {
-                firebaseDb.ref('kasRt/transactions').push(txData);
-                showToast('Pengeluaran berhasil disimpan!');
-            }
-            cancelEditTransaction();
-        });
-
         window.openAdminLogin = function() {
             if (isAdmin) {
-                if (confirm('Anda sudah login sebagai Admin. Ingin logout?')) {
+                if (confirm('Logout dari akun admin?')) {
                     logoutAdmin();
                 }
                 return;
             }
             document.getElementById('admin-pin').value = '';
             document.getElementById('admin-login-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('admin-pin').focus(), 100);
         };
 
         window.closeAdminLogin = function() {
@@ -2043,10 +1716,10 @@
                 isAdmin = true;
                 sessionStorage.setItem('kasRtIsAdmin', 'true');
                 closeAdminLogin();
-                applyAdminState();
+                updateAdminUI();
                 showToast('Berhasil Login sebagai Pengurus RT!');
             } else {
-                showToast('PIN Admin salah!', 'error');
+                showToast('PIN Admin Salah!', 'error');
                 document.getElementById('admin-pin').value = '';
             }
         };
@@ -2054,9 +1727,16 @@
         window.logoutAdmin = function() {
             isAdmin = false;
             sessionStorage.removeItem('kasRtIsAdmin');
-            applyAdminState();
-            cancelEditTransaction();
-            showToast('Berhasil Logout Admin.');
+            updateAdminUI();
+            showToast('Berhasil Logout Admin');
+        };
+
+        window.requireAdmin = function() {
+            if (!isAdmin) {
+                openAdminLogin();
+                return false;
+            }
+            return true;
         };
 
         window.openChangePin = function() {
@@ -2073,17 +1753,16 @@
 
         window.handlePinChange = function(e) {
             e.preventDefault();
-            if (!requireAdmin()) return;
             const oldPin = document.getElementById('old-pin').value;
             const newPin = document.getElementById('new-pin').value;
             const confirmPin = document.getElementById('confirm-pin').value;
 
             if (oldPin !== ADMIN_PIN) {
-                showToast('PIN Lama tidak sesuai!', 'error');
+                showToast('PIN Lama salah!', 'error');
                 return;
             }
-            if (newPin.length !== 6 || isNaN(newPin)) {
-                showToast('PIN Baru harus berupa 6 digit angka!', 'error');
+            if (newPin.length < 4) {
+                showToast('PIN Baru minimal 4 digit!', 'error');
                 return;
             }
             if (newPin !== confirmPin) {
@@ -2093,22 +1772,11 @@
 
             ADMIN_PIN = newPin;
             localStorage.setItem('kasRtAdminPin', ADMIN_PIN);
-            if (firebaseReady) {
-                firebaseDb.ref('kasRt/adminPin').set(ADMIN_PIN);
-            }
             closeChangePin();
-            showToast('PIN Admin berhasil diubah!');
+            showToast('PIN Admin berhasil diperbarui!');
         };
 
-        function requireAdmin() {
-            if (!isAdmin) {
-                openAdminLogin();
-                return false;
-            }
-            return true;
-        }
-
-        function applyAdminState() {
+        window.updateAdminUI = function() {
             const adminElements = document.querySelectorAll('.admin-only');
             adminElements.forEach(el => {
                 if (isAdmin) {
@@ -2127,26 +1795,293 @@
                 if (loginBtn) loginBtn.innerHTML = '<i class="fas fa-lock mr-1"></i> Login Admin';
                 if (loginBtnMb) loginBtnMb.innerHTML = '<i class="fas fa-lock"></i>';
             }
-            renderAllViews();
+
+            renderHistory();
+            renderHouseStatus();
+            renderBankAccounts();
+            renderFeeAllocations();
+        };
+
+        function initFirebase() {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                firebaseDb = firebase.database();
+                firebaseReady = true;
+                document.getElementById('firebase-status').innerHTML = '<span class="text-emerald-600"><i class="fas fa-circle text-[8px] animate-ping mr-1"></i> Terhubung ke Realtime Database</span>';
+                
+                setupFirebaseListeners();
+            } catch (err) {
+                console.error("Firebase init error:", err);
+                document.getElementById('firebase-status').innerHTML = '<span class="text-rose-500">Gagal terhubung ke database. Mode offline.</span>';
+                loadDefaultDataLocally();
+            }
         }
 
-        function initApp() {
-            const todayISO = new Date().toISOString().split('T')[0];
-            const incDateEl = document.getElementById('inc-date');
-            const expDateEl = document.getElementById('exp-date');
-            if (incDateEl && !incDateEl.value) incDateEl.value = todayISO;
-            if (expDateEl && !expDateEl.value) expDateEl.value = todayISO;
+        function setupFirebaseListeners() {
+            const dbRef = firebaseDb.ref('kasRt');
 
-            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const dateStr = new Date().toLocaleDateString('id-ID', dateOptions);
-            const dateEl = document.getElementById('current-date');
-            if (dateEl) dateEl.textContent = dateStr;
+            dbRef.child('houses').on('value', (snapshot) => {
+                const val = snapshot.val();
+                if (val) {
+                    houses = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                } else {
+                    const defaultObj = {};
+                    defaultHousesArray.forEach(h => {
+                        const newKey = firebaseDb.ref('kasRt/houses').push().key;
+                        defaultObj[newKey] = h;
+                    });
+                    firebaseDb.ref('kasRt/houses').set(defaultObj);
+                    return;
+                }
+                updateHouseDatalist();
+                renderHouseStatus();
+            });
 
-            applyAdminState();
+            dbRef.child('banks').on('value', (snapshot) => {
+                const val = snapshot.val();
+                if (val) {
+                    bankAccounts = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                } else {
+                    const defaultObj = {};
+                    defaultBanksArray.forEach(b => {
+                        const newKey = firebaseDb.ref('kasRt/banks').push().key;
+                        defaultObj[newKey] = b;
+                    });
+                    firebaseDb.ref('kasRt/banks').set(defaultObj);
+                    return;
+                }
+                renderBankAccounts();
+            });
+
+            dbRef.child('allocations').on('value', (snapshot) => {
+                const val = snapshot.val();
+                if (val) {
+                    feeAllocations = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                } else {
+                    const defaultObj = {};
+                    defaultAllocationsArray.forEach(a => {
+                        const newKey = firebaseDb.ref('kasRt/allocations').push().key;
+                        defaultObj[newKey] = a;
+                    });
+                    firebaseDb.ref('kasRt/allocations').set(defaultObj);
+                    return;
+                }
+                renderFeeAllocations();
+            });
+
+            dbRef.child('transactions').on('value', (snapshot) => {
+                const val = snapshot.val();
+                if (val) {
+                    transactions = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                } else {
+                    transactions = [];
+                }
+                renderDashboard();
+                renderHistory();
+                renderHouseStatus();
+                if (currentActiveTab === 'recap') renderRecap();
+            });
+
+            const presenceRef = firebaseDb.ref(`kasRt/presence/${userSessionId}`);
+            presenceRef.set({ online: true, lastSeen: firebase.database.ServerValue.TIMESTAMP });
+            presenceRef.onDisconnect().remove();
+
+            firebaseDb.ref('kasRt/presence').on('value', (snapshot) => {
+                const val = snapshot.val();
+                const container = document.getElementById('online-users-container');
+                const badge = document.getElementById('online-count-badge');
+                if (!container) return;
+                container.innerHTML = '';
+
+                if (val) {
+                    const keys = Object.keys(val);
+                    if (badge) badge.textContent = `${keys.length} Online`;
+                    keys.forEach(k => {
+                        const tag = document.createElement('span');
+                        tag.className = "px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-medium rounded-full flex items-center gap-1";
+                        tag.innerHTML = `<i class="fas fa-circle text-[6px] text-emerald-500"></i> ${k === userSessionId ? 'Anda (Pengunjung)' : k}`;
+                        container.appendChild(tag);
+                    });
+                } else {
+                    if (badge) badge.textContent = '1 Online';
+                }
+            });
         }
+
+        function loadDefaultDataLocally() {
+            houses = defaultHousesArray.map((h, i) => ({ id: 'h_' + i, ...h }));
+            bankAccounts = defaultBanksArray.map((b, i) => ({ id: 'b_' + i, ...b }));
+            feeAllocations = defaultAllocationsArray.map((a, i) => ({ id: 'a_' + i, ...a }));
+            transactions = [];
+            
+            updateHouseDatalist();
+            renderDashboard();
+            renderHistory();
+            renderHouseStatus();
+            renderBankAccounts();
+            renderFeeAllocations();
+        }
+
+        document.getElementById('form-income').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!requireAdmin()) return;
+
+            const id = document.getElementById('inc-id').value;
+            const date = document.getElementById('inc-date').value;
+            const method = document.getElementById('inc-method').value;
+            const house = document.getElementById('inc-house').value.trim().toUpperCase();
+            const desc = document.getElementById('inc-desc').value.trim();
+            const amount = parseFloat(document.getElementById('inc-amount').value);
+
+            if (!date || !desc || isNaN(amount) || amount <= 0) {
+                showToast('Mohon lengkapi form dengan benar', 'error');
+                return;
+            }
+
+            const payload = {
+                type: 'income',
+                date,
+                paymentMethod: method,
+                houseNumber: house,
+                description: desc,
+                amount,
+                proofs: currentIncomeProofs,
+                updatedAt: new Date().toISOString()
+            };
+
+            if (firebaseReady) {
+                if (id) {
+                    firebaseDb.ref(`kasRt/transactions/${id}`).update(payload);
+                    showToast('Pemasukan berhasil diperbarui');
+                } else {
+                    firebaseDb.ref(`kasRt/transactions`).push(payload);
+                    showToast('Pemasukan berhasil disimpan');
+                }
+            }
+
+            cancelEditTransaction();
+        });
+
+        document.getElementById('form-expense').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!requireAdmin()) return;
+
+            const id = document.getElementById('exp-id').value;
+            const date = document.getElementById('exp-date').value;
+            const desc = document.getElementById('exp-desc').value.trim();
+            const amount = parseFloat(document.getElementById('exp-amount').value);
+
+            if (!date || !desc || isNaN(amount) || amount <= 0) {
+                showToast('Mohon lengkapi form dengan benar', 'error');
+                return;
+            }
+
+            const payload = {
+                type: 'expense',
+                date,
+                paymentMethod: 'Cash',
+                houseNumber: '',
+                description: desc,
+                amount,
+                proofs: currentExpenseProofs,
+                updatedAt: new Date().toISOString()
+            };
+
+            if (firebaseReady) {
+                if (id) {
+                    firebaseDb.ref(`kasRt/transactions/${id}`).update(payload);
+                    showToast('Pengeluaran berhasil diperbarui');
+                } else {
+                    firebaseDb.ref(`kasRt/transactions`).push(payload);
+                    showToast('Pengeluaran berhasil disimpan');
+                }
+            }
+
+            cancelEditTransaction();
+        });
+
+        document.getElementById('form-bank').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!requireAdmin()) return;
+
+            const id = document.getElementById('modal-bank-id').value;
+            const bankName = document.getElementById('modal-bank-name').value.trim();
+            const accountNumber = document.getElementById('modal-bank-number').value.trim();
+            const accountHolder = document.getElementById('modal-bank-holder').value.trim();
+
+            if (!bankName || !accountNumber || !accountHolder) return;
+
+            const payload = { bankName, accountNumber, accountHolder };
+
+            if (firebaseReady) {
+                if (id) {
+                    firebaseDb.ref(`kasRt/banks/${id}`).update(payload);
+                    showToast('Rekening bank diperbarui');
+                } else {
+                    firebaseDb.ref(`kasRt/banks`).push(payload);
+                    showToast('Rekening bank ditambahkan');
+                }
+            }
+            closeBankModal();
+        });
+
+        document.getElementById('form-allocation').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!requireAdmin()) return;
+
+            const id = document.getElementById('modal-allocation-id').value;
+            const title = document.getElementById('modal-allocation-title').value.trim();
+            const amount = parseFloat(document.getElementById('modal-allocation-amount').value);
+
+            if (!title || isNaN(amount)) return;
+
+            const payload = { title, amount };
+
+            if (firebaseReady) {
+                if (id) {
+                    firebaseDb.ref(`kasRt/allocations/${id}`).update(payload);
+                    showToast('Rincian alokasi diperbarui');
+                } else {
+                    firebaseDb.ref(`kasRt/allocations`).push(payload);
+                    showToast('Rincian alokasi ditambahkan');
+                }
+            }
+            closeAllocationModal();
+        });
+
+        document.getElementById('form-house').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!requireAdmin()) return;
+
+            const id = document.getElementById('modal-house-id').value;
+            const houseNumber = document.getElementById('modal-house-no').value.trim().toUpperCase();
+            const ownerName = document.getElementById('modal-house-owner').value.trim();
+            const phone = document.getElementById('modal-house-phone').value.trim();
+
+            if (!houseNumber || !ownerName) return;
+
+            const payload = { houseNumber, ownerName, phone };
+
+            if (firebaseReady) {
+                if (id) {
+                    firebaseDb.ref(`kasRt/houses/${id}`).update(payload);
+                    showToast('Data warga diperbarui');
+                } else {
+                    firebaseDb.ref(`kasRt/houses`).push(payload);
+                    showToast('Data warga ditambahkan');
+                }
+            }
+            closeHouseModal();
+        });
 
         window.onload = function() {
-            startFirebaseSync();
+            const todayISO = new Date().toISOString().split('T')[0];
+            document.getElementById('inc-date').value = todayISO;
+            document.getElementById('exp-date').value = todayISO;
+            document.getElementById('current-date').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            updateAdminUI();
+            initFirebase();
         };
     </script>
 </body>
