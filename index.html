@@ -993,7 +993,7 @@
         };
 
         // ============================================================
-        // STATE
+        // STATE (URUTAN PENTING — JANGAN DIUBAH!)
         // ============================================================
         let firebaseReady = false;
         let firebaseDb = null;
@@ -1005,6 +1005,10 @@
         let editingTransactionId = null;
         let recapMonthlyDataCache = {};
         let userSessionId = 'User_' + Math.random().toString(36).substring(2, 8);
+
+        // ✅ FIX: currentActiveTab didefinisikan di sini (di atas)
+        // Sebelumnya ada di bawah switchDataTab, bikin error "not defined"
+        let currentActiveTab = localStorage.getItem('kasRtActiveDataTab') || 'history';
 
         let currentIncomeProofs = [];
         let currentExpenseProofs = [];
@@ -1289,6 +1293,8 @@
             const containerAuto = document.getElementById('alokasi-auto-container');
             const containerManual = document.getElementById('alokasi-manual-container');
             
+            if (!btnAuto || !btnManual || !containerAuto || !containerManual) return;
+            
             if (mode === 'auto') {
                 btnAuto.className = "flex-1 py-1.5 rounded text-[10px] font-bold transition-all bg-emerald-600 text-white";
                 btnManual.className = "flex-1 py-1.5 rounded text-[10px] font-bold transition-all text-slate-600 hover:text-slate-900";
@@ -1357,11 +1363,16 @@
             const totalAlloc = Object.values(manualAllocation).reduce((sum, v) => sum + v, 0);
             const nominalInput = parseFloat(document.getElementById('inc-amount').value) || 0;
             
-            document.getElementById('manual-total-alloc').textContent = formatRupiah(totalAlloc);
-            document.getElementById('manual-nominal-input').textContent = formatRupiah(nominalInput);
+            const allocEl = document.getElementById('manual-total-alloc');
+            const nominalEl = document.getElementById('manual-nominal-input');
+            const alertEl = document.getElementById('manual-diff-alert');
+            
+            if (!allocEl || !nominalEl || !alertEl) return;
+            
+            allocEl.textContent = formatRupiah(totalAlloc);
+            nominalEl.textContent = formatRupiah(nominalInput);
             
             const diff = nominalInput - totalAlloc;
-            const alertEl = document.getElementById('manual-diff-alert');
             
             if (Math.abs(diff) < 1) {
                 alertEl.className = "text-[10px] font-semibold text-center py-1.5 rounded bg-emerald-100 text-emerald-700";
@@ -1382,7 +1393,8 @@
         window.updateAllocationPreview = function(val) {
             const inputVal = parseFloat(val) || 0;
             
-            document.getElementById('preview-total-nominal').textContent = formatRupiah(inputVal);
+            const totalNominalEl = document.getElementById('preview-total-nominal');
+            if (totalNominalEl) totalNominalEl.textContent = formatRupiah(inputVal);
             
             // Manual mode
             if (alokasiMode === 'manual') {
@@ -1392,6 +1404,8 @@
             
             // === AUTO MODE ===
             const container = document.getElementById('preview-allocation-list');
+            if (!container) return;
+            
             const houseInput = document.getElementById('inc-house');
             const houseNo = (houseInput?.value || '').trim().toUpperCase();
             const isDonasi = !houseNo;
