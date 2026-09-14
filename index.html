@@ -33,51 +33,49 @@
 <body class="text-slate-800 min-h-screen flex flex-col overflow-x-hidden relative">
 
     <nav class="bg-blue-700 text-white shadow-md sticky top-0 z-30">
-        <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 flex flex-col sm:flex-row justify-between items-center gap-2.5">
-            <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
-                <div class="flex items-center gap-2 min-w-0">
-                    <div class="w-8 h-8 sm:w-9 sm:h-9 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-inner shrink-0">
+        <div class="max-w-6xl mx-auto px-3 sm:px-4 py-3 space-y-2.5">
+            
+            <!-- Baris 1: Judul -->
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-inner shrink-0">
                         <i class="fas fa-building text-sm sm:text-lg"></i>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <h1 class="font-bold text-xs sm:text-base leading-tight truncate">Puri Avanti RT 01 RW 12</h1>
+                        <h1 class="font-bold text-sm sm:text-base leading-tight truncate">Puri Avanti RT 01 RW 12</h1>
                         <p class="text-blue-200 text-[10px] sm:text-xs truncate">Manajemen Keuangan & Status Iuran</p>
                     </div>
                 </div>
-                
-                <div class="flex items-center gap-1.5 shrink-0 sm:hidden">
-                    <button id="admin-login-btn-mb" onclick="openAdminLogin()" class="px-2.5 py-1.5 rounded-lg bg-white/15 text-[11px] font-semibold flex items-center gap-1 whitespace-nowrap">
-                        <i class="fas fa-lock"></i> Login
-                    </button>
-                    <button id="admin-change-pin-btn-mb" onclick="openChangePin()" class="admin-only px-2.5 py-1.5 rounded-lg bg-amber-500 text-[11px] font-semibold hidden flex items-center gap-1 whitespace-nowrap">
-                        <i class="fas fa-key"></i> PIN
-                    </button>
-                    <button id="admin-logout-btn-mb" onclick="logoutAdmin()" class="admin-only px-2.5 py-1.5 rounded-lg bg-rose-500 text-[11px] font-semibold hidden flex items-center gap-1 whitespace-nowrap">
-                        <i class="fas fa-sign-out-alt"></i> Keluar
-                    </button>
-                </div>
+                <div class="text-[10px] text-blue-200 hidden md:block shrink-0" id="current-date"></div>
             </div>
-            
-            <div class="flex items-center bg-blue-800/60 p-1 rounded-xl border border-blue-500/30 w-full sm:w-auto justify-center">
-                <button onclick="switchMainPage('dashboard')" id="nav-btn-dashboard" class="flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-white text-blue-800 shadow text-center">
-                    <i class="fas fa-chart-pie mr-1"></i> Kas & Transaksi
+
+            <!-- Baris 2: Tombol Cek Iuran & Login -->
+            <div class="flex items-center justify-center gap-2 flex-wrap">
+                <button id="warga-login-btn" onclick="openWargaLogin()" class="px-3 sm:px-4 py-2 rounded-lg bg-white text-blue-800 hover:bg-blue-50 text-xs sm:text-sm font-semibold flex items-center gap-1.5 shadow-sm whitespace-nowrap">
+                    <i class="fas fa-search"></i> <span id="warga-btn-text">Cek Iuran Saya</span>
                 </button>
-                <button onclick="switchMainPage('houses')" id="nav-btn-houses" class="flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-blue-100 hover:text-white hover:bg-white/10 relative text-center">
-                    <i class="fas fa-home mr-1"></i> Status Iuran
-                    <span id="unpaid-badge" class="ml-1 px-1.5 py-0.5 text-[9px] bg-rose-500 text-white rounded-full font-bold inline-block">0</span>
+                
+                <button id="admin-login-btn" onclick="openAdminLogin()" class="px-3 sm:px-4 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-xs sm:text-sm font-semibold flex items-center gap-1.5 whitespace-nowrap">
+                    <i class="fas fa-lock"></i> Login Admin
+                </button>
+                
+                <button id="admin-change-pin-btn" onclick="openChangePin()" class="admin-only px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-xs font-semibold hidden items-center gap-1.5 whitespace-nowrap">
+                    <i class="fas fa-key"></i> Ubah PIN
+                </button>
+                
+                <button id="admin-logout-btn" onclick="logoutAdmin()" class="admin-only px-3 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-xs font-semibold hidden items-center gap-1.5 whitespace-nowrap">
+                    <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
 
-            <div class="hidden sm:flex items-center">
-                <div class="text-xs font-medium text-blue-100 hidden lg:block mr-3" id="current-date"></div>
-                <button id="admin-login-btn" onclick="openAdminLogin()" class="ml-3 px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-xs font-semibold">
-                    <i class="fas fa-lock mr-1"></i> Login Admin
+            <!-- Baris 3: Menu Tab -->
+            <div class="flex items-center bg-blue-800/60 p-1 rounded-xl border border-blue-500/30 justify-center">
+                <button onclick="switchMainPage('dashboard')" id="nav-btn-dashboard" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white text-blue-800 shadow text-center">
+                    <i class="fas fa-chart-pie mr-1"></i> Kas & Transaksi
                 </button>
-                <button id="admin-change-pin-btn" onclick="openChangePin()" class="admin-only ml-2 px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-xs font-semibold hidden">
-                    <i class="fas fa-key mr-1"></i> Ubah PIN
-                </button>
-                <button id="admin-logout-btn" onclick="logoutAdmin()" class="admin-only ml-2 px-3 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-xs font-semibold hidden">
-                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                <button onclick="switchMainPage('houses')" id="nav-btn-houses" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all text-blue-100 hover:text-white hover:bg-white/10 relative text-center">
+                    <i class="fas fa-home mr-1"></i> Status Iuran
+                    <span id="unpaid-badge" class="ml-1 px-1.5 py-0.5 text-[9px] bg-rose-500 text-white rounded-full font-bold inline-block">0</span>
                 </button>
             </div>
         </div>
@@ -86,6 +84,30 @@
     <main class="max-w-6xl mx-auto px-2 sm:px-4 py-4 flex-1 w-full space-y-4">
         
         <div id="firebase-status" class="text-[11px] text-slate-500 font-medium px-1"></div>
+
+        <!-- BANNER WARGA LOGGED IN -->
+        <div id="warga-welcome-banner" class="hidden bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-2xl p-3 shadow-sm">
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
+                        <i class="fas fa-user-circle text-lg"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="text-[10px] uppercase tracking-wider opacity-80 font-semibold">Selamat datang</div>
+                        <div class="font-bold text-sm truncate" id="warga-welcome-name">-</div>
+                        <div class="text-[10px] opacity-80 truncate" id="warga-welcome-house">-</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <button onclick="openInfoWarga()" class="px-2.5 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-[10px] font-semibold flex items-center gap-1 whitespace-nowrap">
+                        <i class="fas fa-search"></i> Cek Status
+                    </button>
+                    <button onclick="logoutWarga()" class="px-2.5 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-[10px] font-semibold flex items-center gap-1 whitespace-nowrap">
+                        <i class="fas fa-sign-out-alt"></i> Keluar
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- PANEL ADMIN: PENGUNJUNG ONLINE -->
         <div id="admin-online-panel" class="admin-only bg-white rounded-2xl p-4 shadow-sm border border-slate-200 hidden">
@@ -331,17 +353,57 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nominal (Rp) <span class="text-rose-500">*</span></label>
-                            <input type="number" id="inc-amount" min="1" placeholder="50000" oninput="updateAllocationPreview(this.value)" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">
+                                Nominal (Rp) <span class="text-rose-500">*</span>
+                                <span class="text-emerald-600 font-normal text-[10px]">(Standar: Rp 50.000)</span>
+                            </label>
+                            <input type="number" id="inc-amount" min="1" value="50000" placeholder="50000" oninput="updateAllocationPreview(this.value)" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none font-semibold">
+                            <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                <button type="button" onclick="setNominal(50000)" class="text-[10px] px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded">50rb</button>
+                                <button type="button" onclick="setNominal(30000)" class="text-[10px] px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold rounded">30rb</button>
+                                <button type="button" onclick="setNominal(25000)" class="text-[10px] px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold rounded">25rb</button>
+                                <button type="button" onclick="setNominal(100000)" class="text-[10px] px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold rounded">100rb</button>
+                            </div>
                         </div>
 
-                        <div id="income-allocation-preview" class="p-2.5 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-1 text-[11px]">
+                        <!-- PREVIEW ALOKASI -->
+                        <div id="income-allocation-preview" class="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-2 text-[11px]">
                             <div class="font-bold text-emerald-800 flex items-center justify-between">
                                 <span class="flex items-center gap-1"><i class="fas fa-wallet text-emerald-600"></i> Rincian Alokasi Dana:</span>
                                 <span id="preview-total-nominal" class="text-emerald-700">Rp 0</span>
                             </div>
-                            <div id="preview-allocation-list" class="space-y-1 mt-1 text-slate-600">
-                                <span class="text-slate-400 italic">Masukkan nominal untuk melihat rincian...</span>
+
+                            <!-- Toggle Mode -->
+                            <div class="flex items-center gap-2 bg-white rounded-lg p-1 border border-emerald-200">
+                                <button type="button" onclick="setAlokasiMode('auto')" id="btn-alokasi-auto" class="flex-1 py-1.5 rounded text-[10px] font-bold transition-all bg-emerald-600 text-white">
+                                    <i class="fas fa-magic"></i> Otomatis
+                                </button>
+                                <button type="button" onclick="setAlokasiMode('manual')" id="btn-alokasi-manual" class="flex-1 py-1.5 rounded text-[10px] font-bold transition-all text-slate-600 hover:text-slate-900">
+                                    <i class="fas fa-pen"></i> Manual
+                                </button>
+                            </div>
+
+                            <!-- Preview Otomatis -->
+                            <div id="alokasi-auto-container">
+                                <div id="preview-allocation-list" class="space-y-1 mt-1 text-slate-600">
+                                    <span class="text-slate-400 italic">Masukkan nominal untuk melihat rincian...</span>
+                                </div>
+                            </div>
+
+                            <!-- Input Manual -->
+                            <div id="alokasi-manual-container" class="hidden space-y-2">
+                                <div id="manual-allocation-inputs" class="space-y-2"></div>
+                                <div class="pt-2 border-t border-emerald-200 space-y-1">
+                                    <div class="flex justify-between text-[10px]">
+                                        <span class="text-slate-600">Total Alokasi:</span>
+                                        <span id="manual-total-alloc" class="font-bold text-emerald-700">Rp 0</span>
+                                    </div>
+                                    <div class="flex justify-between text-[10px]">
+                                        <span class="text-slate-600">Nominal Input:</span>
+                                        <span id="manual-nominal-input" class="font-bold text-blue-700">Rp 0</span>
+                                    </div>
+                                    <div id="manual-diff-alert" class="text-[10px] font-semibold text-center py-1.5 rounded hidden"></div>
+                                </div>
                             </div>
                         </div>
 
@@ -555,25 +617,18 @@
                 </div>
             </div>
 
-            <!-- Container Status Iuran -->
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <!-- Tabel Desktop -->
-                <div class="hidden sm:block overflow-x-auto custom-scrollbar">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider border-b border-slate-200">
-                                <th class="px-3 py-2 font-semibold">Rumah & Penghuni</th>
-                                <th class="px-2 py-2 font-semibold text-center w-20">Status</th>
-                                <th class="px-2 py-2 font-semibold text-right w-24">Bayar</th>
-                                <th class="px-2 py-2 font-semibold text-center w-32">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="houses-tbody" class="divide-y divide-slate-100 text-xs"></tbody>
-                    </table>
-                </div>
-
-                <!-- Card Mobile -->
-                <div id="houses-mobile-list" class="sm:hidden divide-y divide-slate-100"></div>
+                <table class="w-full text-left border-collapse table-fixed">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 text-[9px] sm:text-[10px] uppercase tracking-wider border-b border-slate-200">
+                            <th class="px-1.5 sm:px-3 py-2 font-semibold">Rumah & Penghuni</th>
+                            <th class="px-0.5 sm:px-2 py-2 font-semibold text-center w-[52px] sm:w-20">Status</th>
+                            <th class="px-0.5 sm:px-2 py-2 font-semibold text-right w-[68px] sm:w-24">Bayar</th>
+                            <th class="px-0.5 sm:px-2 py-2 font-semibold text-center w-[100px] sm:w-32">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="houses-tbody" class="divide-y divide-slate-100 text-[10px] sm:text-xs"></tbody>
+                </table>
 
                 <div id="houses-empty" class="hidden flex-col items-center justify-center p-8 text-slate-400">
                     <i class="fas fa-users-slash text-3xl mb-2 text-slate-300"></i>
@@ -582,6 +637,106 @@
             </div>
         </div>
     </main>
+
+    <!-- Modal Warga Login -->
+    <div id="warga-login-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
+            <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-5 text-white text-center">
+                <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-2 backdrop-blur-sm">
+                    <i class="fas fa-user-circle text-xl"></i>
+                </div>
+                <h2 class="font-bold text-base">Cek Iuran Saya</h2>
+                <p class="text-blue-200 text-[11px] mt-0.5">Masukkan No. Rumah Anda</p>
+            </div>
+            <form id="form-warga-login" class="p-4 space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">No. Rumah / Blok <span class="text-rose-500">*</span></label>
+                    <input type="text" id="warga-login-input" list="warga-login-list" placeholder="Misal: L8" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase font-semibold">
+                    <datalist id="warga-login-list"></datalist>
+                    <p class="text-[10px] text-slate-400 mt-1 italic">
+                        <i class="fas fa-info-circle"></i> Data pribadi Anda tidak tersimpan di server.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="warga-remember" checked class="w-4 h-4 text-blue-600 rounded">
+                    <label for="warga-remember" class="text-xs text-slate-600">Ingat saya di perangkat ini</label>
+                </div>
+                <div class="pt-1 flex justify-end gap-2">
+                    <button type="button" onclick="closeWargaLogin()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg text-xs">Batal</button>
+                    <button type="submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-xs shadow-sm flex items-center gap-1.5">
+                        <i class="fas fa-sign-in-alt"></i> Masuk
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Info Warga -->
+    <div id="info-warga-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-4 text-white">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm">Status Iuran Saya</h3>
+                            <p class="text-blue-200 text-[10px]">Riwayat pembayaran</p>
+                        </div>
+                    </div>
+                    <button onclick="closeInfoWarga()" class="text-white/70 hover:text-white p-1 rounded-lg">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <div class="min-w-0 flex-1">
+                    <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Rumah</div>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span id="info-result-house" class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-bold border border-blue-200">-</span>
+                        <span id="info-result-owner" class="text-sm font-semibold text-slate-800 truncate">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
+                <div id="info-tunggakan-box" class="rounded-xl p-3 hidden">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[10px] uppercase tracking-wider font-bold opacity-80">
+                            <i class="fas fa-wallet mr-1"></i> Ringkasan
+                        </span>
+                    </div>
+                    <div id="info-tunggakan-amount" class="text-2xl font-extrabold">Rp 0</div>
+                    <div id="info-tunggakan-detail" class="text-[10px] mt-1 opacity-80"></div>
+                </div>
+
+                <div>
+                    <div class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-2">
+                        <i class="fas fa-list-ul mr-1"></i> Riwayat Pembayaran
+                    </div>
+                    <div id="info-status-list" class="space-y-1.5"></div>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                    <div class="text-[10px] uppercase tracking-wider font-bold text-blue-800 mb-2">
+                        <i class="fas fa-credit-card mr-1"></i> Cara Bayar
+                    </div>
+                    <div id="info-bank-list" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 border-t border-slate-200 flex gap-2">
+                <button onclick="closeInfoWarga()" class="flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs rounded-lg">
+                    Tutup
+                </button>
+                <button onclick="whatsappBendahara()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg flex items-center justify-center gap-1.5">
+                    <i class="fab fa-whatsapp"></i> Chat Bendahara
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Bank -->
     <div id="bank-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
@@ -854,6 +1009,14 @@
         let currentIncomeProofs = [];
         let currentExpenseProofs = [];
 
+        // Warga session
+        let currentWargaHouse = null;
+        let BENDAHARA_WHATSAPP = '6281234567890';
+
+        // Alokasi manual
+        let alokasiMode = 'auto'; // 'auto' | 'manual'
+        let manualAllocation = {};
+
         const DEFAULT_ADMIN_PIN = '123456';
         let ADMIN_PIN_HASH = null;
         let isAdmin = sessionStorage.getItem('kasRtIsAdmin') === 'true';
@@ -894,7 +1057,7 @@
                         return newHash;
                     }
                 } catch (err) {
-                    console.warn('Gagal ambil PIN dari server, pakai cache lokal:', err.message);
+                    console.warn('Gagal ambil PIN dari server:', err.message);
                 }
             }
 
@@ -909,7 +1072,7 @@
         }
 
         // ============================================================
-        // KOMPRES GAMBAR (target 500 KB)
+        // KOMPRES GAMBAR
         // ============================================================
         function compressImage(file, maxSizeKB = 500) {
             return new Promise((resolve) => {
@@ -956,16 +1119,13 @@
                                 lastSize = sizeBytes;
 
                                 if (sizeBytes <= targetBytes) {
-                                    console.log(`✅ Kompresi: ${(sizeBytes / 1024).toFixed(0)} KB`);
                                     resolve(dataUrl);
                                     return;
                                 }
                             }
 
-                            console.warn(`⚠️ Tidak bisa <${maxSizeKB}KB. Hasil: ${(lastSize / 1024).toFixed(0)} KB`);
                             resolve(lastResult);
                         } catch (err) {
-                            console.error('Kompresi error:', err);
                             resolve(e.target.result);
                         }
                     };
@@ -1046,10 +1206,14 @@
 
         function updateHouseDatalist() {
             const datalist = document.getElementById('house-list');
-            if (!datalist) return;
-            datalist.innerHTML = houses.map(h => 
+            const wargaList = document.getElementById('warga-login-list');
+            
+            const html = houses.map(h => 
                 `<option value="${escapeHTML(h.houseNumber)}">${escapeHTML(h.houseNumber)} - ${escapeHTML(h.ownerName)}</option>`
             ).join('');
+            
+            if (datalist) datalist.innerHTML = html;
+            if (wargaList) wargaList.innerHTML = html;
         }
 
         // ============================================================
@@ -1108,92 +1272,130 @@
         };
 
         // ============================================================
-        // NAVIGASI
+        // ALOKASI MANUAL
         // ============================================================
-        window.switchMainPage = function(page) {
-            const pageDashboard = document.getElementById('page-dashboard');
-            const pageHouses = document.getElementById('page-houses');
-            const navBtnDash = document.getElementById('nav-btn-dashboard');
-            const navBtnHouses = document.getElementById('nav-btn-houses');
-
-            localStorage.setItem('kasRtActivePage', page);
-
-            if (page === 'dashboard') {
-                pageDashboard.classList.remove('hidden');
-                pageHouses.classList.add('hidden');
-                navBtnDash.className = "flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-white text-blue-800 shadow text-center";
-                navBtnHouses.className = "flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-blue-100 hover:text-white hover:bg-white/10 relative text-center";
-            } else {
-                pageDashboard.classList.add('hidden');
-                pageHouses.classList.remove('hidden');
-                navBtnHouses.className = "flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-white text-blue-800 shadow text-center";
-                navBtnDash.className = "flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-blue-100 hover:text-white hover:bg-white/10 relative text-center";
-                renderHouseStatus();
-            }
+        window.setNominal = function(value) {
+            const input = document.getElementById('inc-amount');
+            if (!input) return;
+            input.value = value;
+            updateAllocationPreview(value);
         };
 
-        window.switchMainView = window.switchMainPage;
-
-        window.switchForm = function(type) {
-            const formIncome = document.getElementById('form-income');
-            const formExpense = document.getElementById('form-expense');
-            const btnInc = document.getElementById('btn-form-income');
-            const btnExp = document.getElementById('btn-form-expense');
-
-            if (type === 'income') {
-                formIncome.classList.remove('hidden');
-                formExpense.classList.add('hidden');
-                btnInc.className = "py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1";
-                btnExp.className = "py-1.5 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1";
+        window.setAlokasiMode = function(mode) {
+            alokasiMode = mode;
+            
+            const btnAuto = document.getElementById('btn-alokasi-auto');
+            const btnManual = document.getElementById('btn-alokasi-manual');
+            const containerAuto = document.getElementById('alokasi-auto-container');
+            const containerManual = document.getElementById('alokasi-manual-container');
+            
+            if (mode === 'auto') {
+                btnAuto.className = "flex-1 py-1.5 rounded text-[10px] font-bold transition-all bg-emerald-600 text-white";
+                btnManual.className = "flex-1 py-1.5 rounded text-[10px] font-bold transition-all text-slate-600 hover:text-slate-900";
+                containerAuto.classList.remove('hidden');
+                containerManual.classList.add('hidden');
             } else {
-                formIncome.classList.add('hidden');
-                formExpense.classList.remove('hidden');
-                btnExp.className = "py-1.5 text-xs font-bold rounded-lg transition-all bg-rose-600 text-white shadow-sm flex items-center justify-center gap-1";
-                btnInc.className = "py-1.5 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1";
+                btnManual.className = "flex-1 py-1.5 rounded text-[10px] font-bold transition-all bg-emerald-600 text-white";
+                btnAuto.className = "flex-1 py-1.5 rounded text-[10px] font-bold transition-all text-slate-600 hover:text-slate-900";
+                containerManual.classList.remove('hidden');
+                containerAuto.classList.add('hidden');
+                
+                // Inisialisasi: kalau kosong, taruh nominal di kategori pertama
+                if (Object.keys(manualAllocation).length === 0) {
+                    const nominal = parseFloat(document.getElementById('inc-amount').value) || 0;
+                    if (feeAllocations && feeAllocations.length > 0) {
+                        feeAllocations.forEach((item, idx) => {
+                            manualAllocation[item.title] = idx === 0 ? nominal : 0;
+                        });
+                    }
+                }
+                
+                renderManualAllocationInputs();
             }
+            
+            const amount = document.getElementById('inc-amount').value;
+            updateAllocationPreview(amount);
         };
 
-        let currentActiveTab = localStorage.getItem('kasRtActiveDataTab') || 'history';
-        window.switchDataTab = function(tab) {
-            currentActiveTab = tab;
-            localStorage.setItem('kasRtActiveDataTab', tab);
-            const viewHistory = document.getElementById('view-history');
-            const viewRecap = document.getElementById('view-recap');
-            const tabHistory = document.getElementById('tab-data-history');
-            const tabRecap = document.getElementById('tab-data-recap');
-
-            if (tab === 'history') {
-                viewHistory.classList.remove('hidden');
-                viewHistory.classList.add('flex');
-                viewRecap.classList.add('hidden');
-                viewRecap.classList.remove('flex');
-                tabHistory.className = "pb-2.5 text-xs sm:text-sm transition-all tab-active";
-                tabRecap.className = "pb-2.5 text-xs sm:text-sm transition-all tab-inactive";
-            } else {
-                viewHistory.classList.add('hidden');
-                viewHistory.classList.remove('flex');
-                viewRecap.classList.remove('hidden');
-                viewRecap.classList.add('flex');
-                tabRecap.className = "pb-2.5 text-xs sm:text-sm transition-all tab-active";
-                tabHistory.className = "pb-2.5 text-xs sm:text-sm transition-all tab-inactive";
-                renderRecap();
+        window.renderManualAllocationInputs = function() {
+            const container = document.getElementById('manual-allocation-inputs');
+            if (!container) return;
+            
+            if (!feeAllocations || feeAllocations.length === 0) {
+                container.innerHTML = '<div class="text-slate-400 italic text-[10px]">Belum ada kategori alokasi. Tambah di menu admin.</div>';
+                return;
             }
+            
+            container.innerHTML = feeAllocations.map(item => {
+                const currentVal = manualAllocation[item.title] || 0;
+                const safeTitle = escapeHTML(item.title).replace(/'/g, "\\'");
+                return `
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">${escapeHTML(item.title)}</label>
+                        <div class="relative">
+                            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">Rp</span>
+                            <input type="number" min="0" step="1000" 
+                                value="${currentVal}" 
+                                oninput="handleManualInput('${safeTitle}', this.value)"
+                                placeholder="0"
+                                class="w-full pl-7 pr-2 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            updateManualSummary();
+        };
+
+        window.handleManualInput = function(title, value) {
+            const amt = parseFloat(value) || 0;
+            manualAllocation[title] = amt;
+            updateManualSummary();
+        };
+
+        window.updateManualSummary = function() {
+            const totalAlloc = Object.values(manualAllocation).reduce((sum, v) => sum + v, 0);
+            const nominalInput = parseFloat(document.getElementById('inc-amount').value) || 0;
+            
+            document.getElementById('manual-total-alloc').textContent = formatRupiah(totalAlloc);
+            document.getElementById('manual-nominal-input').textContent = formatRupiah(nominalInput);
+            
+            const diff = nominalInput - totalAlloc;
+            const alertEl = document.getElementById('manual-diff-alert');
+            
+            if (Math.abs(diff) < 1) {
+                alertEl.className = "text-[10px] font-semibold text-center py-1.5 rounded bg-emerald-100 text-emerald-700";
+                alertEl.innerHTML = '<i class="fas fa-check-circle"></i> Cocok!';
+            } else if (diff > 0) {
+                alertEl.className = "text-[10px] font-semibold text-center py-1.5 rounded bg-blue-100 text-blue-700";
+                alertEl.innerHTML = `<i class="fas fa-info-circle"></i> Sisa ${formatRupiah(diff)} masuk Kas Umum`;
+            } else {
+                alertEl.className = "text-[10px] font-semibold text-center py-1.5 rounded bg-rose-100 text-rose-700";
+                alertEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Kelebihan ${formatRupiah(Math.abs(diff))}`;
+            }
+            alertEl.classList.remove('hidden');
         };
 
         // ============================================================
         // PREVIEW ALOKASI
         // ============================================================
         window.updateAllocationPreview = function(val) {
-            const container = document.getElementById('preview-allocation-list');
-            const totalNominalEl = document.getElementById('preview-total-nominal');
             const inputVal = parseFloat(val) || 0;
-
-            totalNominalEl.textContent = formatRupiah(inputVal);
-
+            
+            document.getElementById('preview-total-nominal').textContent = formatRupiah(inputVal);
+            
+            // Manual mode
+            if (alokasiMode === 'manual') {
+                updateManualSummary();
+                return;
+            }
+            
+            // === AUTO MODE ===
+            const container = document.getElementById('preview-allocation-list');
             const houseInput = document.getElementById('inc-house');
             const houseNo = (houseInput?.value || '').trim().toUpperCase();
             const isDonasi = !houseNo;
-
+            
             if (isDonasi) {
                 container.innerHTML = `
                     <div class="flex justify-between items-center text-xs py-1 bg-purple-50 px-2 rounded">
@@ -1203,31 +1405,31 @@
                         <span class="font-bold text-purple-700">${formatRupiah(inputVal)}</span>
                     </div>
                     <div class="text-[10px] text-purple-600 italic mt-1">
-                        <i class="fas fa-info-circle"></i> Tanpa No. Rumah → langsung ke <b>Kas Umum</b>, tidak dialokasikan.
+                        <i class="fas fa-info-circle"></i> Tanpa No. Rumah → langsung ke <b>Kas Umum</b>.
                     </div>
                 `;
                 return;
             }
-
+            
             if (!feeAllocations || feeAllocations.length === 0) {
                 container.innerHTML = '<span class="text-slate-400 italic">Belum ada rincian alokasi terdaftar.</span>';
                 return;
             }
-
+            
             const totalDefaultAlloc = feeAllocations.reduce(
                 (sum, item) => sum + (parseFloat(item.amount) || 0), 0
             );
-
+            
             if (totalDefaultAlloc <= 0 || inputVal <= 0) {
                 container.innerHTML = '<span class="text-slate-400 italic">Masukkan nominal untuk melihat rincian...</span>';
                 return;
             }
-
+            
             const jumlahRumahBayar = inputVal / totalDefaultAlloc;
-
+            
             let html = '';
             let totalDibulatkan = 0;
-
+            
             feeAllocations.forEach(item => {
                 const amt = (parseFloat(item.amount) || 0) * jumlahRumahBayar;
                 const rounded = Math.round(amt);
@@ -1241,7 +1443,7 @@
                     </div>
                 `;
             });
-
+            
             const selisih = inputVal - totalDibulatkan;
             if (Math.abs(selisih) >= 1) {
                 html += `
@@ -1251,13 +1453,13 @@
                     </div>
                 `;
             }
-
+            
             html += `
                 <div class="text-[10px] text-slate-500 italic mt-1 pt-1 border-t border-emerald-100">
-                    <i class="fas fa-calculator"></i> Setara <b>${jumlahRumahBayar.toFixed(2)}</b>× alokasi iuran standar
+                    <i class="fas fa-calculator"></i> Setara <b>${jumlahRumahBayar.toFixed(2)}</b>× alokasi standar
                 </div>
             `;
-
+            
             container.innerHTML = html;
         };
 
@@ -1878,6 +2080,7 @@
 
                 const isInc = t.type === 'income';
                 const isDonasi = isInc && (!t.houseNumber || !t.houseNumber.trim());
+                const isManualAlloc = isInc && t.allocations && t.allocations.mode === 'manual';
 
                 let methodBadge = '';
                 const m = t.paymentMethod || 'Cash';
@@ -1887,9 +2090,10 @@
                 else if (m.includes('BCA')) { badgeBg = 'bg-indigo-100 text-indigo-700'; methodIcon = '🏦'; }
                 else { badgeBg = 'bg-amber-100 text-amber-800'; methodIcon = '💵'; }
                 const methodTag = `<span class="inline-block px-1.5 py-0.5 text-[9px] rounded font-semibold ${badgeBg}">${methodIcon} ${escapeHTML(m.replace('Bank ', ''))}</span>`;
+                const manualTag = isManualAlloc ? `<span class="inline-block px-1.5 py-0.5 text-[9px] rounded font-semibold bg-purple-100 text-purple-700"><i class="fas fa-hand-paper mr-0.5"></i>Manual</span>` : '';
 
                 if (isInc) {
-                    methodBadge = methodTag;
+                    methodBadge = methodTag + ' ' + manualTag;
                 } else {
                     const catTag = t.category ? `<span class="inline-block px-1.5 py-0.5 text-[9px] rounded font-semibold bg-rose-100 text-rose-700"><i class="fas fa-tag mr-0.5"></i>${escapeHTML(t.category)}</span>` : '';
                     methodBadge = methodTag + ' ' + catTag;
@@ -2062,7 +2266,7 @@
         };
 
         // ============================================================
-        // RENDER HOUSE STATUS (Card di HP, Tabel di Desktop)
+        // RENDER HOUSE STATUS
         // ============================================================
         window.renderHouseStatus = function() {
             const periodInput = document.getElementById('house-period-filter');
@@ -2073,10 +2277,8 @@
             const searchQuery = (document.getElementById('house-search-input').value || '').toLowerCase().trim();
 
             const tbody = document.getElementById('houses-tbody');
-            const mobileList = document.getElementById('houses-mobile-list');
             const emptyEl = document.getElementById('houses-empty');
             tbody.innerHTML = '';
-            mobileList.innerHTML = '';
 
             let paidCount = 0, unpaidCount = 0;
 
@@ -2113,95 +2315,76 @@
                 visibleRows++;
 
                 const statusBadge = isPaid
-                    ? `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">Lunas</span>`
-                    : `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">Belum</span>`;
+                    ? `<span class="inline-block px-1 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-700">Lunas</span>`
+                    : `<span class="inline-block px-1 py-0.5 rounded text-[9px] font-bold bg-rose-100 text-rose-700">Belum</span>`;
 
-                // ========== DESKTOP: Tabel ==========
-                let actionBtn = '';
+                let nominalDisplay = '-';
+                if (isPaid) {
+                    const amt = parseFloat(payment.amount) || 0;
+                    if (amt >= 1000000) {
+                        nominalDisplay = (amt / 1000000).toFixed(1).replace('.0', '') + 'jt';
+                    } else if (amt >= 1000) {
+                        nominalDisplay = (amt / 1000).toFixed(0) + 'rb';
+                    } else {
+                        nominalDisplay = amt.toString();
+                    }
+                }
+
+                let actionBtnMobile = '';
+                let actionBtnDesktop = '';
                 if (isPaid) {
                     const hasProof = (payment.proofs && payment.proofs.length > 0) || payment.proof;
-                    actionBtn = `<button onclick="openProofModal('${payment.id}')" class="text-[10px] px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded whitespace-nowrap ${hasProof ? '' : 'opacity-40 cursor-not-allowed'}" ${hasProof ? '' : 'disabled'}>Bukti</button>`;
+                    actionBtnMobile = `<button onclick="openProofModal('${payment.id}')" class="text-[9px] px-1 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded whitespace-nowrap ${hasProof ? '' : 'opacity-40 cursor-not-allowed'}" ${hasProof ? '' : 'disabled'} title="Bukti">📷</button>`;
+                    actionBtnDesktop = `<button onclick="openProofModal('${payment.id}')" class="text-[10px] px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded whitespace-nowrap ${hasProof ? '' : 'opacity-40 cursor-not-allowed'}" ${hasProof ? '' : 'disabled'}>Bukti</button>`;
                 } else if (isAdmin) {
-                    actionBtn = `<button onclick="quickRecordPayment('${h.houseNumber}')" class="text-[10px] px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded shadow-sm whitespace-nowrap">Bayar</button>`;
-                } else {
-                    actionBtn = `<span class="text-[10px] text-slate-400 font-medium">-</span>`;
+                    actionBtnMobile = `<button onclick="quickRecordPayment('${h.houseNumber}')" class="text-[9px] px-1.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded shadow-sm whitespace-nowrap" title="Bayar">Bayar</button>`;
+                    actionBtnDesktop = `<button onclick="quickRecordPayment('${h.houseNumber}')" class="text-[10px] px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded shadow-sm whitespace-nowrap">Bayar</button>`;
                 }
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition-colors";
+
+                let nominalCellContent = '';
+                if (isPaid) {
+                    nominalCellContent = `
+                        <div class="flex items-center justify-end gap-1">
+                            <span class="font-bold text-[10px] sm:text-xs text-emerald-600" title="${formatRupiah(payment.amount)}">${nominalDisplay}</span>
+                            <span class="sm:hidden">${actionBtnMobile}</span>
+                            <span class="hidden sm:inline">${actionBtnDesktop}</span>
+                        </div>
+                    `;
+                } else if (isAdmin) {
+                    nominalCellContent = `
+                        <div class="flex items-center justify-end gap-1">
+                            <span class="sm:hidden">${actionBtnMobile}</span>
+                            <span class="hidden sm:inline">${actionBtnDesktop}</span>
+                        </div>
+                    `;
+                } else {
+                    nominalCellContent = `<span class="font-bold text-[10px] sm:text-xs text-slate-300">-</span>`;
+                }
+
                 tr.innerHTML = `
-                    <td class="px-3 py-2.5 font-medium text-slate-800">
-                        <div class="font-bold text-blue-700 text-xs">${escapeHTML(h.houseNumber)}</div>
-                        <div class="text-xs truncate max-w-[180px]" title="${escapeHTML(h.ownerName)}">${escapeHTML(h.ownerName)}</div>
-                        ${h.phone ? `<a href="https://wa.me/${h.phone.replace(/[^0-9]/g, '')}" target="_blank" class="text-[10px] text-emerald-600 flex items-center gap-0.5 mt-0.5"><i class="fab fa-whatsapp"></i> ${escapeHTML(h.phone)}</a>` : ''}
+                    <td class="px-1.5 sm:px-3 py-2 font-medium text-slate-800">
+                        <div class="font-bold text-blue-700 text-[10px] sm:text-xs">${escapeHTML(h.houseNumber)}</div>
+                        <div class="text-[10px] sm:text-xs truncate" title="${escapeHTML(h.ownerName)}">${escapeHTML(h.ownerName)}</div>
                     </td>
-                    <td class="px-2 py-2.5 text-center">${statusBadge}</td>
-                    <td class="px-2 py-2.5 text-right font-medium text-xs ${isPaid ? 'text-emerald-600 font-bold' : 'text-slate-300'}">
-                        ${isPaid ? formatRupiah(payment.amount) : '-'}
+                    <td class="px-0.5 sm:px-2 py-2 text-center">${statusBadge}</td>
+                    <td class="px-0.5 sm:px-2 py-2 text-right">
+                        ${nominalCellContent}
                     </td>
-                    <td class="px-2 py-2.5 text-center">
-                        <div class="flex items-center justify-center gap-1 flex-nowrap">
-                            ${actionBtn}
-                            <button onclick="editHouse('${h.id}')" class="admin-only text-slate-400 hover:text-amber-600 p-1 shrink-0 ${isAdmin ? '' : 'hidden'}" title="Edit">
-                                <i class="fas fa-pen text-xs"></i>
+                    <td class="px-0.5 sm:px-2 py-2 text-center">
+                        <div class="flex items-center justify-center gap-0.5 sm:gap-1 flex-nowrap">
+                            <button onclick="editHouse('${h.id}')" class="admin-only text-slate-400 hover:text-amber-600 p-0.5 sm:p-1 shrink-0 ${isAdmin ? '' : 'hidden'}" title="Edit">
+                                <i class="fas fa-pen text-[10px] sm:text-xs"></i>
                             </button>
-                            <button onclick="deleteHouse('${h.id}')" class="admin-only text-slate-300 hover:text-rose-600 p-1 shrink-0 ${isAdmin ? '' : 'hidden'}" title="Hapus">
-                                <i class="fas fa-trash-alt text-xs"></i>
+                            <button onclick="deleteHouse('${h.id}')" class="admin-only text-slate-300 hover:text-rose-600 p-0.5 sm:p-1 shrink-0 ${isAdmin ? '' : 'hidden'}" title="Hapus">
+                                <i class="fas fa-trash-alt text-[10px] sm:text-xs"></i>
                             </button>
                         </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
-
-                // ========== MOBILE: Card ==========
-                const card = document.createElement('div');
-                const leftBorder = isPaid ? 'border-l-4 border-emerald-400' : 'border-l-4 border-amber-400';
-                card.className = `p-3 flex flex-col gap-2 ${leftBorder} bg-white hover:bg-slate-50 transition-colors`;
-
-                // Tombol aksi mobile
-                let mobileActionBtn = '';
-                if (isPaid) {
-                    const hasProof = (payment.proofs && payment.proofs.length > 0) || payment.proof;
-                    mobileActionBtn = `<button onclick="openProofModal('${payment.id}')" class="text-[10px] px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded whitespace-nowrap ${hasProof ? '' : 'opacity-40 cursor-not-allowed'}" ${hasProof ? '' : 'disabled'}><i class="fas fa-image mr-1"></i>Bukti</button>`;
-                } else if (isAdmin) {
-                    mobileActionBtn = `<button onclick="quickRecordPayment('${h.houseNumber}')" class="text-[10px] px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded shadow-sm whitespace-nowrap"><i class="fas fa-check mr-1"></i>Bayar</button>`;
-                }
-
-                card.innerHTML = `
-                    <div class="flex items-center justify-between gap-2">
-                        <div class="flex items-center gap-2 min-w-0 flex-1">
-                            <span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[11px] font-bold border border-blue-200 shrink-0">${escapeHTML(h.houseNumber)}</span>
-                            <span class="text-sm font-semibold text-slate-800 truncate" title="${escapeHTML(h.ownerName)}">${escapeHTML(h.ownerName)}</span>
-                        </div>
-                        ${statusBadge}
-                    </div>
-
-                    ${h.phone ? `<a href="https://wa.me/${h.phone.replace(/[^0-9]/g, '')}" target="_blank" class="text-[10px] text-emerald-600 flex items-center gap-1 -mt-1 ml-1"><i class="fab fa-whatsapp"></i> ${escapeHTML(h.phone)}</a>` : ''}
-
-                    <div class="flex items-center justify-between pt-1.5 border-t border-slate-100">
-                        <div class="text-[10px] font-medium text-slate-500">
-                            <i class="fas fa-money-bill-wave mr-1"></i>Nominal Bayar
-                        </div>
-                        <div class="text-sm font-extrabold ${isPaid ? 'text-emerald-600' : 'text-slate-400'}">
-                            ${isPaid ? formatRupiah(payment.amount) : 'Belum Bayar'}
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between gap-2 pt-1">
-                        <div class="flex items-center gap-1">
-                            ${mobileActionBtn}
-                        </div>
-                        <div class="flex items-center gap-1 admin-only ${isAdmin ? '' : 'hidden'}">
-                            <button onclick="editHouse('${h.id}')" class="text-[10px] px-2 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded" title="Edit">
-                                <i class="fas fa-pen"></i>
-                            </button>
-                            <button onclick="deleteHouse('${h.id}')" class="text-[10px] px-2 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium rounded" title="Hapus">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                mobileList.appendChild(card);
             });
 
             const totalHouses = houses.length;
@@ -2366,8 +2549,10 @@
             }
             
             descInput.value = `Iuran Kas Bulan ${monthName}`;
+            document.getElementById('inc-amount').value = '50000';
+            updateAllocationPreview('50000');
             document.getElementById('inc-amount').focus();
-            updateAllocationPreview(document.getElementById('inc-amount').value);
+            document.getElementById('inc-amount').select();
             showToast(`Mencatat iuran rumah ${houseNo}`);
         };
 
@@ -2394,6 +2579,18 @@
                 document.getElementById('inc-house').value = t.houseNumber || '';
                 document.getElementById('inc-desc').value = t.description || '';
                 document.getElementById('inc-amount').value = t.amount || '';
+                
+                // Load mode alokasi
+                if (t.allocations && t.allocations.mode === 'manual' && t.allocations.items) {
+                    alokasiMode = 'manual';
+                    manualAllocation = { ...t.allocations.items };
+                    setAlokasiMode('manual');
+                } else {
+                    alokasiMode = 'auto';
+                    manualAllocation = {};
+                    setAlokasiMode('auto');
+                }
+                
                 updateAllocationPreview(t.amount || 0);
                 document.getElementById('inc-submit-btn').innerHTML = '<i class="fas fa-save"></i> Perbarui Pemasukan';
 
@@ -2427,8 +2624,15 @@
             const formInc = document.getElementById('form-income');
             formInc.reset();
             document.getElementById('inc-id').value = '';
+            document.getElementById('inc-amount').value = '50000';
             document.getElementById('inc-submit-btn').innerHTML = '<i class="fas fa-save"></i> Simpan Pemasukan';
-            updateAllocationPreview(0);
+
+            // Reset mode alokasi
+            alokasiMode = 'auto';
+            manualAllocation = {};
+            setAlokasiMode('auto');
+
+            updateAllocationPreview('50000');
             currentIncomeProofs = [];
             renderPreviews('income');
 
@@ -2772,7 +2976,8 @@
                         myPresenceRef.onDisconnect().remove();
                         myPresenceRef.set({
                             joinedAt: firebase.database.ServerValue.TIMESTAMP,
-                            device: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
+                            device: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
+                            role: isAdmin ? 'Admin' : 'Warga'
                         });
                     }
                 });
@@ -2796,13 +3001,20 @@
                         return;
                     }
 
-                    keys.forEach((key, index) => {
+                    keys.forEach((key) => {
+                        const user = presenceObj[key] || {};
                         const isMe = key === userSessionId;
+                        const role = user.role || 'Warga';
+                        const device = user.device || '';
+
                         const badge = document.createElement('div');
                         badge.className = "flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-xl text-xs font-medium shadow-xs";
                         badge.innerHTML = `
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span>${isMe ? 'Anda (Admin)' : 'Pengunjung ' + (index + 1)}</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                            <span class="flex items-center gap-1">
+                                <b>${isMe ? `Anda (${role})` : role}</b>
+                                ${device ? `<span class="text-[9px] text-emerald-500">${device === 'Mobile' ? '📱' : '💻'}</span>` : ''}
+                            </span>
                         `;
                         container.appendChild(badge);
                     });
@@ -2813,7 +3025,6 @@
                     if (serverHash && serverHash !== ADMIN_PIN_HASH) {
                         ADMIN_PIN_HASH = serverHash;
                         localStorage.setItem('kasRtAdminPinHash', serverHash);
-                        console.log('🔐 PIN Admin diupdate dari server');
                     }
                 });
 
@@ -2824,6 +3035,13 @@
                         houses.forEach(h => addHouseToFirebase(h));
                     } else {
                         houses = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                    }
+                    if (currentWargaHouse) {
+                        const updated = houses.find(h => h.houseNumber === currentWargaHouse.houseNumber);
+                        if (updated) {
+                            currentWargaHouse = updated;
+                            updateWargaUI();
+                        }
                     }
                     scheduleRenderAllViews();
                 });
@@ -2893,7 +3111,7 @@
         }
 
         // ============================================================
-        // AUTH
+        // AUTH ADMIN
         // ============================================================
         window.openAdminLogin = function() {
             document.getElementById('admin-pin').value = '';
@@ -3006,13 +3224,10 @@
             });
 
             const loginBtn = document.getElementById('admin-login-btn');
-            const loginBtnMb = document.getElementById('admin-login-btn-mb');
             if (isAdmin) {
                 if (loginBtn) loginBtn.classList.add('hidden');
-                if (loginBtnMb) loginBtnMb.classList.add('hidden');
             } else {
                 if (loginBtn) loginBtn.classList.remove('hidden');
-                if (loginBtnMb) loginBtnMb.classList.remove('hidden');
             }
             renderAllViews();
         }
@@ -3187,7 +3402,6 @@
             const ownerName = document.getElementById('modal-house-owner').value.trim();
             const phone = document.getElementById('modal-house-phone').value.trim();
 
-            // Normalisasi format blok rumah
             if (houseNumber) {
                 houseNumber = houseNumber.replace(/[\s\-]/g, '');
                 const match = houseNumber.match(/^([A-Z]+)(\d+)$/);
@@ -3230,7 +3444,22 @@
             const amount = parseFloat(document.getElementById('inc-amount').value) || 0;
             const proofs = [...currentIncomeProofs];
 
-            const txData = { type: 'income', date, paymentMethod, houseNumber, description, amount, proofs };
+            // Validasi & ambil alokasi
+            let allocations = null;
+            if (alokasiMode === 'manual') {
+                const totalAlloc = Object.values(manualAllocation).reduce((sum, v) => sum + v, 0);
+                
+                if (totalAlloc > amount) {
+                    showToast(`Total alokasi (${formatRupiah(totalAlloc)}) melebihi nominal (${formatRupiah(amount)})!`, 'error');
+                    return;
+                }
+                
+                allocations = { mode: 'manual', items: { ...manualAllocation } };
+            } else {
+                allocations = { mode: 'auto' };
+            }
+
+            const txData = { type: 'income', date, paymentMethod, houseNumber, description, amount, proofs, allocations };
 
             if (firebaseReady) {
                 if (id) firebaseDb.ref(`kasRt/transactions/${id}`).update(txData);
@@ -3315,6 +3544,17 @@
                     content.classList.remove('hidden');
                     icon.classList.add('rotate-180');
                 }
+            }
+
+            const savedWarga = localStorage.getItem('kasRtWargaHouse');
+            if (savedWarga) {
+                setTimeout(() => {
+                    const found = houses.find(h => h.houseNumber === savedWarga);
+                    if (found) {
+                        currentWargaHouse = found;
+                        updateWargaUI();
+                    }
+                }, 1500);
             }
 
             startFirebaseSync();
