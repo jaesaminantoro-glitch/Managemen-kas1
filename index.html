@@ -341,7 +341,7 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">
                                 No. Rumah / Blok Warga
-                                <span class="text-purple-600 font-normal text-[10px]">(Kosongkan jika Donasi/Infaq)</span>
+                                <span class="text-purple-600 font-normal text-[10px]">(Kosongkan jika Dana Tambahan)</span>
                             </label>
                             <input type="text" id="inc-house" list="house-list" placeholder="Misal: A-01" oninput="updateAllocationPreview(document.getElementById('inc-amount').value)" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase">
                             <datalist id="house-list"></datalist>
@@ -357,7 +357,7 @@
                                 Nominal (Rp) <span class="text-rose-500">*</span>
                                 <span class="text-emerald-600 font-normal text-[10px]">(Standar: Rp 50.000)</span>
                             </label>
-                            <input type="number" id="inc-amount" min="1" value="50000" placeholder="50000" oninput="updateAllocationPreview(this.value)" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none font-semibold">
+                            <input type="number" id="inc-amount" min="0" value="50000" placeholder="50000" oninput="updateAllocationPreview(this.value)" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none font-semibold">
                             <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
                                 <button type="button" onclick="setNominal(50000)" class="text-[10px] px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded">50rb</button>
                                 <button type="button" onclick="setNominal(30000)" class="text-[10px] px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold rounded">30rb</button>
@@ -373,37 +373,28 @@
                                 <span id="preview-total-nominal" class="text-emerald-700">Rp 0</span>
                             </div>
 
-                            <!-- Toggle Mode -->
-                            <div class="flex items-center gap-2 bg-white rounded-lg p-1 border border-emerald-200">
-                                <button type="button" onclick="setAlokasiMode('auto')" id="btn-alokasi-auto" class="flex-1 py-1.5 rounded text-[10px] font-bold transition-all bg-emerald-600 text-white">
-                                    <i class="fas fa-magic"></i> Otomatis
-                                </button>
-                                <button type="button" onclick="setAlokasiMode('manual')" id="btn-alokasi-manual" class="flex-1 py-1.5 rounded text-[10px] font-bold transition-all text-slate-600 hover:text-slate-900">
-                                    <i class="fas fa-pen"></i> Manual
-                                </button>
-                            </div>
-
-                            <!-- Preview Otomatis -->
+                            <!-- Preview Otomatis (default) -->
                             <div id="alokasi-auto-container">
                                 <div id="preview-allocation-list" class="space-y-1 mt-1 text-slate-600">
                                     <span class="text-slate-400 italic">Masukkan nominal untuk melihat rincian...</span>
                                 </div>
+                                <button type="button" onclick="aktifkanManualAlokasi()" class="w-full mt-2 py-1.5 bg-white border border-emerald-300 hover:bg-emerald-50 text-emerald-700 font-bold rounded text-[10px] flex items-center justify-center gap-1 transition-colors">
+                                    <i class="fas fa-pen"></i> Ubah Manual
+                                </button>
                             </div>
 
-                            <!-- Input Manual -->
+                            <!-- Input Manual (hidden default) -->
                             <div id="alokasi-manual-container" class="hidden space-y-2">
                                 <div id="manual-allocation-inputs" class="space-y-2"></div>
-                                <div class="pt-2 border-t border-emerald-200 space-y-1">
+                                <div class="pt-2 border-t border-emerald-200">
                                     <div class="flex justify-between text-[10px]">
                                         <span class="text-slate-600">Total Alokasi:</span>
                                         <span id="manual-total-alloc" class="font-bold text-emerald-700">Rp 0</span>
                                     </div>
-                                    <div class="flex justify-between text-[10px]">
-                                        <span class="text-slate-600">Nominal Input:</span>
-                                        <span id="manual-nominal-input" class="font-bold text-blue-700">Rp 0</span>
-                                    </div>
-                                    <div id="manual-diff-alert" class="text-[10px] font-semibold text-center py-1.5 rounded hidden"></div>
                                 </div>
+                                <button type="button" onclick="kembaliOtomatis()" class="w-full py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 font-bold rounded text-[10px] flex items-center justify-center gap-1 transition-colors">
+                                    <i class="fas fa-undo"></i> Kembali Otomatis
+                                </button>
                             </div>
                         </div>
 
@@ -993,7 +984,7 @@
         };
 
         // ============================================================
-        // STATE (URUTAN PENTING!)
+        // STATE
         // ============================================================
         let firebaseReady = false;
         let firebaseDb = null;
@@ -1097,6 +1088,7 @@
                             ];
 
                             let lastResult = null;
+                            let lastSize = Infinity;
 
                             for (const attempt of attempts) {
                                 const canvas = document.createElement('canvas');
@@ -1110,6 +1102,7 @@
                                 const sizeBytes = Math.floor(base64Length * 3 / 4);
 
                                 lastResult = dataUrl;
+                                lastSize = sizeBytes;
 
                                 if (sizeBytes <= targetBytes) {
                                     resolve(dataUrl);
@@ -1265,262 +1258,6 @@
         };
 
         // ============================================================
-        // NAVIGASI (PENTING: didefinisikan SEBELUM dipakai)
-        // ============================================================
-        window.switchMainPage = function(page) {
-            const pageDashboard = document.getElementById('page-dashboard');
-            const pageHouses = document.getElementById('page-houses');
-            const navBtnDash = document.getElementById('nav-btn-dashboard');
-            const navBtnHouses = document.getElementById('nav-btn-houses');
-
-            if (!pageDashboard || !pageHouses || !navBtnDash || !navBtnHouses) return;
-
-            localStorage.setItem('kasRtActivePage', page);
-
-            if (page === 'dashboard') {
-                pageDashboard.classList.remove('hidden');
-                pageHouses.classList.add('hidden');
-                navBtnDash.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white text-blue-800 shadow text-center";
-                navBtnHouses.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all text-blue-100 hover:text-white hover:bg-white/10 relative text-center";
-            } else {
-                pageDashboard.classList.add('hidden');
-                pageHouses.classList.remove('hidden');
-                navBtnHouses.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white text-blue-800 shadow text-center";
-                navBtnDash.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all text-blue-100 hover:text-white hover:bg-white/10 relative text-center";
-                renderHouseStatus();
-            }
-        };
-
-        window.switchMainView = window.switchMainPage;
-
-        window.switchForm = function(type) {
-            const formIncome = document.getElementById('form-income');
-            const formExpense = document.getElementById('form-expense');
-            const btnInc = document.getElementById('btn-form-income');
-            const btnExp = document.getElementById('btn-form-expense');
-
-            if (type === 'income') {
-                formIncome.classList.remove('hidden');
-                formExpense.classList.add('hidden');
-                btnInc.className = "py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1";
-                btnExp.className = "py-1.5 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1";
-            } else {
-                formIncome.classList.add('hidden');
-                formExpense.classList.remove('hidden');
-                btnExp.className = "py-1.5 text-xs font-bold rounded-lg transition-all bg-rose-600 text-white shadow-sm flex items-center justify-center gap-1";
-                btnInc.className = "py-1.5 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1";
-            }
-        };
-
-        window.switchDataTab = function(tab) {
-            currentActiveTab = tab;
-            localStorage.setItem('kasRtActiveDataTab', tab);
-            const viewHistory = document.getElementById('view-history');
-            const viewRecap = document.getElementById('view-recap');
-            const tabHistory = document.getElementById('tab-data-history');
-            const tabRecap = document.getElementById('tab-data-recap');
-
-            if (tab === 'history') {
-                viewHistory.classList.remove('hidden');
-                viewHistory.classList.add('flex');
-                viewRecap.classList.add('hidden');
-                viewRecap.classList.remove('flex');
-                tabHistory.className = "pb-2.5 text-xs sm:text-sm transition-all tab-active";
-                tabRecap.className = "pb-2.5 text-xs sm:text-sm transition-all tab-inactive";
-            } else {
-                viewHistory.classList.add('hidden');
-                viewHistory.classList.remove('flex');
-                viewRecap.classList.remove('hidden');
-                viewRecap.classList.add('flex');
-                tabRecap.className = "pb-2.5 text-xs sm:text-sm transition-all tab-active";
-                tabHistory.className = "pb-2.5 text-xs sm:text-sm transition-all tab-inactive";
-                renderRecap();
-            }
-        };
-
-        // ============================================================
-        // WARGA LOGIN
-        // ============================================================
-        window.openWargaLogin = function() {
-            if (currentWargaHouse) {
-                openInfoWarga();
-                return;
-            }
-
-            document.getElementById('warga-login-input').value = '';
-            document.getElementById('warga-remember').checked = true;
-            document.getElementById('warga-login-modal').classList.remove('hidden');
-            setTimeout(() => document.getElementById('warga-login-input').focus(), 100);
-        };
-
-        window.closeWargaLogin = function() {
-            document.getElementById('warga-login-modal').classList.add('hidden');
-        };
-
-        window.logoutWarga = function() {
-            if (!confirm('Yakin ingin keluar?')) return;
-            
-            currentWargaHouse = null;
-            localStorage.removeItem('kasRtWargaHouse');
-            updateWargaUI();
-            showToast('Anda telah keluar. Terima kasih! 👋', 'info');
-        };
-
-        function updateWargaUI() {
-            const banner = document.getElementById('warga-welcome-banner');
-            const btnText = document.getElementById('warga-btn-text');
-
-            if (currentWargaHouse) {
-                if (banner) banner.classList.remove('hidden');
-                document.getElementById('warga-welcome-name').textContent = currentWargaHouse.ownerName || '-';
-                document.getElementById('warga-welcome-house').textContent = `Rumah ${currentWargaHouse.houseNumber}`;
-                if (btnText) btnText.textContent = 'Cek Iuran Saya';
-            } else {
-                if (banner) banner.classList.add('hidden');
-                if (btnText) btnText.textContent = 'Cek Iuran Saya';
-            }
-        }
-
-        window.openInfoWarga = function() {
-            if (!currentWargaHouse) {
-                openWargaLogin();
-                return;
-            }
-
-            const normalized = currentWargaHouse.houseNumber.replace(/[\s\-]/g, '').toUpperCase();
-            const now = new Date();
-            const currentYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
-            const paymentsByMonth = {};
-            transactions.forEach(t => {
-                if (t.type !== 'income' || !t.houseNumber) return;
-                if (t.houseNumber.replace(/[\s\-]/g, '').toUpperCase() !== normalized) return;
-                
-                const tDate = new Date(t.date);
-                if (isNaN(tDate.getTime())) return;
-                
-                const tYM = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
-                
-                if (!paymentsByMonth[tYM]) {
-                    paymentsByMonth[tYM] = { ym: tYM, amount: 0, count: 0, date: tDate };
-                }
-                paymentsByMonth[tYM].amount += (parseFloat(t.amount) || 0);
-                paymentsByMonth[tYM].count += 1;
-            });
-
-            const sortedMonths = Object.keys(paymentsByMonth).sort().reverse();
-
-            const statusPerMonth = sortedMonths.map(ym => {
-                const data = paymentsByMonth[ym];
-                const d = new Date(data.date.getFullYear(), data.date.getMonth(), 1);
-                return {
-                    ym: ym,
-                    dateObj: d,
-                    fullLabel: d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }),
-                    isPaid: true,
-                    amount: data.amount,
-                    isCurrentMonth: ym === currentYM,
-                    isMultiPayment: data.count > 1
-                };
-            });
-
-            const totalPaid = statusPerMonth.reduce((sum, m) => sum + m.amount, 0);
-
-            document.getElementById('info-result-house').textContent = currentWargaHouse.houseNumber;
-            document.getElementById('info-result-owner').textContent = currentWargaHouse.ownerName || '-';
-
-            const summaryBox = document.getElementById('info-tunggakan-box');
-            const summaryAmount = document.getElementById('info-tunggakan-amount');
-            const summaryDetail = document.getElementById('info-tunggakan-detail');
-
-            if (statusPerMonth.length === 0) {
-                summaryBox.classList.remove('hidden');
-                summaryBox.className = "rounded-xl p-3 bg-amber-50 border border-amber-200 text-amber-800";
-                summaryAmount.textContent = "Belum Ada Pembayaran";
-                summaryAmount.className = "text-base font-extrabold text-amber-700";
-                summaryDetail.textContent = `Belum ada riwayat pembayaran tercatat.`;
-            } else {
-                summaryBox.classList.remove('hidden');
-                summaryBox.className = "rounded-xl p-3 bg-emerald-50 border border-emerald-200 text-emerald-800";
-                summaryAmount.textContent = formatRupiah(totalPaid);
-                summaryAmount.className = "text-2xl font-extrabold text-emerald-700";
-                summaryDetail.textContent = `Total sudah dibayar (${statusPerMonth.length} bulan)`;
-            }
-
-            const statusList = document.getElementById('info-status-list');
-            if (statusPerMonth.length === 0) {
-                statusList.innerHTML = `
-                    <div class="text-center py-6 px-3 bg-slate-50 border border-dashed border-slate-300 rounded-xl">
-                        <i class="fas fa-inbox text-2xl text-slate-300 mb-2"></i>
-                        <p class="text-xs text-slate-500">Belum ada riwayat pembayaran</p>
-                    </div>
-                `;
-            } else {
-                statusList.innerHTML = statusPerMonth.map(m => {
-                    const highlight = m.isCurrentMonth ? 'ring-2 ring-blue-300' : '';
-                    const multiTag = m.isMultiPayment ? `<span class="text-[9px] text-blue-600 font-bold ml-1">(${m.count}x)</span>` : '';
-                    
-                    return `
-                        <div class="flex items-center justify-between p-2 rounded-lg border bg-emerald-50 border-emerald-200 ${highlight}">
-                            <div class="flex items-center gap-2 min-w-0">
-                                <span class="text-sm">✅</span>
-                                <div class="min-w-0">
-                                    <div class="text-xs font-semibold text-slate-800 truncate">${m.fullLabel}${multiTag}</div>
-                                    ${m.isCurrentMonth ? `<div class="text-[9px] text-blue-600 font-bold">BULAN INI</div>` : ''}
-                                </div>
-                            </div>
-                            <div class="text-right shrink-0">
-                                <div class="text-[10px] font-bold text-emerald-700">Lunas</div>
-                                <div class="text-[10px] text-slate-600 font-semibold">${formatRupiah(m.amount)}</div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            const bankList = document.getElementById('info-bank-list');
-            if (bankAccounts.length === 0) {
-                bankList.innerHTML = '<div class="text-xs text-blue-600 italic">Hubungi bendahara untuk info rekening.</div>';
-            } else {
-                bankList.innerHTML = bankAccounts.map(b => `
-                    <div class="flex items-center justify-between gap-2 bg-white rounded-lg p-2 border border-blue-200">
-                        <div class="min-w-0 flex-1">
-                            <div class="text-[10px] font-bold text-blue-700 uppercase">${escapeHTML(b.bankName)}</div>
-                            <div class="text-xs font-bold text-slate-800">${escapeHTML(b.accountNumber)}</div>
-                            <div class="text-[10px] text-slate-500">a.n. ${escapeHTML(b.accountHolder)}</div>
-                        </div>
-                        <button onclick="copyToClipboard('${escapeHTML(b.accountNumber)}')" class="text-[10px] px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold rounded shrink-0">
-                            <i class="fas fa-copy"></i> Salin
-                        </button>
-                    </div>
-                `).join('');
-            }
-
-            document.getElementById('info-warga-modal').classList.remove('hidden');
-        };
-
-        window.closeInfoWarga = function() {
-            document.getElementById('info-warga-modal').classList.add('hidden');
-        };
-
-        window.whatsappBendahara = function() {
-            if (!currentWargaHouse) {
-                showToast('Login dulu!', 'error');
-                return;
-            }
-
-            const house = currentWargaHouse.houseNumber;
-            const owner = currentWargaHouse.ownerName;
-
-            let message = `Assalamualaikum Bendahara RT 01.\n\n`;
-            message += `Saya ${owner} (${house}) ingin konfirmasi iuran.\n\n`;
-            message += `Mohon dibantu dicek ya. Terima kasih. 🙏`;
-
-            const url = `https://wa.me/${BENDAHARA_WHATSAPP}?text=${encodeURIComponent(message)}`;
-            window.open(url, '_blank');
-        };
-
-        // ============================================================
         // ALOKASI MANUAL
         // ============================================================
         window.setNominal = function(value) {
@@ -1530,40 +1267,47 @@
             updateAllocationPreview(value);
         };
 
-        window.setAlokasiMode = function(mode) {
-            alokasiMode = mode;
+        window.aktifkanManualAlokasi = function() {
+            alokasiMode = 'manual';
             
-            const btnAuto = document.getElementById('btn-alokasi-auto');
-            const btnManual = document.getElementById('btn-alokasi-manual');
-            const containerAuto = document.getElementById('alokasi-auto-container');
-            const containerManual = document.getElementById('alokasi-manual-container');
+            // Sembunyikan auto, tampilkan manual
+            document.getElementById('alokasi-auto-container').classList.add('hidden');
+            document.getElementById('alokasi-manual-container').classList.remove('hidden');
             
-            if (!btnAuto || !btnManual || !containerAuto || !containerManual) return;
-            
-            if (mode === 'auto') {
-                btnAuto.className = "flex-1 py-1.5 rounded text-[10px] font-bold transition-all bg-emerald-600 text-white";
-                btnManual.className = "flex-1 py-1.5 rounded text-[10px] font-bold transition-all text-slate-600 hover:text-slate-900";
-                containerAuto.classList.remove('hidden');
-                containerManual.classList.add('hidden');
-            } else {
-                btnManual.className = "flex-1 py-1.5 rounded text-[10px] font-bold transition-all bg-emerald-600 text-white";
-                btnAuto.className = "flex-1 py-1.5 rounded text-[10px] font-bold transition-all text-slate-600 hover:text-slate-900";
-                containerManual.classList.remove('hidden');
-                containerAuto.classList.add('hidden');
-                
-                if (Object.keys(manualAllocation).length === 0) {
-                    const nominal = parseFloat(document.getElementById('inc-amount').value) || 0;
-                    if (feeAllocations && feeAllocations.length > 0) {
-                        feeAllocations.forEach((item, idx) => {
-                            manualAllocation[item.title] = idx === 0 ? nominal : 0;
-                        });
-                    }
-                }
-                
-                renderManualAllocationInputs();
+            // ✅ SET NOMINAL JADI 0
+            const amountInput = document.getElementById('inc-amount');
+            if (amountInput) {
+                amountInput.value = 0;
             }
             
-            const amount = document.getElementById('inc-amount').value;
+            // RESET total: semua kategori = 0
+            manualAllocation = {};
+            if (feeAllocations && feeAllocations.length > 0) {
+                feeAllocations.forEach((item) => {
+                    manualAllocation[item.title] = 0;
+                });
+            }
+            
+            renderManualAllocationInputs();
+            updateManualSummary();
+        };
+
+        window.kembaliOtomatis = function() {
+            alokasiMode = 'auto';
+            manualAllocation = {};
+            
+            // Sembunyikan manual, tampilkan auto
+            document.getElementById('alokasi-manual-container').classList.add('hidden');
+            document.getElementById('alokasi-auto-container').classList.remove('hidden');
+            
+            // ✅ Kembalikan nominal ke 50.000
+            const amountInput = document.getElementById('inc-amount');
+            if (amountInput && (parseFloat(amountInput.value) === 0 || !amountInput.value)) {
+                amountInput.value = 50000;
+            }
+            
+            // Refresh preview otomatis
+            const amount = amountInput.value;
             updateAllocationPreview(amount);
         };
 
@@ -1605,55 +1349,41 @@
 
         window.updateManualSummary = function() {
             const totalAlloc = Object.values(manualAllocation).reduce((sum, v) => sum + v, 0);
-            const nominalInput = parseFloat(document.getElementById('inc-amount').value) || 0;
             
             const allocEl = document.getElementById('manual-total-alloc');
-            const nominalEl = document.getElementById('manual-nominal-input');
-            const alertEl = document.getElementById('manual-diff-alert');
-            
-            if (!allocEl || !nominalEl || !alertEl) return;
-            
-            allocEl.textContent = formatRupiah(totalAlloc);
-            nominalEl.textContent = formatRupiah(nominalInput);
-            
-            const diff = nominalInput - totalAlloc;
-            
-            if (Math.abs(diff) < 1) {
-                alertEl.className = "text-[10px] font-semibold text-center py-1.5 rounded bg-emerald-100 text-emerald-700";
-                alertEl.innerHTML = '<i class="fas fa-check-circle"></i> Cocok!';
-            } else if (diff > 0) {
-                alertEl.className = "text-[10px] font-semibold text-center py-1.5 rounded bg-blue-100 text-blue-700";
-                alertEl.innerHTML = `<i class="fas fa-info-circle"></i> Sisa ${formatRupiah(diff)} masuk Kas Umum`;
-            } else {
-                alertEl.className = "text-[10px] font-semibold text-center py-1.5 rounded bg-rose-100 text-rose-700";
-                alertEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Kelebihan ${formatRupiah(Math.abs(diff))}`;
+            if (allocEl) {
+                allocEl.textContent = formatRupiah(totalAlloc);
             }
-            alertEl.classList.remove('hidden');
         };
 
+        // ============================================================
+        // PREVIEW ALOKASI
+        // ============================================================
         window.updateAllocationPreview = function(val) {
             const inputVal = parseFloat(val) || 0;
             
             const totalNominalEl = document.getElementById('preview-total-nominal');
             if (totalNominalEl) totalNominalEl.textContent = formatRupiah(inputVal);
             
+            // Manual mode
             if (alokasiMode === 'manual') {
                 updateManualSummary();
                 return;
             }
             
+            // === AUTO MODE ===
             const container = document.getElementById('preview-allocation-list');
             if (!container) return;
             
             const houseInput = document.getElementById('inc-house');
             const houseNo = (houseInput?.value || '').trim().toUpperCase();
-            const isDonasi = !houseNo;
+            const isDanaTambahan = !houseNo;
             
-            if (isDonasi) {
+            if (isDanaTambahan) {
                 container.innerHTML = `
                     <div class="flex justify-between items-center text-xs py-1 bg-purple-50 px-2 rounded">
                         <span class="text-purple-800 font-semibold">
-                            <i class="fas fa-gift mr-1"></i> Donasi / Infaq
+                            <i class="fas fa-gift mr-1"></i> Dana Tambahan
                         </span>
                         <span class="font-bold text-purple-700">${formatRupiah(inputVal)}</span>
                     </div>
@@ -1674,7 +1404,7 @@
             );
             
             if (totalDefaultAlloc <= 0 || inputVal <= 0) {
-                container.innerHTML = '<span class="text-slate-400 italic">Masukkan nominal...</span>';
+                container.innerHTML = '<span class="text-slate-400 italic">Masukkan nominal untuk melihat rincian...</span>';
                 return;
             }
             
@@ -1689,7 +1419,9 @@
                 totalDibulatkan += rounded;
                 html += `
                     <div class="flex justify-between items-center text-xs py-0.5 border-b border-emerald-100/60 last:border-0">
-                        <span class="text-slate-700">• ${escapeHTML(item.title)}</span>
+                        <span class="text-slate-700">• ${escapeHTML(item.title)}
+                            <span class="text-slate-400 text-[10px]">(${formatRupiah(item.amount)} × ${jumlahRumahBayar.toFixed(2)})</span>
+                        </span>
                         <span class="font-bold text-emerald-800">${formatRupiah(rounded)}</span>
                     </div>
                 `;
@@ -1704,6 +1436,12 @@
                     </div>
                 `;
             }
+            
+            html += `
+                <div class="text-[10px] text-slate-500 italic mt-1 pt-1 border-t border-emerald-100">
+                    <i class="fas fa-calculator"></i> Setara <b>${jumlahRumahBayar.toFixed(2)}</b>× alokasi standar
+                </div>
+            `;
             
             container.innerHTML = html;
         };
@@ -1725,8 +1463,14 @@
             try {
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
-                    if (!file.type.startsWith('image/')) continue;
-                    if (file.size > 10 * 1024 * 1024) continue;
+                    if (!file.type.startsWith('image/')) {
+                        showToast(`File ${file.name} bukan gambar.`, 'error');
+                        continue;
+                    }
+                    if (file.size > 10 * 1024 * 1024) {
+                        showToast(`File ${file.name} > 10MB, dilewati.`, 'error');
+                        continue;
+                    }
 
                     const base64 = await compressImage(file, 500);
                     if (base64) {
@@ -1738,6 +1482,7 @@
                 renderPreviews(type);
             } catch (err) {
                 console.error('Upload error:', err);
+                showToast('Gagal memproses gambar.', 'error');
             }
         };
 
@@ -1754,7 +1499,7 @@
                 wrap.className = "relative w-20 h-20 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 shrink-0 shadow-xs";
                 wrap.innerHTML = `
                     <img src="${imgSrc}" class="w-full h-full object-cover">
-                    <button type="button" onclick="removeProofItem('${type}', ${index})" class="absolute top-0.5 right-0.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] shadow">
+                    <button type="button" onclick="removeProofItem('${type}', ${index})" class="absolute top-0.5 right-0.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] shadow" title="Hapus foto">
                         <i class="fas fa-times"></i>
                     </button>
                     <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] text-center py-0.5 font-semibold">
@@ -1784,7 +1529,7 @@
             container.innerHTML = '';
 
             if (bankAccounts.length === 0) {
-                container.innerHTML = '<p class="text-[11px] text-slate-400 col-span-full">Belum ada rekening bank.</p>';
+                container.innerHTML = '<p class="text-[11px] text-slate-400 col-span-full">Belum ada nomor rekening bank terdaftar.</p>';
                 return;
             }
 
@@ -1801,13 +1546,13 @@
                         <div class="font-bold text-slate-800 text-xs tracking-wide">${escapeHTML(b.accountNumber)}</div>
                     </div>
                     <div class="flex items-center gap-1 shrink-0">
-                        <button onclick="copyToClipboard('${escapeHTML(b.accountNumber)}')" class="px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold rounded text-[10px] flex items-center gap-1">
+                        <button onclick="copyToClipboard('${escapeHTML(b.accountNumber)}')" class="px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold rounded text-[10px] flex items-center gap-1 transition-colors" title="Salin No Rekening">
                             <i class="fas fa-copy"></i> Salin
                         </button>
-                        <button onclick="editBank('${b.id}')" class="admin-only text-slate-400 hover:text-amber-600 p-1 ${isAdmin ? '' : 'hidden'}">
+                        <button onclick="editBank('${b.id}')" class="admin-only text-slate-400 hover:text-amber-600 p-1 ${isAdmin ? '' : 'hidden'}" title="Edit Rekening">
                             <i class="fas fa-pen text-[10px]"></i>
                         </button>
-                        <button onclick="deleteBank('${b.id}')" class="admin-only text-slate-300 hover:text-rose-600 p-1 ${isAdmin ? '' : 'hidden'}">
+                        <button onclick="deleteBank('${b.id}')" class="admin-only text-slate-300 hover:text-rose-600 p-1 ${isAdmin ? '' : 'hidden'}" title="Hapus Rekening">
                             <i class="fas fa-trash-alt text-[10px]"></i>
                         </button>
                     </div>
@@ -1822,7 +1567,7 @@
             container.innerHTML = '';
 
             if (feeAllocations.length === 0) {
-                container.innerHTML = '<p class="text-[11px] text-slate-400 col-span-full">Belum ada rincian alokasi.</p>';
+                container.innerHTML = '<p class="text-[11px] text-slate-400 col-span-full">Belum ada rincian alokasi iuran.</p>';
                 populateExpenseCategoryOptions();
                 return;
             }
@@ -1836,10 +1581,10 @@
                         <strong class="text-slate-800 text-xs">${formatRupiah(item.amount)} <span class="text-slate-400 font-normal text-[10px]">/ rumah</span></strong>
                     </div>
                     <div class="admin-only flex items-center gap-1 shrink-0 ${isAdmin ? '' : 'hidden'}">
-                        <button onclick="editAllocation('${item.id}')" class="text-slate-400 hover:text-amber-600 p-1">
+                        <button onclick="editAllocation('${item.id}')" class="text-slate-400 hover:text-amber-600 p-1" title="Edit Rincian">
                             <i class="fas fa-pen text-[10px]"></i>
                         </button>
-                        <button onclick="deleteAllocation('${item.id}')" class="text-slate-300 hover:text-rose-600 p-1">
+                        <button onclick="deleteAllocation('${item.id}')" class="text-slate-300 hover:text-rose-600 p-1" title="Hapus Rincian">
                             <i class="fas fa-trash-alt text-[10px]"></i>
                         </button>
                     </div>
@@ -1869,7 +1614,7 @@
 
             const optKasUmum = document.createElement('option');
             optKasUmum.value = 'Kas Umum';
-            optKasUmum.textContent = 'Kas Umum (Donasi)';
+            optKasUmum.textContent = 'Kas Umum (Dana Tambahan)';
             select.appendChild(optKasUmum);
 
             if (!(feeAllocations || []).some(item => (item.title || '').toLowerCase().includes('lain'))) {
@@ -1972,7 +1717,7 @@
         window.renderDashboard = function() {
             let totalInc = 0, incCash = 0, incMandiri = 0, incBca = 0, totalExp = 0;
             let totalIuranWarga = 0;
-            let totalDonasi = 0;
+            let totalDanaTambahan = 0;
 
             transactions.forEach(t => {
                 const amt = parseFloat(t.amount) || 0;
@@ -1986,7 +1731,7 @@
                     if (t.houseNumber && t.houseNumber.trim()) {
                         totalIuranWarga += amt;
                     } else {
-                        totalDonasi += amt;
+                        totalDanaTambahan += amt;
                     }
                 } else if (t.type === 'expense') {
                     totalExp += amt;
@@ -2025,8 +1770,8 @@
                 incomeAllocByCategory['Kas Umum'] = totalIuranWarga;
             }
 
-            if (totalDonasi > 0) {
-                incomeAllocByCategory['Kas Umum (Donasi)'] = totalDonasi;
+            if (totalDanaTambahan > 0) {
+                incomeAllocByCategory['Kas Umum (Dana Tambahan)'] = totalDanaTambahan;
             }
 
             const expenseByCategory = {};
@@ -2040,12 +1785,12 @@
             if (allocList) {
                 const entries = Object.entries(incomeAllocByCategory);
                 if (entries.length === 0) {
-                    allocList.innerHTML = '<span class="text-[11px] text-slate-400 italic">Belum ada pemasukan.</span>';
+                    allocList.innerHTML = '<span class="text-[11px] text-slate-400 italic">Belum ada pemasukan tercatat.</span>';
                 } else {
                     allocList.innerHTML = entries.map(([title, amount]) => {
                         let color = 'text-emerald-700';
                         let icon = '';
-                        if (title.includes('Donasi')) {
+                        if (title.includes('Dana Tambahan')) {
                             color = 'text-purple-700';
                             icon = '<i class="fas fa-gift mr-1"></i>';
                         } else if (title.includes('Kas Umum')) {
@@ -2066,7 +1811,7 @@
             if (expCatList) {
                 const categories = Object.keys(expenseByCategory);
                 if (categories.length === 0) {
-                    expCatList.innerHTML = '<span class="text-[11px] text-slate-400 italic">Belum ada pengeluaran.</span>';
+                    expCatList.innerHTML = '<span class="text-[11px] text-slate-400 italic">Belum ada pengeluaran tercatat.</span>';
                 } else {
                     const allocOrder = (feeAllocations || []).map(a => a.title);
                     categories.sort((a, b) => {
@@ -2098,7 +1843,7 @@
                 });
 
                 if (allCategoryNames.length === 0) {
-                    balanceList.innerHTML = '<span class="text-[11px] text-blue-200 italic">Belum ada data.</span>';
+                    balanceList.innerHTML = '<span class="text-[11px] text-blue-200 italic">Belum ada data alokasi.</span>';
                 } else {
                     balanceList.innerHTML = allCategoryNames.map(cat => {
                         const allocatedIn = incomeAllocByCategory[cat] || 0;
@@ -2112,6 +1857,26 @@
                             </div>
                         `;
                     }).join('');
+                }
+            }
+
+            const allocTitles = (feeAllocations || []).map(a => a.title);
+            const orphanCategories = Object.keys(expenseByCategory).filter(cat => {
+                if (cat === 'Tanpa Kategori' || cat === 'Kas Umum' || cat === 'Lain-lain') return false;
+                return !allocTitles.includes(cat);
+            });
+
+            const orphanAlert = document.getElementById('orphan-category-alert');
+            const orphanList = document.getElementById('orphan-category-list');
+            if (orphanAlert && orphanList) {
+                if (orphanCategories.length > 0) {
+                    orphanAlert.classList.remove('hidden');
+                    orphanList.innerHTML = orphanCategories.map(cat => {
+                        const amt = expenseByCategory[cat];
+                        return `<div>• <b>${escapeHTML(cat)}</b> — Rp ${amt.toLocaleString('id-ID')} (tidak ada di master alokasi)</div>`;
+                    }).join('');
+                } else {
+                    orphanAlert.classList.add('hidden');
                 }
             }
         };
@@ -2193,7 +1958,7 @@
             }).join('') + `
                 <div class="px-4 py-3 bg-slate-50 flex items-center justify-between">
                     <span class="font-bold text-slate-700 text-sm uppercase tracking-wide">
-                        <i class="fas fa-calculator mr-1"></i> Total
+                        <i class="fas fa-calculator mr-1"></i> Total Keseluruhan
                     </span>
                     <span class="font-extrabold text-base ${totalSaldo < 0 ? 'text-rose-600' : 'text-slate-800'}">
                         ${formatRupiah(totalSaldo)}
@@ -2297,8 +2062,7 @@
                 else dailyExpense += amt;
 
                 const isInc = t.type === 'income';
-                const isDonasi = isInc && (!t.houseNumber || !t.houseNumber.trim());
-                const isManualAlloc = isInc && t.allocations && t.allocations.mode === 'manual';
+                const isDanaTambahan = isInc && (!t.houseNumber || !t.houseNumber.trim());
 
                 let methodBadge = '';
                 const m = t.paymentMethod || 'Cash';
@@ -2308,10 +2072,9 @@
                 else if (m.includes('BCA')) { badgeBg = 'bg-indigo-100 text-indigo-700'; methodIcon = '🏦'; }
                 else { badgeBg = 'bg-amber-100 text-amber-800'; methodIcon = '💵'; }
                 const methodTag = `<span class="inline-block px-1.5 py-0.5 text-[9px] rounded font-semibold ${badgeBg}">${methodIcon} ${escapeHTML(m.replace('Bank ', ''))}</span>`;
-                const manualTag = isManualAlloc ? `<span class="inline-block px-1.5 py-0.5 text-[9px] rounded font-semibold bg-purple-100 text-purple-700">Manual</span>` : '';
 
                 if (isInc) {
-                    methodBadge = methodTag + ' ' + manualTag;
+                    methodBadge = methodTag;
                 } else {
                     const catTag = t.category ? `<span class="inline-block px-1.5 py-0.5 text-[9px] rounded font-semibold bg-rose-100 text-rose-700"><i class="fas fa-tag mr-0.5"></i>${escapeHTML(t.category)}</span>` : '';
                     methodBadge = methodTag + ' ' + catTag;
@@ -2327,10 +2090,10 @@
                     <td class="px-2 sm:px-3 py-2 font-medium text-slate-500 text-[11px]">${formatDate(t.date)}</td>
                     <td class="px-2 sm:px-3 py-2">
                         ${t.houseNumber ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200 inline-block">${escapeHTML(t.houseNumber)}</span>` 
-                            : (isInc ? `<span class="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-purple-200 inline-block"><i class="fas fa-gift"></i> Donasi</span>` : '<span class="text-slate-300">-</span>')}
+                            : (isInc ? `<span class="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-purple-200 inline-block"><i class="fas fa-gift"></i> Dana Tambahan</span>` : '<span class="text-slate-300">-</span>')}
                     </td>
                     <td class="px-2 sm:px-3 py-2">
-                        <div class="font-semibold text-slate-800 text-xs sm:text-sm leading-tight line-clamp-2">${escapeHTML(t.description)}</div>
+                        <div class="font-semibold text-slate-800 text-xs sm:text-sm leading-tight line-clamp-2" title="${escapeHTML(t.description)}">${escapeHTML(t.description)}</div>
                         <div class="flex items-center gap-1.5 mt-1 flex-wrap">
                             ${methodBadge}
                             ${proofsCount > 0 
@@ -2361,13 +2124,13 @@
                     <div class="flex items-center justify-between border-b border-slate-100 pb-1.5">
                         <div class="flex items-center gap-2">
                             ${t.houseNumber ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200">${escapeHTML(t.houseNumber)}</span>`
-                                : (isInc ? `<span class="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-purple-200"><i class="fas fa-gift"></i> Donasi</span>` : '')}
+                                : (isInc ? `<span class="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-purple-200"><i class="fas fa-gift"></i> Dana Tambahan</span>` : '')}
                         </div>
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isInc ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
                             ${isInc ? 'Pemasukan' : 'Pengeluaran'}
                         </span>
                     </div>
-                    <div class="font-semibold text-slate-800 text-xs leading-snug line-clamp-2">${escapeHTML(t.description)}</div>
+                    <div class="font-semibold text-slate-800 text-xs leading-snug line-clamp-2" title="${escapeHTML(t.description)}">${escapeHTML(t.description)}</div>
                     <div class="flex items-center justify-between pt-1.5 mt-0.5 border-t border-slate-100">
                         <div class="text-[10px] font-medium text-slate-500">Nominal</div>
                         <div class="font-extrabold text-xs ${isInc ? 'text-emerald-600' : 'text-rose-600'}">
@@ -2552,10 +2315,10 @@
                 let actionBtnDesktop = '';
                 if (isPaid) {
                     const hasProof = (payment.proofs && payment.proofs.length > 0) || payment.proof;
-                    actionBtnMobile = `<button onclick="openProofModal('${payment.id}')" class="text-[9px] px-1 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded whitespace-nowrap ${hasProof ? '' : 'opacity-40 cursor-not-allowed'}" ${hasProof ? '' : 'disabled'}>📷</button>`;
+                    actionBtnMobile = `<button onclick="openProofModal('${payment.id}')" class="text-[9px] px-1 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded whitespace-nowrap ${hasProof ? '' : 'opacity-40 cursor-not-allowed'}" ${hasProof ? '' : 'disabled'} title="Bukti">📷</button>`;
                     actionBtnDesktop = `<button onclick="openProofModal('${payment.id}')" class="text-[10px] px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded whitespace-nowrap ${hasProof ? '' : 'opacity-40 cursor-not-allowed'}" ${hasProof ? '' : 'disabled'}>Bukti</button>`;
                 } else if (isAdmin) {
-                    actionBtnMobile = `<button onclick="quickRecordPayment('${h.houseNumber}')" class="text-[9px] px-1.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded shadow-sm whitespace-nowrap">Bayar</button>`;
+                    actionBtnMobile = `<button onclick="quickRecordPayment('${h.houseNumber}')" class="text-[9px] px-1.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded shadow-sm whitespace-nowrap" title="Bayar">Bayar</button>`;
                     actionBtnDesktop = `<button onclick="quickRecordPayment('${h.houseNumber}')" class="text-[10px] px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded shadow-sm whitespace-nowrap">Bayar</button>`;
                 }
 
@@ -2566,7 +2329,7 @@
                 if (isPaid) {
                     nominalCellContent = `
                         <div class="flex items-center justify-end gap-1">
-                            <span class="font-bold text-[10px] sm:text-xs text-emerald-600">${nominalDisplay}</span>
+                            <span class="font-bold text-[10px] sm:text-xs text-emerald-600" title="${formatRupiah(payment.amount)}">${nominalDisplay}</span>
                             <span class="sm:hidden">${actionBtnMobile}</span>
                             <span class="hidden sm:inline">${actionBtnDesktop}</span>
                         </div>
@@ -2585,7 +2348,7 @@
                 tr.innerHTML = `
                     <td class="px-1.5 sm:px-3 py-2 font-medium text-slate-800">
                         <div class="font-bold text-blue-700 text-[10px] sm:text-xs">${escapeHTML(h.houseNumber)}</div>
-                        <div class="text-[10px] sm:text-xs truncate">${escapeHTML(h.ownerName)}</div>
+                        <div class="text-[10px] sm:text-xs truncate" title="${escapeHTML(h.ownerName)}">${escapeHTML(h.ownerName)}</div>
                     </td>
                     <td class="px-0.5 sm:px-2 py-2 text-center">${statusBadge}</td>
                     <td class="px-0.5 sm:px-2 py-2 text-right">
@@ -2593,10 +2356,10 @@
                     </td>
                     <td class="px-0.5 sm:px-2 py-2 text-center">
                         <div class="flex items-center justify-center gap-0.5 sm:gap-1 flex-nowrap">
-                            <button onclick="editHouse('${h.id}')" class="admin-only text-slate-400 hover:text-amber-600 p-0.5 sm:p-1 shrink-0 ${isAdmin ? '' : 'hidden'}">
+                            <button onclick="editHouse('${h.id}')" class="admin-only text-slate-400 hover:text-amber-600 p-0.5 sm:p-1 shrink-0 ${isAdmin ? '' : 'hidden'}" title="Edit">
                                 <i class="fas fa-pen text-[10px] sm:text-xs"></i>
                             </button>
-                            <button onclick="deleteHouse('${h.id}')" class="admin-only text-slate-300 hover:text-rose-600 p-0.5 sm:p-1 shrink-0 ${isAdmin ? '' : 'hidden'}">
+                            <button onclick="deleteHouse('${h.id}')" class="admin-only text-slate-300 hover:text-rose-600 p-0.5 sm:p-1 shrink-0 ${isAdmin ? '' : 'hidden'}" title="Hapus">
                                 <i class="fas fa-trash-alt text-[10px] sm:text-xs"></i>
                             </button>
                         </div>
@@ -2640,13 +2403,13 @@
 
             if (currentActiveTab === 'history') {
                 if (transactions.length === 0) {
-                    showToast('Tidak ada data.', 'error');
+                    showToast('Tidak ada data transaksi untuk diekspor.', 'error');
                     return;
                 }
                 const exportData = transactions.map((t, index) => ({
                     "No": index + 1,
                     "Tanggal": t.date || '-',
-                    "Tipe": t.type === 'income' ? (t.houseNumber && t.houseNumber.trim() ? 'Pemasukan (Iuran)' : 'Pemasukan (Donasi)') : 'Pengeluaran',
+                    "Tipe": t.type === 'income' ? (t.houseNumber && t.houseNumber.trim() ? 'Pemasukan (Iuran)' : 'Pemasukan (Dana Tambahan)') : 'Pengeluaran',
                     "No. Rumah": t.houseNumber || '-',
                     "Keterangan": t.description || '-',
                     "Metode": t.paymentMethod || '-',
@@ -2674,7 +2437,7 @@
 
                 const sortedKeys = Object.keys(monthlyData).sort().reverse();
                 if (sortedKeys.length === 0) {
-                    showToast('Tidak ada data rekap.', 'error');
+                    showToast('Tidak ada data rekap untuk diekspor.', 'error');
                     return;
                 }
 
@@ -2709,7 +2472,7 @@
             );
 
             if (sortedHouses.length === 0) {
-                showToast('Tidak ada data.', 'error');
+                showToast('Tidak ada data warga untuk diekspor.', 'error');
                 return;
             }
 
@@ -2736,7 +2499,7 @@
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, `Status Iuran ${periodInput}`);
             XLSX.writeFile(workbook, `Status_Iuran_RT_${periodInput}.xlsx`);
-            showToast(`Status iuran berhasil diekspor!`);
+            showToast(`Status iuran periode ${periodInput} berhasil diekspor!`);
         };
 
         // ============================================================
@@ -2798,15 +2561,11 @@
                 document.getElementById('inc-desc').value = t.description || '';
                 document.getElementById('inc-amount').value = t.amount || '';
                 
-                if (t.allocations && t.allocations.mode === 'manual' && t.allocations.items) {
-                    alokasiMode = 'manual';
-                    manualAllocation = { ...t.allocations.items };
-                    setAlokasiMode('manual');
-                } else {
-                    alokasiMode = 'auto';
-                    manualAllocation = {};
-                    setAlokasiMode('auto');
-                }
+                // Reset ke mode otomatis
+                alokasiMode = 'auto';
+                manualAllocation = {};
+                document.getElementById('alokasi-manual-container').classList.add('hidden');
+                document.getElementById('alokasi-auto-container').classList.remove('hidden');
                 
                 updateAllocationPreview(t.amount || 0);
                 document.getElementById('inc-submit-btn').innerHTML = '<i class="fas fa-save"></i> Perbarui Pemasukan';
@@ -2844,9 +2603,11 @@
             document.getElementById('inc-amount').value = '50000';
             document.getElementById('inc-submit-btn').innerHTML = '<i class="fas fa-save"></i> Simpan Pemasukan';
 
+            // Reset ke mode otomatis
             alokasiMode = 'auto';
             manualAllocation = {};
-            setAlokasiMode('auto');
+            document.getElementById('alokasi-manual-container').classList.add('hidden');
+            document.getElementById('alokasi-auto-container').classList.remove('hidden');
 
             updateAllocationPreview('50000');
             currentIncomeProofs = [];
@@ -2933,7 +2694,7 @@
                     container.appendChild(img);
                 });
             } else {
-                container.innerHTML = '<p class="text-slate-400 text-xs">Bukti tidak tersedia.</p>';
+                container.innerHTML = '<p class="text-slate-400 text-xs">Bukti transaksi tidak tersedia.</p>';
             }
             modal.classList.remove('hidden');
         };
@@ -2988,22 +2749,34 @@
             const listEl = document.getElementById('recap-detail-list');
 
             if (rows.length === 0) {
-                listEl.innerHTML = `<p class="text-slate-400 text-xs text-center py-4">Tidak ada mutasi.</p>`;
+                listEl.innerHTML = `
+                    <div class="flex justify-between items-center px-2.5 py-2 rounded-lg bg-slate-100 text-[11px] font-semibold text-slate-600 mb-1">
+                        <span><i class="fas fa-flag mr-1 text-slate-400"></i> Saldo Awal</span>
+                        <span>${formatRupiah(openingBalance)}</span>
+                    </div>
+                    <p class="text-slate-400 text-xs text-center py-4">Tidak ada mutasi pada periode ini.</p>
+                `;
             } else {
                 const displayRows = [...rows].reverse();
                 let html = `
                     <div class="flex justify-between items-center px-2.5 py-2 rounded-lg bg-slate-100 text-[11px] font-semibold text-slate-600 mb-1">
-                        <span>Saldo Awal</span>
+                        <span><i class="fas fa-flag mr-1 text-slate-400"></i> Saldo Awal</span>
                         <span>${formatRupiah(openingBalance)}</span>
                     </div>
                 `;
                 html += displayRows.map(({ t, saldo }) => {
                     const isInc = t.type === 'income';
+                    const tagBadge = isInc
+                        ? (t.houseNumber
+                            ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200">${escapeHTML(t.houseNumber)}</span>`
+                            : `<span class="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-purple-200"><i class="fas fa-gift"></i> Dana Tambahan</span>`)
+                        : (t.category ? `<span class="bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded text-[10px] font-semibold border border-rose-200"><i class="fas fa-tag mr-0.5"></i>${escapeHTML(t.category)}</span>` : '');
                     return `
                         <div class="flex items-start justify-between gap-2 p-2.5 rounded-lg border border-slate-100 bg-white shadow-sm">
                             <div class="min-w-0 flex-1">
                                 <div class="text-[10px] text-slate-400 font-medium">${formatDate(t.date)}</div>
                                 <div class="font-semibold text-slate-800 text-xs leading-snug">${escapeHTML(t.description)}</div>
+                                <div class="mt-1">${tagBadge}</div>
                             </div>
                             <div class="text-right shrink-0">
                                 <div class="font-bold text-xs ${isInc ? 'text-emerald-600' : 'text-rose-600'}">
@@ -3030,7 +2803,7 @@
                 return;
             }
             if (!currentRecapExport) {
-                showToast('Tidak ada data mutasi.', 'error');
+                showToast('Tidak ada data mutasi untuk diekspor.', 'error');
                 return;
             }
 
@@ -3049,7 +2822,7 @@
                 exportData.push({
                     "Tanggal": formatDate(t.date),
                     "Keterangan": t.description || '-',
-                    "No. Rumah / Kategori": isInc ? (t.houseNumber || 'Donasi') : (t.category || '-'),
+                    "No. Rumah / Kategori": isInc ? (t.houseNumber || 'Dana Tambahan') : (t.category || '-'),
                     "Debit (Keluar)": !isInc ? (parseFloat(t.amount) || 0) : '',
                     "Kredit (Masuk)": isInc ? (parseFloat(t.amount) || 0) : '',
                     "Saldo": saldo
@@ -3064,6 +2837,7 @@
             });
 
             const worksheet = XLSX.utils.json_to_sheet(exportData);
+            worksheet['!cols'] = [{ wch: 12 }, { wch: 32 }, { wch: 20 }, { wch: 14 }, { wch: 14 }, { wch: 14 }];
             const workbook = XLSX.utils.book_new();
             const sheetName = monthName.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 31) || 'Mutasi';
             XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
@@ -3180,7 +2954,8 @@
                         myPresenceRef.set({
                             joinedAt: firebase.database.ServerValue.TIMESTAMP,
                             device: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
-                            role: isAdmin ? 'Admin' : 'Warga'
+                            role: isAdmin ? 'Admin' : 'Warga',
+                            house: currentWargaHouse ? currentWargaHouse.houseNumber : ''
                         });
                     }
                 });
@@ -3209,13 +2984,18 @@
                         const isMe = key === userSessionId;
                         const role = user.role || 'Warga';
                         const device = user.device || '';
+                        const house = user.house || '';
 
                         const badge = document.createElement('div');
                         badge.className = "flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-xl text-xs font-medium shadow-xs";
+                        
+                        let displayName = isMe ? 'Anda' : role;
+                        if (house) displayName += ` (${house})`;
+                        
                         badge.innerHTML = `
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
                             <span class="flex items-center gap-1">
-                                <b>${isMe ? `Anda (${role})` : role}</b>
+                                <b>${displayName}</b>
                                 ${device ? `<span class="text-[9px] text-emerald-500">${device === 'Mobile' ? '📱' : '💻'}</span>` : ''}
                             </span>
                         `;
@@ -3344,7 +3124,7 @@
                 updateAdminUI();
                 showToast('Berhasil login sebagai Admin RT!');
             } else {
-                showToast('PIN Admin salah!', 'error');
+                showToast('PIN Admin salah! Cek dengan admin lain.', 'error');
                 document.getElementById('admin-pin').value = '';
             }
         };
@@ -3354,7 +3134,7 @@
             sessionStorage.removeItem('kasRtIsAdmin');
             updateAdminUI();
             cancelEditTransaction();
-            showToast('Anda telah logout.');
+            showToast('Anda telah logout dari mode admin.');
         };
 
         window.openChangePin = function() {
@@ -3379,15 +3159,15 @@
             const oldHash = await hashPin(oldPin);
 
             if (oldHash !== storedHash) {
-                showToast('PIN Lama tidak sesuai!', 'error');
+                showToast('PIN Lama tidak sesuai! Cek dengan admin lain.', 'error');
                 return;
             }
             if (newPin.length < 6) {
-                showToast('PIN Baru minimal 6 karakter!', 'error');
+                showToast('PIN Baru minimal 6 karakter/digit!', 'error');
                 return;
             }
             if (newPin !== confirmPin) {
-                showToast('Konfirmasi PIN tidak sama!', 'error');
+                showToast('Konfirmasi PIN Baru tidak sama!', 'error');
                 return;
             }
 
@@ -3396,13 +3176,14 @@
             if (firebaseReady) {
                 try {
                     await firebaseDb.ref('kasRt/settings/adminPinHash').set(newHash);
-                    showToast('PIN diperbarui!');
+                    showToast('PIN diperbarui! Semua admin pakai PIN baru.');
                 } catch (err) {
-                    console.error('Gagal simpan PIN:', err);
+                    console.error('Gagal simpan PIN ke server:', err);
+                    showToast('Gagal simpan PIN ke server.', 'error');
                     return;
                 }
             } else {
-                showToast('Mode offline — PIN tersimpan lokal.', 'info');
+                showToast('Mode offline — PIN hanya tersimpan lokal.', 'info');
             }
 
             ADMIN_PIN_HASH = newHash;
@@ -3456,7 +3237,7 @@
             reader.onload = (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (!confirm('Restore akan MENGGANTI semua data. Lanjutkan?')) return;
+                    if (!confirm('Restore akan MENGGANTI semua data saat ini. Lanjutkan?')) return;
 
                     houses = data.houses || [];
                     bankAccounts = data.bankAccounts || [];
@@ -3525,7 +3306,7 @@
             }
 
             closeBankModal();
-            showToast('Data rekening disimpan!');
+            showToast('Data rekening berhasil disimpan!');
         });
 
         document.getElementById('form-allocation').addEventListener('submit', async function(e) {
@@ -3547,8 +3328,9 @@
 
                     if (affectedExpenses > 0) {
                         const doUpdate = confirm(
-                            `Nama alokasi berubah dari "${oldTitle}" ke "${title}".\n\n` +
-                            `Update ${affectedExpenses} transaksi juga?`
+                            `Nama alokasi berubah dari "${oldTitle}" menjadi "${title}".\n\n` +
+                            `Ada ${affectedExpenses} transaksi pengeluaran dengan kategori "${oldTitle}".\n\n` +
+                            `Update semua transaksi tersebut ke kategori baru "${title}"?`
                         );
 
                         if (doUpdate) {
@@ -3570,7 +3352,7 @@
                                 });
                                 saveLocalStorage();
                             }
-                            showToast(`${affectedExpenses} transaksi diperbarui!`);
+                            showToast(`${affectedExpenses} transaksi diperbarui ke "${title}"`);
                         }
                     }
                 }
@@ -3591,7 +3373,7 @@
             }
 
             closeAllocationModal();
-            showToast('Rincian alokasi disimpan!');
+            showToast('Rincian alokasi berhasil disimpan!');
         });
 
         document.getElementById('form-house').addEventListener('submit', function(e) {
@@ -3630,7 +3412,7 @@
             }
 
             closeHouseModal();
-            showToast('Data warga disimpan!');
+            showToast('Data warga berhasil disimpan!');
         });
 
         document.getElementById('form-income').addEventListener('submit', function(e) {
@@ -3645,21 +3427,7 @@
             const amount = parseFloat(document.getElementById('inc-amount').value) || 0;
             const proofs = [...currentIncomeProofs];
 
-            let allocations = null;
-            if (alokasiMode === 'manual') {
-                const totalAlloc = Object.values(manualAllocation).reduce((sum, v) => sum + v, 0);
-                
-                if (totalAlloc > amount) {
-                    showToast(`Total alokasi melebihi nominal!`, 'error');
-                    return;
-                }
-                
-                allocations = { mode: 'manual', items: { ...manualAllocation } };
-            } else {
-                allocations = { mode: 'auto' };
-            }
-
-            const txData = { type: 'income', date, paymentMethod, houseNumber, description, amount, proofs, allocations };
+            const txData = { type: 'income', date, paymentMethod, houseNumber, description, amount, proofs };
 
             if (firebaseReady) {
                 if (id) firebaseDb.ref(`kasRt/transactions/${id}`).update(txData);
@@ -3676,7 +3444,7 @@
             }
 
             cancelEditTransaction();
-            showToast(houseNumber ? 'Pemasukan dicatat!' : 'Donasi dicatat!');
+            showToast(houseNumber ? 'Pemasukan iuran berhasil dicatat!' : 'Dana Tambahan berhasil dicatat!');
         });
 
         document.getElementById('form-expense').addEventListener('submit', function(e) {
@@ -3708,7 +3476,7 @@
             }
 
             cancelEditTransaction();
-            showToast('Pengeluaran dicatat!');
+            showToast('Pengeluaran kas berhasil dicatat!');
         });
 
         // ============================================================
@@ -3732,7 +3500,7 @@
             });
 
             if (!house) {
-                showToast(`Rumah "${houseNo}" tidak ditemukan.`, 'error');
+                showToast(`Rumah "${houseNo}" tidak ditemukan. Cek dengan pengurus.`, 'error');
                 return;
             }
 
@@ -3747,6 +3515,266 @@
 
             setTimeout(() => openInfoWarga(), 300);
         });
+
+        // ============================================================
+        // INFO WARGA
+        // ============================================================
+        window.openInfoWarga = function() {
+            if (!currentWargaHouse) {
+                openWargaLogin();
+                return;
+            }
+
+            const normalized = currentWargaHouse.houseNumber.replace(/[\s\-]/g, '').toUpperCase();
+            const now = new Date();
+            const currentYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+            const paymentsByMonth = {};
+            transactions.forEach(t => {
+                if (t.type !== 'income' || !t.houseNumber) return;
+                if (t.houseNumber.replace(/[\s\-]/g, '').toUpperCase() !== normalized) return;
+                
+                const tDate = new Date(t.date);
+                if (isNaN(tDate.getTime())) return;
+                
+                const tYM = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
+                
+                if (!paymentsByMonth[tYM]) {
+                    paymentsByMonth[tYM] = { ym: tYM, amount: 0, count: 0, date: tDate };
+                }
+                paymentsByMonth[tYM].amount += (parseFloat(t.amount) || 0);
+                paymentsByMonth[tYM].count += 1;
+            });
+
+            const sortedMonths = Object.keys(paymentsByMonth).sort().reverse();
+
+            const statusPerMonth = sortedMonths.map(ym => {
+                const data = paymentsByMonth[ym];
+                const d = new Date(data.date.getFullYear(), data.date.getMonth(), 1);
+                return {
+                    ym: ym,
+                    dateObj: d,
+                    fullLabel: d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }),
+                    isPaid: true,
+                    amount: data.amount,
+                    isCurrentMonth: ym === currentYM,
+                    isMultiPayment: data.count > 1
+                };
+            });
+
+            const totalPaid = statusPerMonth.reduce((sum, m) => sum + m.amount, 0);
+
+            document.getElementById('info-result-house').textContent = currentWargaHouse.houseNumber;
+            document.getElementById('info-result-owner').textContent = currentWargaHouse.ownerName || '-';
+
+            const summaryBox = document.getElementById('info-tunggakan-box');
+            const summaryAmount = document.getElementById('info-tunggakan-amount');
+            const summaryDetail = document.getElementById('info-tunggakan-detail');
+
+            if (statusPerMonth.length === 0) {
+                summaryBox.classList.remove('hidden');
+                summaryBox.className = "rounded-xl p-3 bg-amber-50 border border-amber-200 text-amber-800";
+                summaryAmount.textContent = "Belum Ada Pembayaran";
+                summaryAmount.className = "text-base font-extrabold text-amber-700";
+                summaryDetail.textContent = `Belum ada riwayat pembayaran tercatat untuk rumah ini.`;
+            } else {
+                summaryBox.classList.remove('hidden');
+                summaryBox.className = "rounded-xl p-3 bg-emerald-50 border border-emerald-200 text-emerald-800";
+                summaryAmount.textContent = formatRupiah(totalPaid);
+                summaryAmount.className = "text-2xl font-extrabold text-emerald-700";
+                summaryDetail.textContent = `Total sudah dibayar (${statusPerMonth.length} bulan)`;
+            }
+
+            const statusList = document.getElementById('info-status-list');
+            if (statusPerMonth.length === 0) {
+                statusList.innerHTML = `
+                    <div class="text-center py-6 px-3 bg-slate-50 border border-dashed border-slate-300 rounded-xl">
+                        <i class="fas fa-inbox text-2xl text-slate-300 mb-2"></i>
+                        <p class="text-xs text-slate-500">Belum ada riwayat pembayaran</p>
+                        <p class="text-[10px] text-slate-400 mt-1">Hubungi bendahara jika sudah membayar</p>
+                    </div>
+                `;
+            } else {
+                statusList.innerHTML = statusPerMonth.map(m => {
+                    const highlight = m.isCurrentMonth ? 'ring-2 ring-blue-300' : '';
+                    const multiTag = m.isMultiPayment ? `<span class="text-[9px] text-blue-600 font-bold ml-1">(${m.count}x bayar)</span>` : '';
+                    
+                    return `
+                        <div class="flex items-center justify-between p-2 rounded-lg border bg-emerald-50 border-emerald-200 ${highlight}">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="text-sm">✅</span>
+                                <div class="min-w-0">
+                                    <div class="text-xs font-semibold text-slate-800 truncate">${m.fullLabel}${multiTag}</div>
+                                    ${m.isCurrentMonth ? `<div class="text-[9px] text-blue-600 font-bold">BULAN INI</div>` : ''}
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <div class="text-[10px] font-bold text-emerald-700">Lunas</div>
+                                <div class="text-[10px] text-slate-600 font-semibold">${formatRupiah(m.amount)}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            const bankList = document.getElementById('info-bank-list');
+            if (bankAccounts.length === 0) {
+                bankList.innerHTML = '<div class="text-xs text-blue-600 italic">Hubungi bendahara untuk info rekening.</div>';
+            } else {
+                bankList.innerHTML = bankAccounts.map(b => `
+                    <div class="flex items-center justify-between gap-2 bg-white rounded-lg p-2 border border-blue-200">
+                        <div class="min-w-0 flex-1">
+                            <div class="text-[10px] font-bold text-blue-700 uppercase">${escapeHTML(b.bankName)}</div>
+                            <div class="text-xs font-bold text-slate-800">${escapeHTML(b.accountNumber)}</div>
+                            <div class="text-[10px] text-slate-500">a.n. ${escapeHTML(b.accountHolder)}</div>
+                        </div>
+                        <button onclick="copyToClipboard('${escapeHTML(b.accountNumber)}')" class="text-[10px] px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold rounded shrink-0">
+                            <i class="fas fa-copy"></i> Salin
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('info-warga-modal').classList.remove('hidden');
+        };
+
+        window.closeInfoWarga = function() {
+            document.getElementById('info-warga-modal').classList.add('hidden');
+        };
+
+        window.whatsappBendahara = function() {
+            if (!currentWargaHouse) {
+                showToast('Login dulu!', 'error');
+                return;
+            }
+
+            const house = currentWargaHouse.houseNumber;
+            const owner = currentWargaHouse.ownerName;
+
+            let message = `Assalamualaikum Bendahara RT 01.\n\n`;
+            message += `Saya ${owner} (${house}) ingin konfirmasi iuran.\n\n`;
+            message += `Mohon dibantu dicek ya. Terima kasih. 🙏`;
+
+            const url = `https://wa.me/${BENDAHARA_WHATSAPP}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        };
+
+        // ============================================================
+        // NAVIGASI
+        // ============================================================
+        window.switchMainPage = function(page) {
+            const pageDashboard = document.getElementById('page-dashboard');
+            const pageHouses = document.getElementById('page-houses');
+            const navBtnDash = document.getElementById('nav-btn-dashboard');
+            const navBtnHouses = document.getElementById('nav-btn-houses');
+
+            if (!pageDashboard || !pageHouses || !navBtnDash || !navBtnHouses) return;
+
+            localStorage.setItem('kasRtActivePage', page);
+
+            if (page === 'dashboard') {
+                pageDashboard.classList.remove('hidden');
+                pageHouses.classList.add('hidden');
+                navBtnDash.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white text-blue-800 shadow text-center";
+                navBtnHouses.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all text-blue-100 hover:text-white hover:bg-white/10 relative text-center";
+            } else {
+                pageDashboard.classList.add('hidden');
+                pageHouses.classList.remove('hidden');
+                navBtnHouses.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white text-blue-800 shadow text-center";
+                navBtnDash.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all text-blue-100 hover:text-white hover:bg-white/10 relative text-center";
+                renderHouseStatus();
+            }
+        };
+
+        window.switchMainView = window.switchMainPage;
+
+        window.switchForm = function(type) {
+            const formIncome = document.getElementById('form-income');
+            const formExpense = document.getElementById('form-expense');
+            const btnInc = document.getElementById('btn-form-income');
+            const btnExp = document.getElementById('btn-form-expense');
+
+            if (type === 'income') {
+                formIncome.classList.remove('hidden');
+                formExpense.classList.add('hidden');
+                btnInc.className = "py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1";
+                btnExp.className = "py-1.5 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1";
+            } else {
+                formIncome.classList.add('hidden');
+                formExpense.classList.remove('hidden');
+                btnExp.className = "py-1.5 text-xs font-bold rounded-lg transition-all bg-rose-600 text-white shadow-sm flex items-center justify-center gap-1";
+                btnInc.className = "py-1.5 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1";
+            }
+        };
+
+        window.switchDataTab = function(tab) {
+            currentActiveTab = tab;
+            localStorage.setItem('kasRtActiveDataTab', tab);
+            const viewHistory = document.getElementById('view-history');
+            const viewRecap = document.getElementById('view-recap');
+            const tabHistory = document.getElementById('tab-data-history');
+            const tabRecap = document.getElementById('tab-data-recap');
+
+            if (tab === 'history') {
+                viewHistory.classList.remove('hidden');
+                viewHistory.classList.add('flex');
+                viewRecap.classList.add('hidden');
+                viewRecap.classList.remove('flex');
+                tabHistory.className = "pb-2.5 text-xs sm:text-sm transition-all tab-active";
+                tabRecap.className = "pb-2.5 text-xs sm:text-sm transition-all tab-inactive";
+            } else {
+                viewHistory.classList.add('hidden');
+                viewHistory.classList.remove('flex');
+                viewRecap.classList.remove('hidden');
+                viewRecap.classList.add('flex');
+                tabRecap.className = "pb-2.5 text-xs sm:text-sm transition-all tab-active";
+                tabHistory.className = "pb-2.5 text-xs sm:text-sm transition-all tab-inactive";
+                renderRecap();
+            }
+        };
+
+        // ============================================================
+        // WARGA LOGIN
+        // ============================================================
+        window.openWargaLogin = function() {
+            if (currentWargaHouse) {
+                openInfoWarga();
+                return;
+            }
+
+            document.getElementById('warga-login-input').value = '';
+            document.getElementById('warga-remember').checked = true;
+            document.getElementById('warga-login-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('warga-login-input').focus(), 100);
+        };
+
+        window.closeWargaLogin = function() {
+            document.getElementById('warga-login-modal').classList.add('hidden');
+        };
+
+        window.logoutWarga = function() {
+            if (!confirm('Yakin ingin keluar? Anda perlu memasukkan No. Rumah lagi di kunjungan berikutnya.')) return;
+            
+            currentWargaHouse = null;
+            localStorage.removeItem('kasRtWargaHouse');
+            updateWargaUI();
+            showToast('Anda telah keluar. Terima kasih! 👋', 'info');
+        };
+
+        function updateWargaUI() {
+            const banner = document.getElementById('warga-welcome-banner');
+            const btnText = document.getElementById('warga-btn-text');
+
+            if (currentWargaHouse) {
+                if (banner) banner.classList.remove('hidden');
+                document.getElementById('warga-welcome-name').textContent = currentWargaHouse.ownerName || '-';
+                document.getElementById('warga-welcome-house').textContent = `Rumah ${currentWargaHouse.houseNumber}`;
+                if (btnText) btnText.textContent = 'Cek Iuran Saya';
+            } else {
+                if (banner) banner.classList.add('hidden');
+                if (btnText) btnText.textContent = 'Cek Iuran Saya';
+            }
+        }
 
         // ============================================================
         // INIT (PALING BAWAH)
@@ -3768,7 +3796,7 @@
             await getAdminPinHash();
             updateAdminUI();
 
-            // Pakai setTimeout untuk pastikan semua fungsi sudah siap
+            // Delay sedikit supaya semua fungsi sudah didefinisikan
             setTimeout(() => {
                 const savedPage = localStorage.getItem('kasRtActivePage') || 'dashboard';
                 if (typeof switchMainPage === 'function') switchMainPage(savedPage);
