@@ -18,7 +18,12 @@
         .admin-only.hidden { display:none !important; }
         .readonly-overlay { pointer-events:none; opacity:.65; }
         th, td { white-space: normal !important; word-break: break-word; }
-        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
         .smooth-hscroll { -webkit-overflow-scrolling: touch; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-app-compat.js"></script>
@@ -29,6 +34,8 @@
 
     <nav class="bg-blue-700 text-white shadow-md sticky top-0 z-30">
         <div class="max-w-6xl mx-auto px-3 sm:px-4 py-3 space-y-2.5">
+            
+            <!-- Baris 1: Judul -->
             <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2 min-w-0 flex-1">
                     <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-inner shrink-0">
@@ -42,21 +49,26 @@
                 <div class="text-[10px] text-blue-200 hidden md:block shrink-0" id="current-date"></div>
             </div>
 
+            <!-- Baris 2: Tombol Cek Iuran & Login -->
             <div class="flex items-center justify-center gap-2 flex-wrap">
                 <button id="warga-login-btn" onclick="openWargaLogin()" class="px-3 sm:px-4 py-2 rounded-lg bg-white text-blue-800 hover:bg-blue-50 text-xs sm:text-sm font-semibold flex items-center gap-1.5 shadow-sm whitespace-nowrap">
                     <i class="fas fa-search"></i> <span id="warga-btn-text">Cek Iuran Saya</span>
                 </button>
+                
                 <button id="admin-login-btn" onclick="openAdminLogin()" class="px-3 sm:px-4 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-xs sm:text-sm font-semibold flex items-center gap-1.5 whitespace-nowrap">
                     <i class="fas fa-lock"></i> Login Admin
                 </button>
+                
                 <button id="admin-change-pin-btn" onclick="openChangePin()" class="admin-only px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-xs font-semibold hidden items-center gap-1.5 whitespace-nowrap">
                     <i class="fas fa-key"></i> Ubah PIN
                 </button>
+                
                 <button id="admin-logout-btn" onclick="logoutAdmin()" class="admin-only px-3 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-xs font-semibold hidden items-center gap-1.5 whitespace-nowrap">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
 
+            <!-- Baris 3: Menu Tab -->
             <div class="flex items-center bg-blue-800/60 p-1 rounded-xl border border-blue-500/30 justify-center">
                 <button onclick="switchMainPage('dashboard')" id="nav-btn-dashboard" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white text-blue-800 shadow text-center">
                     <i class="fas fa-chart-pie mr-1"></i> Kas & Transaksi
@@ -73,6 +85,7 @@
         
         <div id="firebase-status" class="text-[11px] text-slate-500 font-medium px-1"></div>
 
+        <!-- BANNER WARGA LOGGED IN -->
         <div id="warga-welcome-banner" class="hidden bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-2xl p-3 shadow-sm">
             <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3 min-w-0">
@@ -96,6 +109,7 @@
             </div>
         </div>
 
+        <!-- PANEL ADMIN: PENGUNJUNG ONLINE -->
         <div id="admin-online-panel" class="admin-only bg-white rounded-2xl p-4 shadow-sm border border-slate-200 hidden">
             <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
                 <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-2">
@@ -119,8 +133,10 @@
             </div>
         </div>
 
+        <!-- DASHBOARD KAS & TRANSAKSI -->
         <div id="page-dashboard" class="space-y-4 sm:space-y-6">
 
+            <!-- PANEL ADMIN: SALDO PER METODE (COLLAPSIBLE) -->
             <div id="admin-method-balance-panel" class="admin-only bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hidden">
                 <button onclick="toggleMethodBalance()" class="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors text-left">
                     <div class="flex items-center gap-2 min-w-0">
@@ -143,6 +159,7 @@
                 </div>
             </div>
 
+            <!-- BANNER PERINGATAN KATEGORI YATIM PIATU -->
             <div id="orphan-category-alert" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-amber-800">
                 <div class="flex items-start gap-2">
                     <i class="fas fa-exclamation-triangle text-amber-600 mt-0.5"></i>
@@ -154,6 +171,7 @@
                 </div>
             </div>
             
+            <!-- INFO REKENING BANK -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <button onclick="toggleBankSection()" class="w-full p-3 bg-slate-50 hover:bg-slate-100 flex items-center justify-between transition-colors text-left">
                     <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
@@ -184,6 +202,7 @@
                 </div>
             </div>
 
+            <!-- KARTU TOTAL -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5">
                 <div class="bg-gradient-to-br from-blue-700 to-indigo-800 text-white rounded-2xl p-4 sm:p-6 shadow-md relative overflow-hidden flex flex-col justify-between cursor-pointer select-none" onclick="toggleBalanceBreakdown()">
                     <div>
@@ -281,6 +300,7 @@
                 </div>
             </div>
 
+            <!-- FORM & RIWAYAT -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 <div id="transaction-form-container" class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 flex flex-col admin-only hidden">
                     <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
@@ -301,6 +321,7 @@
                         </button>
                     </div>
 
+                    <!-- FORM PEMASUKAN -->
                     <form id="form-income" class="space-y-3">
                         <input type="hidden" id="inc-id" value="">
                         <div>
@@ -345,12 +366,14 @@
                             </div>
                         </div>
 
+                        <!-- PREVIEW ALOKASI -->
                         <div id="income-allocation-preview" class="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-2 text-[11px]">
                             <div class="font-bold text-emerald-800 flex items-center justify-between">
                                 <span class="flex items-center gap-1"><i class="fas fa-wallet text-emerald-600"></i> Rincian Alokasi Dana:</span>
                                 <span id="preview-total-nominal" class="text-emerald-700">Rp 0</span>
                             </div>
 
+                            <!-- Preview Otomatis (default) -->
                             <div id="alokasi-auto-container">
                                 <div id="preview-allocation-list" class="space-y-1 mt-1 text-slate-600">
                                     <span class="text-slate-400 italic">Masukkan nominal untuk melihat rincian...</span>
@@ -360,6 +383,7 @@
                                 </button>
                             </div>
 
+                            <!-- Input Manual (hidden default) -->
                             <div id="alokasi-manual-container" class="hidden space-y-2">
                                 <div id="manual-allocation-inputs" class="space-y-2"></div>
                                 <div class="pt-2 border-t border-emerald-200">
@@ -392,6 +416,7 @@
                         </button>
                     </form>
 
+                    <!-- FORM PENGELUARAN -->
                     <form id="form-expense" class="space-y-3 hidden">
                         <input type="hidden" id="exp-id" value="">
                         <div>
@@ -529,20 +554,24 @@
             </div>
         </div>
 
+        <!-- HALAMAN STATUS IURAN -->
         <div id="page-houses" class="hidden space-y-4">
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm">
                     <div class="text-slate-500 text-[10px] font-semibold uppercase">Total Warga</div>
                     <h3 class="text-lg sm:text-2xl font-bold text-slate-800" id="stat-total-houses">0</h3>
                 </div>
+                
                 <div class="bg-emerald-50/70 rounded-xl p-3 border border-emerald-200/80 shadow-sm">
                     <div class="text-emerald-700 text-[10px] font-semibold uppercase">Sudah Bayar</div>
                     <h3 class="text-lg sm:text-2xl font-bold text-emerald-800" id="stat-paid-houses">0</h3>
                 </div>
+
                 <div class="bg-rose-50/70 rounded-xl p-3 border border-rose-200/80 shadow-sm">
                     <div class="text-rose-700 text-[10px] font-semibold uppercase">Belum Bayar</div>
                     <h3 class="text-lg sm:text-2xl font-bold text-rose-800" id="stat-unpaid-houses">0</h3>
                 </div>
+
                 <div class="bg-blue-50/70 rounded-xl p-3 border border-blue-200/80 shadow-sm">
                     <div class="text-blue-700 text-[10px] font-semibold uppercase">Persentase</div>
                     <h3 class="text-lg sm:text-2xl font-bold text-blue-800" id="stat-percentage">0%</h3>
@@ -600,6 +629,7 @@
         </div>
     </main>
 
+    <!-- Modal Warga Login -->
     <div id="warga-login-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
             <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-5 text-white text-center">
@@ -632,6 +662,7 @@
         </div>
     </div>
 
+    <!-- Modal Info Warga -->
     <div id="info-warga-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-4 text-white">
@@ -698,6 +729,7 @@
         </div>
     </div>
 
+    <!-- Modal Bank -->
     <div id="bank-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -730,6 +762,7 @@
         </div>
     </div>
 
+    <!-- Modal Alokasi -->
     <div id="allocation-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -759,6 +792,7 @@
         </div>
     </div>
 
+    <!-- Modal House -->
     <div id="house-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -791,6 +825,7 @@
         </div>
     </div>
 
+    <!-- Modal Proof -->
     <div id="proof-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -808,6 +843,7 @@
         </div>
     </div>
 
+    <!-- Modal Recap Detail -->
     <div id="recap-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -842,6 +878,7 @@
         </div>
     </div>
 
+    <!-- Modal Login Admin -->
     <div id="admin-login-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-xs w-full overflow-hidden shadow-2xl">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -866,6 +903,7 @@
         </div>
     </div>
 
+    <!-- Modal Change PIN -->
     <div id="change-pin-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-2xl max-w-xs w-full overflow-hidden shadow-2xl">
             <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -900,6 +938,7 @@
         </div>
     </div>
 
+    <!-- Toast -->
     <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 -translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 z-[200] pointer-events-none text-xs">
         <i id="toast-icon" class="fas fa-check-circle text-emerald-400 text-sm"></i>
         <span id="toast-message" class="font-medium whitespace-nowrap">Notifikasi</span>
@@ -1231,14 +1270,17 @@
         window.aktifkanManualAlokasi = function() {
             alokasiMode = 'manual';
             
+            // Sembunyikan auto, tampilkan manual
             document.getElementById('alokasi-auto-container').classList.add('hidden');
             document.getElementById('alokasi-manual-container').classList.remove('hidden');
             
+            // ✅ SET NOMINAL JADI 0
             const amountInput = document.getElementById('inc-amount');
             if (amountInput) {
                 amountInput.value = 0;
             }
             
+            // RESET total: semua kategori = 0
             manualAllocation = {};
             if (feeAllocations && feeAllocations.length > 0) {
                 feeAllocations.forEach((item) => {
@@ -1254,14 +1296,17 @@
             alokasiMode = 'auto';
             manualAllocation = {};
             
+            // Sembunyikan manual, tampilkan auto
             document.getElementById('alokasi-manual-container').classList.add('hidden');
             document.getElementById('alokasi-auto-container').classList.remove('hidden');
             
+            // ✅ Kembalikan nominal ke 50.000
             const amountInput = document.getElementById('inc-amount');
             if (amountInput && (parseFloat(amountInput.value) === 0 || !amountInput.value)) {
                 amountInput.value = 50000;
             }
             
+            // Refresh preview otomatis
             const amount = amountInput.value;
             updateAllocationPreview(amount);
         };
@@ -1320,11 +1365,13 @@
             const totalNominalEl = document.getElementById('preview-total-nominal');
             if (totalNominalEl) totalNominalEl.textContent = formatRupiah(inputVal);
             
+            // Manual mode
             if (alokasiMode === 'manual') {
                 updateManualSummary();
                 return;
             }
             
+            // === AUTO MODE ===
             const container = document.getElementById('preview-allocation-list');
             if (!container) return;
             
@@ -2015,6 +2062,7 @@
                 else dailyExpense += amt;
 
                 const isInc = t.type === 'income';
+                const isDanaTambahan = isInc && (!t.houseNumber || !t.houseNumber.trim());
 
                 let methodBadge = '';
                 const m = t.paymentMethod || 'Cash';
@@ -2311,4 +2359,1472 @@
                             <button onclick="editHouse('${h.id}')" class="admin-only text-slate-400 hover:text-amber-600 p-0.5 sm:p-1 shrink-0 ${isAdmin ? '' : 'hidden'}" title="Edit">
                                 <i class="fas fa-pen text-[10px] sm:text-xs"></i>
                             </button>
-                            <button onclick="deleteHouse('${h.id}')" class="admin-only text-slate-300 hover:text-rose-600 p-0.5 sm:p-1 shrink-0 ${isAdmin ? '' : 'hidden
+                            <button onclick="deleteHouse('${h.id}')" class="admin-only text-slate-300 hover:text-rose-600 p-0.5 sm:p-1 shrink-0 ${isAdmin ? '' : 'hidden'}" title="Hapus">
+                                <i class="fas fa-trash-alt text-[10px] sm:text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const totalHouses = houses.length;
+            document.getElementById('stat-total-houses').textContent = totalHouses;
+            document.getElementById('stat-paid-houses').textContent = paidCount;
+            document.getElementById('stat-unpaid-houses').textContent = unpaidCount;
+            
+            const percentage = totalHouses > 0 ? Math.round((paidCount / totalHouses) * 100) : 0;
+            document.getElementById('stat-percentage').textContent = `${percentage}%`;
+
+            const unpaidBadge = document.getElementById('unpaid-badge');
+            if (unpaidBadge) {
+                unpaidBadge.textContent = unpaidCount;
+                if (unpaidCount > 0) unpaidBadge.classList.remove('hidden');
+                else unpaidBadge.classList.add('hidden');
+            }
+
+            if (visibleRows === 0) {
+                emptyEl.classList.remove('hidden');
+                emptyEl.classList.add('flex');
+            } else {
+                emptyEl.classList.add('hidden');
+                emptyEl.classList.remove('flex');
+            }
+        };
+
+        // ============================================================
+        // EXPORT EXCEL
+        // ============================================================
+        window.exportToExcel = function() {
+            if (typeof XLSX === 'undefined') {
+                showToast('Pustaka Excel belum siap.', 'error');
+                return;
+            }
+
+            if (currentActiveTab === 'history') {
+                if (transactions.length === 0) {
+                    showToast('Tidak ada data transaksi untuk diekspor.', 'error');
+                    return;
+                }
+                const exportData = transactions.map((t, index) => ({
+                    "No": index + 1,
+                    "Tanggal": t.date || '-',
+                    "Tipe": t.type === 'income' ? (t.houseNumber && t.houseNumber.trim() ? 'Pemasukan (Iuran)' : 'Pemasukan (Dana Tambahan)') : 'Pengeluaran',
+                    "No. Rumah": t.houseNumber || '-',
+                    "Keterangan": t.description || '-',
+                    "Metode": t.paymentMethod || '-',
+                    "Kategori": t.type === 'expense' ? (t.category || '-') : '-',
+                    "Pemasukan (Rp)": t.type === 'income' ? (parseFloat(t.amount) || 0) : 0,
+                    "Pengeluaran (Rp)": t.type === 'expense' ? (parseFloat(t.amount) || 0) : 0
+                }));
+
+                const worksheet = XLSX.utils.json_to_sheet(exportData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Buku Kas");
+                XLSX.writeFile(workbook, `Buku_Kas_RT_${new Date().toISOString().split('T')[0]}.xlsx`);
+                showToast('Buku Kas berhasil diekspor!');
+            } else {
+                const monthlyData = {};
+                transactions.forEach(t => {
+                    const d = new Date(t.date);
+                    if (isNaN(d.getTime())) return;
+                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    if (!monthlyData[key]) monthlyData[key] = { income: 0, expense: 0 };
+                    const amt = parseFloat(t.amount) || 0;
+                    if (t.type === 'income') monthlyData[key].income += amt;
+                    else if (t.type === 'expense') monthlyData[key].expense += amt;
+                });
+
+                const sortedKeys = Object.keys(monthlyData).sort().reverse();
+                if (sortedKeys.length === 0) {
+                    showToast('Tidak ada data rekap untuk diekspor.', 'error');
+                    return;
+                }
+
+                const exportData = sortedKeys.map((key, index) => {
+                    const item = monthlyData[key];
+                    return {
+                        "No": index + 1,
+                        "Periode": key,
+                        "Pemasukan (Rp)": item.income,
+                        "Pengeluaran (Rp)": item.expense,
+                        "Bersih (Rp)": item.income - item.expense
+                    };
+                });
+
+                const worksheet = XLSX.utils.json_to_sheet(exportData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Bulanan");
+                XLSX.writeFile(workbook, `Rekap_Kas_RT_${new Date().toISOString().split('T')[0]}.xlsx`);
+                showToast('Rekap bulanan berhasil diekspor!');
+            }
+        };
+
+        window.exportHouseStatusToExcel = function() {
+            if (typeof XLSX === 'undefined') {
+                showToast('Pustaka Excel belum siap.', 'error');
+                return;
+            }
+
+            const periodInput = document.getElementById('house-period-filter').value || currentYearMonth;
+            const sortedHouses = [...houses].sort((a, b) => 
+                (a.houseNumber || '').localeCompare(b.houseNumber || '', undefined, { numeric: true, sensitivity: 'base' })
+            );
+
+            if (sortedHouses.length === 0) {
+                showToast('Tidak ada data warga untuk diekspor.', 'error');
+                return;
+            }
+
+            const exportData = sortedHouses.map((h, index) => {
+                const payment = transactions.find(t => {
+                    if (t.type !== 'income' || !t.houseNumber) return false;
+                    if (t.houseNumber.trim().toUpperCase() !== h.houseNumber.trim().toUpperCase()) return false;
+                    const tDate = new Date(t.date);
+                    if (isNaN(tDate.getTime())) return false;
+                    return `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}` === periodInput;
+                });
+
+                return {
+                    "No": index + 1,
+                    "No. Rumah": h.houseNumber || '-',
+                    "Nama Penghuni": h.ownerName || '-',
+                    "No. Telepon": h.phone || '-',
+                    "Status": payment ? 'Lunas' : 'Belum Bayar',
+                    "Nominal (Rp)": payment ? parseFloat(payment.amount) || 0 : 0
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, `Status Iuran ${periodInput}`);
+            XLSX.writeFile(workbook, `Status_Iuran_RT_${periodInput}.xlsx`);
+            showToast(`Status iuran periode ${periodInput} berhasil diekspor!`);
+        };
+
+        // ============================================================
+        // QUICK RECORD PAYMENT
+        // ============================================================
+        window.quickRecordPayment = function(houseNo) { 
+            if (!requireAdmin()) return;
+            switchMainPage('dashboard');
+            cancelEditTransaction();
+            switchForm('income');
+            const houseInput = document.getElementById('inc-house');
+            const descInput = document.getElementById('inc-desc');
+            const periodInput = document.getElementById('house-period-filter').value;
+            
+            houseInput.value = houseNo;
+            
+            let monthName = new Date().toLocaleDateString('id-ID', { month: 'long' });
+            if (periodInput) {
+                const [pYear, pMonth] = periodInput.split('-');
+                const pDate = new Date(parseInt(pYear), parseInt(pMonth) - 1, 1);
+                if (!isNaN(pDate.getTime())) {
+                    monthName = pDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+                    const yearMonthToday = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+                    if (periodInput !== yearMonthToday) {
+                        document.getElementById('inc-date').value = `${periodInput}-01`;
+                    }
+                }
+            }
+            
+            descInput.value = `Iuran Kas Bulan ${monthName}`;
+            document.getElementById('inc-amount').value = '50000';
+            updateAllocationPreview('50000');
+            document.getElementById('inc-amount').focus();
+            document.getElementById('inc-amount').select();
+            showToast(`Mencatat iuran rumah ${houseNo}`);
+        };
+
+        // ============================================================
+        // EDIT / CANCEL TRANSAKSI
+        // ============================================================
+        window.editTransaction = function(id) {
+            if (!requireAdmin()) return;
+            const t = transactions.find(item => item.id === id);
+            if (!t) return;
+
+            editingTransactionId = id;
+            switchMainPage('dashboard');
+
+            document.getElementById('form-type-switcher').classList.add('hidden');
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+
+            if (t.type === 'income') {
+                switchForm('income');
+                document.getElementById('form-title').innerHTML = '<i class="fas fa-edit text-amber-500"></i> Edit Pemasukan';
+                document.getElementById('inc-id').value = t.id;
+                document.getElementById('inc-date').value = t.date || '';
+                document.getElementById('inc-method').value = t.paymentMethod || 'Cash';
+                document.getElementById('inc-house').value = t.houseNumber || '';
+                document.getElementById('inc-desc').value = t.description || '';
+                document.getElementById('inc-amount').value = t.amount || '';
+                
+                // Reset ke mode otomatis
+                alokasiMode = 'auto';
+                manualAllocation = {};
+                document.getElementById('alokasi-manual-container').classList.add('hidden');
+                document.getElementById('alokasi-auto-container').classList.remove('hidden');
+                
+                updateAllocationPreview(t.amount || 0);
+                document.getElementById('inc-submit-btn').innerHTML = '<i class="fas fa-save"></i> Perbarui Pemasukan';
+
+                currentIncomeProofs = Array.isArray(t.proofs) ? [...t.proofs] : (t.proof ? [t.proof] : []);
+                renderPreviews('income');
+
+            } else {
+                switchForm('expense');
+                document.getElementById('form-title').innerHTML = '<i class="fas fa-edit text-amber-500"></i> Edit Pengeluaran';
+                document.getElementById('exp-id').value = t.id;
+                document.getElementById('exp-date').value = t.date || '';
+                document.getElementById('exp-method').value = t.paymentMethod || 'Cash';
+                document.getElementById('exp-desc').value = t.description || '';
+                document.getElementById('exp-category').value = t.category || '';
+                document.getElementById('exp-amount').value = t.amount || '';
+                document.getElementById('exp-submit-btn').innerHTML = '<i class="fas fa-save"></i> Perbarui Pengeluaran';
+
+                currentExpenseProofs = Array.isArray(t.proofs) ? [...t.proofs] : (t.proof ? [t.proof] : []);
+                renderPreviews('expense');
+            }
+
+            document.getElementById('form-title').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.cancelEditTransaction = function() {
+            editingTransactionId = null;
+            document.getElementById('form-type-switcher').classList.remove('hidden');
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+            document.getElementById('form-title').innerHTML = '<i class="fas fa-pen-to-square text-blue-600"></i> Catat Transaksi Baru';
+
+            const formInc = document.getElementById('form-income');
+            formInc.reset();
+            document.getElementById('inc-id').value = '';
+            document.getElementById('inc-amount').value = '50000';
+            document.getElementById('inc-submit-btn').innerHTML = '<i class="fas fa-save"></i> Simpan Pemasukan';
+
+            // Reset ke mode otomatis
+            alokasiMode = 'auto';
+            manualAllocation = {};
+            document.getElementById('alokasi-manual-container').classList.add('hidden');
+            document.getElementById('alokasi-auto-container').classList.remove('hidden');
+
+            updateAllocationPreview('50000');
+            currentIncomeProofs = [];
+            renderPreviews('income');
+
+            const formExp = document.getElementById('form-expense');
+            formExp.reset();
+            document.getElementById('exp-id').value = '';
+            document.getElementById('exp-method').value = 'Cash';
+            document.getElementById('exp-submit-btn').innerHTML = '<i class="fas fa-save"></i> Simpan Pengeluaran';
+            currentExpenseProofs = [];
+            renderPreviews('expense');
+
+            const todayISO = new Date().toISOString().split('T')[0];
+            document.getElementById('inc-date').value = todayISO;
+            document.getElementById('exp-date').value = todayISO;
+        };
+
+        // ============================================================
+        // CRUD HOUSE
+        // ============================================================
+        window.openAddHouseModal = function() { 
+            if (!requireAdmin()) return;
+            document.getElementById('modal-house-id').value = '';
+            document.getElementById('modal-house-no').value = '';
+            document.getElementById('modal-house-owner').value = '';
+            document.getElementById('modal-house-phone').value = '';
+            document.getElementById('house-modal-title').innerHTML = '<i class="fas fa-home text-blue-600"></i> Tambah Data Warga';
+            document.getElementById('house-modal').classList.remove('hidden');
+        };
+
+        window.editHouse = function(id) {
+            if (!requireAdmin()) return;
+            const house = houses.find(h => h.id === id);
+            if (!house) return;
+
+            document.getElementById('modal-house-id').value = house.id;
+            document.getElementById('modal-house-no').value = house.houseNumber || '';
+            document.getElementById('modal-house-owner').value = house.ownerName || '';
+            document.getElementById('modal-house-phone').value = house.phone || '';
+            document.getElementById('house-modal-title').innerHTML = '<i class="fas fa-edit text-amber-500"></i> Edit Data Warga';
+            document.getElementById('house-modal').classList.remove('hidden');
+        };
+
+        window.closeHouseModal = function() {
+            document.getElementById('house-modal').classList.add('hidden');
+        };
+
+        window.deleteHouse = function(id) { 
+            if (!requireAdmin()) return;
+            const house = houses.find(h => h.id === id);
+            const houseName = house ? `Rumah ${house.houseNumber}` : 'data ini';
+            if (confirm(`Hapus ${houseName}?`)) {
+                if (firebaseReady) firebaseDb.ref(`kasRt/houses/${id}`).remove();
+                else {
+                    houses = houses.filter(h => h.id !== id);
+                    saveLocalStorage();
+                    scheduleRenderAllViews();
+                }
+                showToast('Data rumah terhapus', 'delete');
+            }
+        };
+
+        // ============================================================
+        // MODAL PROOF
+        // ============================================================
+        window.openProofModal = function(id) {
+            const t = transactions.find(item => item.id === id);
+            const modal = document.getElementById('proof-modal');
+            const container = document.getElementById('proof-images-container');
+            container.innerHTML = '';
+
+            let proofsList = [];
+            if (t) {
+                if (Array.isArray(t.proofs) && t.proofs.length > 0) proofsList = t.proofs;
+                else if (t.proof) proofsList = [t.proof];
+            }
+
+            if (proofsList.length > 0) {
+                proofsList.forEach((src) => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.className = "max-h-[50vh] max-w-full object-contain rounded-lg border border-slate-700 bg-black/40 shadow";
+                    container.appendChild(img);
+                });
+            } else {
+                container.innerHTML = '<p class="text-slate-400 text-xs">Bukti transaksi tidak tersedia.</p>';
+            }
+            modal.classList.remove('hidden');
+        };
+
+        window.closeProofModal = function() {
+            document.getElementById('proof-modal').classList.add('hidden');
+        };
+
+        // ============================================================
+        // RECAP DETAIL
+        // ============================================================
+        let currentRecapExport = null;
+
+        window.openRecapDetail = function(monthKey) {
+            const monthData = recapMonthlyDataCache[monthKey];
+            if (!monthData) return;
+
+            const monthName = monthData.dateObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+            document.getElementById('recap-detail-title').textContent = `Rincian Mutasi - ${monthName}`;
+
+            const net = monthData.income - monthData.expense;
+            document.getElementById('recap-detail-income').textContent = formatRupiah(monthData.income);
+            document.getElementById('recap-detail-expense').textContent = formatRupiah(monthData.expense);
+            const netEl = document.getElementById('recap-detail-net');
+            netEl.textContent = formatRupiah(net);
+            netEl.className = `font-bold ${net >= 0 ? 'text-blue-600' : 'text-rose-600'}`;
+
+            const monthStart = monthData.dateObj;
+            let openingBalance = 0;
+            transactions.forEach(t => {
+                const d = new Date(t.date);
+                if (isNaN(d.getTime()) || d >= monthStart) return;
+                const amt = parseFloat(t.amount) || 0;
+                openingBalance += (t.type === 'income' ? amt : -amt);
+            });
+
+            const chronological = [...(monthData.transactions || [])].sort((a, b) => {
+                const dateDiff = new Date(a.date) - new Date(b.date);
+                if (dateDiff !== 0) return dateDiff;
+                return (a.id || '').localeCompare(b.id || '');
+            });
+
+            let running = openingBalance;
+            const rows = chronological.map(t => {
+                const amt = parseFloat(t.amount) || 0;
+                running += (t.type === 'income' ? amt : -amt);
+                return { t, saldo: running };
+            });
+
+            currentRecapExport = { monthKey, monthName, openingBalance, closingBalance: running, rows };
+
+            const listEl = document.getElementById('recap-detail-list');
+
+            if (rows.length === 0) {
+                listEl.innerHTML = `
+                    <div class="flex justify-between items-center px-2.5 py-2 rounded-lg bg-slate-100 text-[11px] font-semibold text-slate-600 mb-1">
+                        <span><i class="fas fa-flag mr-1 text-slate-400"></i> Saldo Awal</span>
+                        <span>${formatRupiah(openingBalance)}</span>
+                    </div>
+                    <p class="text-slate-400 text-xs text-center py-4">Tidak ada mutasi pada periode ini.</p>
+                `;
+            } else {
+                const displayRows = [...rows].reverse();
+                let html = `
+                    <div class="flex justify-between items-center px-2.5 py-2 rounded-lg bg-slate-100 text-[11px] font-semibold text-slate-600 mb-1">
+                        <span><i class="fas fa-flag mr-1 text-slate-400"></i> Saldo Awal</span>
+                        <span>${formatRupiah(openingBalance)}</span>
+                    </div>
+                `;
+                html += displayRows.map(({ t, saldo }) => {
+                    const isInc = t.type === 'income';
+                    const tagBadge = isInc
+                        ? (t.houseNumber
+                            ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200">${escapeHTML(t.houseNumber)}</span>`
+                            : `<span class="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-purple-200"><i class="fas fa-gift"></i> Dana Tambahan</span>`)
+                        : (t.category ? `<span class="bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded text-[10px] font-semibold border border-rose-200"><i class="fas fa-tag mr-0.5"></i>${escapeHTML(t.category)}</span>` : '');
+                    return `
+                        <div class="flex items-start justify-between gap-2 p-2.5 rounded-lg border border-slate-100 bg-white shadow-sm">
+                            <div class="min-w-0 flex-1">
+                                <div class="text-[10px] text-slate-400 font-medium">${formatDate(t.date)}</div>
+                                <div class="font-semibold text-slate-800 text-xs leading-snug">${escapeHTML(t.description)}</div>
+                                <div class="mt-1">${tagBadge}</div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <div class="font-bold text-xs ${isInc ? 'text-emerald-600' : 'text-rose-600'}">
+                                    ${isInc ? '+' : '-'}${formatRupiah(t.amount)}
+                                </div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">Saldo: ${formatRupiah(saldo)}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                listEl.innerHTML = html;
+            }
+
+            document.getElementById('recap-detail-modal').classList.remove('hidden');
+        };
+
+        window.closeRecapDetail = function() {
+            document.getElementById('recap-detail-modal').classList.add('hidden');
+        };
+
+        window.exportRecapDetailToExcel = function() {
+            if (typeof XLSX === 'undefined') {
+                showToast('Pustaka Excel belum siap.', 'error');
+                return;
+            }
+            if (!currentRecapExport) {
+                showToast('Tidak ada data mutasi untuk diekspor.', 'error');
+                return;
+            }
+
+            const { monthName, openingBalance, closingBalance, rows } = currentRecapExport;
+
+            const exportData = [];
+            exportData.push({
+                "Tanggal": "-", "Keterangan": "SALDO AWAL",
+                "No. Rumah / Kategori": "-",
+                "Debit (Keluar)": "", "Kredit (Masuk)": "",
+                "Saldo": openingBalance
+            });
+
+            rows.forEach(({ t, saldo }) => {
+                const isInc = t.type === 'income';
+                exportData.push({
+                    "Tanggal": formatDate(t.date),
+                    "Keterangan": t.description || '-',
+                    "No. Rumah / Kategori": isInc ? (t.houseNumber || 'Dana Tambahan') : (t.category || '-'),
+                    "Debit (Keluar)": !isInc ? (parseFloat(t.amount) || 0) : '',
+                    "Kredit (Masuk)": isInc ? (parseFloat(t.amount) || 0) : '',
+                    "Saldo": saldo
+                });
+            });
+
+            exportData.push({
+                "Tanggal": "-", "Keterangan": "SALDO AKHIR",
+                "No. Rumah / Kategori": "-",
+                "Debit (Keluar)": "", "Kredit (Masuk)": "",
+                "Saldo": closingBalance
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            worksheet['!cols'] = [{ wch: 12 }, { wch: 32 }, { wch: 20 }, { wch: 14 }, { wch: 14 }, { wch: 14 }];
+            const workbook = XLSX.utils.book_new();
+            const sheetName = monthName.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 31) || 'Mutasi';
+            XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+            XLSX.writeFile(workbook, `Mutasi_Kas_RT_${monthName.replace(/\s+/g, '_')}.xlsx`);
+            showToast('Rincian mutasi berhasil diekspor!');
+        };
+
+        // ============================================================
+        // DELETE TRANSAKSI
+        // ============================================================
+        window.deleteTransaction = function(id) { 
+            if (!requireAdmin()) return;
+            if (confirm('Hapus transaksi ini?')) {
+                if (editingTransactionId === id) cancelEditTransaction();
+                if (firebaseReady) firebaseDb.ref(`kasRt/transactions/${id}`).remove();
+                else {
+                    transactions = transactions.filter(t => t.id !== id);
+                    saveLocalStorage();
+                    scheduleRenderAllViews();
+                }
+                showToast('Transaksi dihapus', 'delete');
+            }
+        };
+
+        // ============================================================
+        // RENDER BATCH
+        // ============================================================
+        let renderScheduled = false;
+
+        function scheduleRenderAllViews() {
+            if (renderScheduled) return;
+            renderScheduled = true;
+
+            const runRender = () => {
+                renderScheduled = false;
+                renderAllViews();
+            };
+
+            if (window.requestAnimationFrame) requestAnimationFrame(runRender);
+            else setTimeout(runRender, 0);
+        }
+
+        function renderAllViews() {
+            updateHouseDatalist();
+            renderBankAccounts();
+            renderFeeAllocations();
+            renderDashboard();
+            renderMethodBalances();
+            renderHistory();
+            if (currentActiveTab === 'recap') renderRecap();
+            renderHouseStatus();
+        }
+
+        // ============================================================
+        // FIREBASE
+        // ============================================================
+        function addHouseToFirebase(houseData) {
+            if (!firebaseReady) return;
+            firebaseDb.ref('kasRt/houses').push().set({
+                houseNumber: houseData.houseNumber,
+                ownerName: houseData.ownerName,
+                phone: houseData.phone || ''
+            });
+        }
+
+        function addBankToFirebase(bankData) {
+            if (!firebaseReady) return;
+            firebaseDb.ref('kasRt/banks').push().set({
+                bankName: bankData.bankName,
+                accountNumber: bankData.accountNumber,
+                accountHolder: bankData.accountHolder
+            });
+        }
+
+        function addAllocationToFirebase(allocData) {
+            if (!firebaseReady) return;
+            firebaseDb.ref('kasRt/allocations').push().set({
+                title: allocData.title,
+                amount: allocData.amount
+            });
+        }
+
+        function isFirebaseConfigured() {
+            return firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('ISI_');
+        }
+
+        async function startFirebaseSync() {
+            const statusEl = document.getElementById('firebase-status');
+
+            if (!isFirebaseConfigured()) {
+                initApp();
+                return;
+            }
+            try {
+                firebase.initializeApp(firebaseConfig);
+                firebaseDb = firebase.database();
+                firebaseAuth = firebase.auth();
+
+                firebaseAuth.signInAnonymously().catch((err) => {
+                    console.warn('Anonymous auth gagal:', err.message);
+                });
+
+                firebaseReady = true;
+                statusEl.innerHTML = '<span class="text-emerald-600"><i class="fas fa-check-circle"></i> Terhubung ke Firebase Realtime Database.</span>';
+
+                await getAdminPinHash();
+
+                const myPresenceRef = firebaseDb.ref(`kasRt/presence/${userSessionId}`);
+                const connectedRef = firebaseDb.ref('.info/connected');
+
+                connectedRef.on('value', (snap) => {
+                    if (snap.val() === true) {
+                        myPresenceRef.onDisconnect().remove();
+                        myPresenceRef.set({
+                            joinedAt: firebase.database.ServerValue.TIMESTAMP,
+                            device: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
+                            role: isAdmin ? 'Admin' : 'Warga',
+                            house: currentWargaHouse ? currentWargaHouse.houseNumber : ''
+                        });
+                    }
+                });
+
+                window.addEventListener('beforeunload', () => {
+                    if (firebaseReady) myPresenceRef.remove();
+                });
+
+                firebaseDb.ref('kasRt/presence').on('value', (snap) => {
+                    const presenceObj = snap.val() || {};
+                    const container = document.getElementById('online-users-container');
+                    const countBadge = document.getElementById('online-count-badge');
+                    if (!container) return;
+
+                    container.innerHTML = '';
+                    const keys = Object.keys(presenceObj);
+                    countBadge.textContent = `${keys.length} Online`;
+
+                    if (keys.length === 0) {
+                        container.innerHTML = '<span class="text-xs text-slate-400">Belum ada pengunjung online.</span>';
+                        return;
+                    }
+
+                    keys.forEach((key) => {
+                        const user = presenceObj[key] || {};
+                        const isMe = key === userSessionId;
+                        const role = user.role || 'Warga';
+                        const device = user.device || '';
+                        const house = user.house || '';
+
+                        const badge = document.createElement('div');
+                        badge.className = "flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-xl text-xs font-medium shadow-xs";
+                        
+                        let displayName = isMe ? 'Anda' : role;
+                        if (house) displayName += ` (${house})`;
+                        
+                        badge.innerHTML = `
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                            <span class="flex items-center gap-1">
+                                <b>${displayName}</b>
+                                ${device ? `<span class="text-[9px] text-emerald-500">${device === 'Mobile' ? '📱' : '💻'}</span>` : ''}
+                            </span>
+                        `;
+                        container.appendChild(badge);
+                    });
+                });
+
+                firebaseDb.ref('kasRt/settings/adminPinHash').on('value', (snap) => {
+                    const serverHash = snap.val();
+                    if (serverHash && serverHash !== ADMIN_PIN_HASH) {
+                        ADMIN_PIN_HASH = serverHash;
+                        localStorage.setItem('kasRtAdminPinHash', serverHash);
+                    }
+                });
+
+                firebaseDb.ref('kasRt/houses').on('value', (snap) => {
+                    const val = snap.val();
+                    if (!val) {
+                        houses = [...defaultHousesArray];
+                        houses.forEach(h => addHouseToFirebase(h));
+                    } else {
+                        houses = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                    }
+                    if (currentWargaHouse) {
+                        const updated = houses.find(h => h.houseNumber === currentWargaHouse.houseNumber);
+                        if (updated) {
+                            currentWargaHouse = updated;
+                            updateWargaUI();
+                        }
+                    }
+                    scheduleRenderAllViews();
+                });
+
+                firebaseDb.ref('kasRt/banks').on('value', (snap) => {
+                    const val = snap.val();
+                    if (!val) {
+                        bankAccounts = [...defaultBanksArray];
+                        bankAccounts.forEach(b => addBankToFirebase(b));
+                    } else {
+                        bankAccounts = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                    }
+                    scheduleRenderAllViews();
+                });
+
+                firebaseDb.ref('kasRt/allocations').on('value', (snap) => {
+                    const val = snap.val();
+                    if (!val) {
+                        feeAllocations = [...defaultAllocationsArray];
+                        feeAllocations.forEach(a => addAllocationToFirebase(a));
+                    } else {
+                        feeAllocations = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                    }
+                    scheduleRenderAllViews();
+                });
+
+                firebaseDb.ref('kasRt/transactions').on('value', (snap) => {
+                    const val = snap.val();
+                    if (!val) {
+                        transactions = [];
+                    } else {
+                        transactions = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+                    }
+                    scheduleRenderAllViews();
+                });
+
+            } catch(err) {
+                console.error("Firebase init error:", err);
+                initApp();
+            }
+        }
+
+        // ============================================================
+        // LOCAL STORAGE MODE
+        // ============================================================
+        function initApp() {
+            firebaseReady = false;
+            document.getElementById('firebase-status').innerHTML = '<span class="text-amber-600"><i class="fas fa-exclamation-triangle"></i> Mode Offline / LocalStorage.</span>';
+            
+            houses = JSON.parse(localStorage.getItem('kasRtHouses') || JSON.stringify(defaultHousesArray));
+            bankAccounts = JSON.parse(localStorage.getItem('kasRtBanks') || JSON.stringify(defaultBanksArray));
+            feeAllocations = JSON.parse(localStorage.getItem('kasRtAllocations') || JSON.stringify(defaultAllocationsArray));
+            transactions = JSON.parse(localStorage.getItem('kasRtTransactions') || '[]');
+
+            document.getElementById('online-users-container').innerHTML = '<span class="text-xs text-slate-400">Offline mode.</span>';
+            document.getElementById('online-count-badge').textContent = 'Offline';
+
+            scheduleRenderAllViews();
+        }
+
+        function saveLocalStorage() {
+            if (firebaseReady) return;
+            localStorage.setItem('kasRtHouses', JSON.stringify(houses));
+            localStorage.setItem('kasRtBanks', JSON.stringify(bankAccounts));
+            localStorage.setItem('kasRtAllocations', JSON.stringify(feeAllocations));
+            localStorage.setItem('kasRtTransactions', JSON.stringify(transactions));
+        }
+
+        // ============================================================
+        // AUTH ADMIN
+        // ============================================================
+        window.openAdminLogin = function() {
+            document.getElementById('admin-pin').value = '';
+            document.getElementById('admin-login-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('admin-pin').focus(), 100);
+        };
+
+        window.closeAdminLogin = function() {
+            document.getElementById('admin-login-modal').classList.add('hidden');
+        };
+
+        window.handleAdminLogin = async function(e) {
+            e.preventDefault();
+            const pin = document.getElementById('admin-pin').value;
+            if (!pin || pin.length < 6) {
+                showToast('PIN minimal 6 digit!', 'error');
+                return;
+            }
+
+            const storedHash = await getAdminPinHash();
+            const pinHash = await hashPin(pin);
+
+            if (pinHash === storedHash) {
+                isAdmin = true;
+                sessionStorage.setItem('kasRtIsAdmin', 'true');
+                closeAdminLogin();
+                updateAdminUI();
+                showToast('Berhasil login sebagai Admin RT!');
+            } else {
+                showToast('PIN Admin salah! Cek dengan admin lain.', 'error');
+                document.getElementById('admin-pin').value = '';
+            }
+        };
+
+        window.logoutAdmin = function() {
+            isAdmin = false;
+            sessionStorage.removeItem('kasRtIsAdmin');
+            updateAdminUI();
+            cancelEditTransaction();
+            showToast('Anda telah logout dari mode admin.');
+        };
+
+        window.openChangePin = function() {
+            if (!requireAdmin()) return;
+            document.getElementById('old-pin').value = '';
+            document.getElementById('new-pin').value = '';
+            document.getElementById('confirm-pin').value = '';
+            document.getElementById('change-pin-modal').classList.remove('hidden');
+        };
+
+        window.closeChangePin = function() {
+            document.getElementById('change-pin-modal').classList.add('hidden');
+        };
+
+        window.handlePinChange = async function(e) {
+            e.preventDefault();
+            const oldPin = document.getElementById('old-pin').value;
+            const newPin = document.getElementById('new-pin').value;
+            const confirmPin = document.getElementById('confirm-pin').value;
+
+            const storedHash = await getAdminPinHash();
+            const oldHash = await hashPin(oldPin);
+
+            if (oldHash !== storedHash) {
+                showToast('PIN Lama tidak sesuai! Cek dengan admin lain.', 'error');
+                return;
+            }
+            if (newPin.length < 6) {
+                showToast('PIN Baru minimal 6 karakter/digit!', 'error');
+                return;
+            }
+            if (newPin !== confirmPin) {
+                showToast('Konfirmasi PIN Baru tidak sama!', 'error');
+                return;
+            }
+
+            const newHash = await hashPin(newPin);
+
+            if (firebaseReady) {
+                try {
+                    await firebaseDb.ref('kasRt/settings/adminPinHash').set(newHash);
+                    showToast('PIN diperbarui! Semua admin pakai PIN baru.');
+                } catch (err) {
+                    console.error('Gagal simpan PIN ke server:', err);
+                    showToast('Gagal simpan PIN ke server.', 'error');
+                    return;
+                }
+            } else {
+                showToast('Mode offline — PIN hanya tersimpan lokal.', 'info');
+            }
+
+            ADMIN_PIN_HASH = newHash;
+            localStorage.setItem('kasRtAdminPinHash', newHash);
+            closeChangePin();
+        };
+
+        function requireAdmin() {
+            if (!isAdmin) {
+                openAdminLogin();
+                return false;
+            }
+            return true;
+        }
+
+        function updateAdminUI() {
+            const adminOnlyElements = document.querySelectorAll('.admin-only');
+            adminOnlyElements.forEach(el => {
+                if (isAdmin) el.classList.remove('hidden');
+                else el.classList.add('hidden');
+            });
+
+            const loginBtn = document.getElementById('admin-login-btn');
+            if (isAdmin) {
+                if (loginBtn) loginBtn.classList.add('hidden');
+            } else {
+                if (loginBtn) loginBtn.classList.remove('hidden');
+            }
+            renderAllViews();
+        }
+
+        // ============================================================
+        // BACKUP / RESTORE
+        // ============================================================
+        window.backupDataJSON = function() {
+            const data = { houses, bankAccounts, feeAllocations, transactions, exportedAt: new Date().toISOString() };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_kas_rt_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Backup berhasil diunduh!');
+        };
+
+        window.restoreDataJSON = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!confirm('Restore akan MENGGANTI semua data saat ini. Lanjutkan?')) return;
+
+                    houses = data.houses || [];
+                    bankAccounts = data.bankAccounts || [];
+                    feeAllocations = data.feeAllocations || [];
+                    transactions = data.transactions || [];
+
+                    if (firebaseReady) {
+                        firebaseDb.ref('kasRt/houses').set(houses.reduce((acc, h) => {
+                            const { id, ...rest } = h;
+                            acc[id || firebaseDb.ref().push().key] = rest;
+                            return acc;
+                        }, {}));
+                        firebaseDb.ref('kasRt/banks').set(bankAccounts.reduce((acc, b) => {
+                            const { id, ...rest } = b;
+                            acc[id || firebaseDb.ref().push().key] = rest;
+                            return acc;
+                        }, {}));
+                        firebaseDb.ref('kasRt/allocations').set(feeAllocations.reduce((acc, a) => {
+                            const { id, ...rest } = a;
+                            acc[id || firebaseDb.ref().push().key] = rest;
+                            return acc;
+                        }, {}));
+                        firebaseDb.ref('kasRt/transactions').set(transactions.reduce((acc, t) => {
+                            const { id, ...rest } = t;
+                            acc[id || firebaseDb.ref().push().key] = rest;
+                            return acc;
+                        }, {}));
+                    } else {
+                        saveLocalStorage();
+                        scheduleRenderAllViews();
+                    }
+                    showToast('Data berhasil direstore!');
+                } catch (err) {
+                    console.error(err);
+                    showToast('File backup tidak valid.', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        };
+
+        // ============================================================
+        // FORM SUBMITS
+        // ============================================================
+        document.getElementById('form-bank').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!requireAdmin()) return;
+
+            const id = document.getElementById('modal-bank-id').value;
+            const bankName = document.getElementById('modal-bank-name').value.trim();
+            const accountNumber = document.getElementById('modal-bank-number').value.trim();
+            const accountHolder = document.getElementById('modal-bank-holder').value.trim();
+
+            if (firebaseReady) {
+                if (id) firebaseDb.ref(`kasRt/banks/${id}`).update({ bankName, accountNumber, accountHolder });
+                else firebaseDb.ref('kasRt/banks').push({ bankName, accountNumber, accountHolder });
+            } else {
+                if (id) {
+                    const idx = bankAccounts.findIndex(b => b.id === id);
+                    if (idx !== -1) bankAccounts[idx] = { id, bankName, accountNumber, accountHolder };
+                } else {
+                    bankAccounts.push({ id: 'b_' + Date.now(), bankName, accountNumber, accountHolder });
+                }
+                saveLocalStorage();
+                scheduleRenderAllViews();
+            }
+
+            closeBankModal();
+            showToast('Data rekening berhasil disimpan!');
+        });
+
+        document.getElementById('form-allocation').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!requireAdmin()) return;
+
+            const id = document.getElementById('modal-allocation-id').value;
+            const title = document.getElementById('modal-allocation-title').value.trim();
+            const amount = parseFloat(document.getElementById('modal-allocation-amount').value) || 0;
+
+            if (id) {
+                const oldAlloc = feeAllocations.find(a => a.id === id);
+                const oldTitle = oldAlloc ? oldAlloc.title : null;
+
+                if (oldTitle && oldTitle !== title) {
+                    const affectedExpenses = transactions.filter(t =>
+                        t.type === 'expense' && t.category === oldTitle
+                    ).length;
+
+                    if (affectedExpenses > 0) {
+                        const doUpdate = confirm(
+                            `Nama alokasi berubah dari "${oldTitle}" menjadi "${title}".\n\n` +
+                            `Ada ${affectedExpenses} transaksi pengeluaran dengan kategori "${oldTitle}".\n\n` +
+                            `Update semua transaksi tersebut ke kategori baru "${title}"?`
+                        );
+
+                        if (doUpdate) {
+                            if (firebaseReady) {
+                                const updates = {};
+                                transactions.forEach(t => {
+                                    if (t.type === 'expense' && t.category === oldTitle) {
+                                        updates[`kasRt/transactions/${t.id}/category`] = title;
+                                    }
+                                });
+                                if (Object.keys(updates).length > 0) {
+                                    await firebaseDb.ref().update(updates);
+                                }
+                            } else {
+                                transactions.forEach(t => {
+                                    if (t.type === 'expense' && t.category === oldTitle) {
+                                        t.category = title;
+                                    }
+                                });
+                                saveLocalStorage();
+                            }
+                            showToast(`${affectedExpenses} transaksi diperbarui ke "${title}"`);
+                        }
+                    }
+                }
+            }
+
+            if (firebaseReady) {
+                if (id) firebaseDb.ref(`kasRt/allocations/${id}`).update({ title, amount });
+                else firebaseDb.ref('kasRt/allocations').push({ title, amount });
+            } else {
+                if (id) {
+                    const idx = feeAllocations.findIndex(a => a.id === id);
+                    if (idx !== -1) feeAllocations[idx] = { id, title, amount };
+                } else {
+                    feeAllocations.push({ id: 'a_' + Date.now(), title, amount });
+                }
+                saveLocalStorage();
+                scheduleRenderAllViews();
+            }
+
+            closeAllocationModal();
+            showToast('Rincian alokasi berhasil disimpan!');
+        });
+
+        document.getElementById('form-house').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!requireAdmin()) return;
+
+            const id = document.getElementById('modal-house-id').value;
+            let houseNumber = document.getElementById('modal-house-no').value.trim().toUpperCase();
+            const ownerName = document.getElementById('modal-house-owner').value.trim();
+            const phone = document.getElementById('modal-house-phone').value.trim();
+
+            if (houseNumber) {
+                houseNumber = houseNumber.replace(/[\s\-]/g, '');
+                const match = houseNumber.match(/^([A-Z]+)(\d+)$/);
+                if (match) {
+                    const letter = match[1];
+                    const number = match[2].padStart(2, '0');
+                    houseNumber = letter + number;
+                } else if (/^\d+$/.test(houseNumber)) {
+                    houseNumber = 'O' + houseNumber.padStart(2, '0');
+                }
+            }
+
+            if (firebaseReady) {
+                if (id) firebaseDb.ref(`kasRt/houses/${id}`).update({ houseNumber, ownerName, phone });
+                else firebaseDb.ref('kasRt/houses').push({ houseNumber, ownerName, phone });
+            } else {
+                if (id) {
+                    const idx = houses.findIndex(h => h.id === id);
+                    if (idx !== -1) houses[idx] = { id, houseNumber, ownerName, phone };
+                } else {
+                    houses.push({ id: 'h_' + Date.now(), houseNumber, ownerName, phone });
+                }
+                saveLocalStorage();
+                scheduleRenderAllViews();
+            }
+
+            closeHouseModal();
+            showToast('Data warga berhasil disimpan!');
+        });
+
+        document.getElementById('form-income').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!requireAdmin()) return;
+
+            const id = document.getElementById('inc-id').value;
+            const date = document.getElementById('inc-date').value;
+            const paymentMethod = document.getElementById('inc-method').value;
+            const houseNumber = document.getElementById('inc-house').value.trim().toUpperCase();
+            const description = document.getElementById('inc-desc').value.trim();
+            const amount = parseFloat(document.getElementById('inc-amount').value) || 0;
+            const proofs = [...currentIncomeProofs];
+
+            const txData = { type: 'income', date, paymentMethod, houseNumber, description, amount, proofs };
+
+            if (firebaseReady) {
+                if (id) firebaseDb.ref(`kasRt/transactions/${id}`).update(txData);
+                else firebaseDb.ref('kasRt/transactions').push(txData);
+            } else {
+                if (id) {
+                    const idx = transactions.findIndex(t => t.id === id);
+                    if (idx !== -1) transactions[idx] = { id, ...txData };
+                } else {
+                    transactions.push({ id: 't_' + Date.now(), ...txData });
+                }
+                saveLocalStorage();
+                scheduleRenderAllViews();
+            }
+
+            cancelEditTransaction();
+            showToast(houseNumber ? 'Pemasukan iuran berhasil dicatat!' : 'Dana Tambahan berhasil dicatat!');
+        });
+
+        document.getElementById('form-expense').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!requireAdmin()) return;
+
+            const id = document.getElementById('exp-id').value;
+            const date = document.getElementById('exp-date').value;
+            const paymentMethod = document.getElementById('exp-method').value;
+            const description = document.getElementById('exp-desc').value.trim();
+            const category = document.getElementById('exp-category').value;
+            const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
+            const proofs = [...currentExpenseProofs];
+
+            const txData = { type: 'expense', date, paymentMethod, description, category, amount, proofs };
+
+            if (firebaseReady) {
+                if (id) firebaseDb.ref(`kasRt/transactions/${id}`).update(txData);
+                else firebaseDb.ref('kasRt/transactions').push(txData);
+            } else {
+                if (id) {
+                    const idx = transactions.findIndex(t => t.id === id);
+                    if (idx !== -1) transactions[idx] = { id, ...txData };
+                } else {
+                    transactions.push({ id: 't_' + Date.now(), ...txData });
+                }
+                saveLocalStorage();
+                scheduleRenderAllViews();
+            }
+
+            cancelEditTransaction();
+            showToast('Pengeluaran kas berhasil dicatat!');
+        });
+
+        // ============================================================
+        // WARGA LOGIN FORM
+        // ============================================================
+        document.getElementById('form-warga-login').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('warga-login-input');
+            const remember = document.getElementById('warga-remember').checked;
+            
+            let houseNo = (input.value || '').trim().toUpperCase();
+            if (!houseNo) {
+                showToast('Masukkan No. Rumah!', 'error');
+                return;
+            }
+
+            const normalized = houseNo.replace(/[\s\-]/g, '');
+            const house = houses.find(h => {
+                const hNorm = (h.houseNumber || '').replace(/[\s\-]/g, '').toUpperCase();
+                return hNorm === normalized;
+            });
+
+            if (!house) {
+                showToast(`Rumah "${houseNo}" tidak ditemukan. Cek dengan pengurus.`, 'error');
+                return;
+            }
+
+            currentWargaHouse = house;
+            if (remember) {
+                localStorage.setItem('kasRtWargaHouse', house.houseNumber);
+            }
+
+            closeWargaLogin();
+            updateWargaUI();
+            showToast(`Selamat datang, ${house.ownerName}! 👋`);
+
+            setTimeout(() => openInfoWarga(), 300);
+        });
+
+        // ============================================================
+        // INFO WARGA
+        // ============================================================
+        window.openInfoWarga = function() {
+            if (!currentWargaHouse) {
+                openWargaLogin();
+                return;
+            }
+
+            const normalized = currentWargaHouse.houseNumber.replace(/[\s\-]/g, '').toUpperCase();
+            const now = new Date();
+            const currentYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+            const paymentsByMonth = {};
+            transactions.forEach(t => {
+                if (t.type !== 'income' || !t.houseNumber) return;
+                if (t.houseNumber.replace(/[\s\-]/g, '').toUpperCase() !== normalized) return;
+                
+                const tDate = new Date(t.date);
+                if (isNaN(tDate.getTime())) return;
+                
+                const tYM = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
+                
+                if (!paymentsByMonth[tYM]) {
+                    paymentsByMonth[tYM] = { ym: tYM, amount: 0, count: 0, date: tDate };
+                }
+                paymentsByMonth[tYM].amount += (parseFloat(t.amount) || 0);
+                paymentsByMonth[tYM].count += 1;
+            });
+
+            const sortedMonths = Object.keys(paymentsByMonth).sort().reverse();
+
+            const statusPerMonth = sortedMonths.map(ym => {
+                const data = paymentsByMonth[ym];
+                const d = new Date(data.date.getFullYear(), data.date.getMonth(), 1);
+                return {
+                    ym: ym,
+                    dateObj: d,
+                    fullLabel: d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }),
+                    isPaid: true,
+                    amount: data.amount,
+                    isCurrentMonth: ym === currentYM,
+                    isMultiPayment: data.count > 1
+                };
+            });
+
+            const totalPaid = statusPerMonth.reduce((sum, m) => sum + m.amount, 0);
+
+            document.getElementById('info-result-house').textContent = currentWargaHouse.houseNumber;
+            document.getElementById('info-result-owner').textContent = currentWargaHouse.ownerName || '-';
+
+            const summaryBox = document.getElementById('info-tunggakan-box');
+            const summaryAmount = document.getElementById('info-tunggakan-amount');
+            const summaryDetail = document.getElementById('info-tunggakan-detail');
+
+            if (statusPerMonth.length === 0) {
+                summaryBox.classList.remove('hidden');
+                summaryBox.className = "rounded-xl p-3 bg-amber-50 border border-amber-200 text-amber-800";
+                summaryAmount.textContent = "Belum Ada Pembayaran";
+                summaryAmount.className = "text-base font-extrabold text-amber-700";
+                summaryDetail.textContent = `Belum ada riwayat pembayaran tercatat untuk rumah ini.`;
+            } else {
+                summaryBox.classList.remove('hidden');
+                summaryBox.className = "rounded-xl p-3 bg-emerald-50 border border-emerald-200 text-emerald-800";
+                summaryAmount.textContent = formatRupiah(totalPaid);
+                summaryAmount.className = "text-2xl font-extrabold text-emerald-700";
+                summaryDetail.textContent = `Total sudah dibayar (${statusPerMonth.length} bulan)`;
+            }
+
+            const statusList = document.getElementById('info-status-list');
+            if (statusPerMonth.length === 0) {
+                statusList.innerHTML = `
+                    <div class="text-center py-6 px-3 bg-slate-50 border border-dashed border-slate-300 rounded-xl">
+                        <i class="fas fa-inbox text-2xl text-slate-300 mb-2"></i>
+                        <p class="text-xs text-slate-500">Belum ada riwayat pembayaran</p>
+                        <p class="text-[10px] text-slate-400 mt-1">Hubungi bendahara jika sudah membayar</p>
+                    </div>
+                `;
+            } else {
+                statusList.innerHTML = statusPerMonth.map(m => {
+                    const highlight = m.isCurrentMonth ? 'ring-2 ring-blue-300' : '';
+                    const multiTag = m.isMultiPayment ? `<span class="text-[9px] text-blue-600 font-bold ml-1">(${m.count}x bayar)</span>` : '';
+                    
+                    return `
+                        <div class="flex items-center justify-between p-2 rounded-lg border bg-emerald-50 border-emerald-200 ${highlight}">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="text-sm">✅</span>
+                                <div class="min-w-0">
+                                    <div class="text-xs font-semibold text-slate-800 truncate">${m.fullLabel}${multiTag}</div>
+                                    ${m.isCurrentMonth ? `<div class="text-[9px] text-blue-600 font-bold">BULAN INI</div>` : ''}
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <div class="text-[10px] font-bold text-emerald-700">Lunas</div>
+                                <div class="text-[10px] text-slate-600 font-semibold">${formatRupiah(m.amount)}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            const bankList = document.getElementById('info-bank-list');
+            if (bankAccounts.length === 0) {
+                bankList.innerHTML = '<div class="text-xs text-blue-600 italic">Hubungi bendahara untuk info rekening.</div>';
+            } else {
+                bankList.innerHTML = bankAccounts.map(b => `
+                    <div class="flex items-center justify-between gap-2 bg-white rounded-lg p-2 border border-blue-200">
+                        <div class="min-w-0 flex-1">
+                            <div class="text-[10px] font-bold text-blue-700 uppercase">${escapeHTML(b.bankName)}</div>
+                            <div class="text-xs font-bold text-slate-800">${escapeHTML(b.accountNumber)}</div>
+                            <div class="text-[10px] text-slate-500">a.n. ${escapeHTML(b.accountHolder)}</div>
+                        </div>
+                        <button onclick="copyToClipboard('${escapeHTML(b.accountNumber)}')" class="text-[10px] px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold rounded shrink-0">
+                            <i class="fas fa-copy"></i> Salin
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('info-warga-modal').classList.remove('hidden');
+        };
+
+        window.closeInfoWarga = function() {
+            document.getElementById('info-warga-modal').classList.add('hidden');
+        };
+
+        window.whatsappBendahara = function() {
+            if (!currentWargaHouse) {
+                showToast('Login dulu!', 'error');
+                return;
+            }
+
+            const house = currentWargaHouse.houseNumber;
+            const owner = currentWargaHouse.ownerName;
+
+            let message = `Assalamualaikum Bendahara RT 01.\n\n`;
+            message += `Saya ${owner} (${house}) ingin konfirmasi iuran.\n\n`;
+            message += `Mohon dibantu dicek ya. Terima kasih. 🙏`;
+
+            const url = `https://wa.me/${BENDAHARA_WHATSAPP}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        };
+
+        // ============================================================
+        // NAVIGASI
+        // ============================================================
+        window.switchMainPage = function(page) {
+            const pageDashboard = document.getElementById('page-dashboard');
+            const pageHouses = document.getElementById('page-houses');
+            const navBtnDash = document.getElementById('nav-btn-dashboard');
+            const navBtnHouses = document.getElementById('nav-btn-houses');
+
+            if (!pageDashboard || !pageHouses || !navBtnDash || !navBtnHouses) return;
+
+            localStorage.setItem('kasRtActivePage', page);
+
+            if (page === 'dashboard') {
+                pageDashboard.classList.remove('hidden');
+                pageHouses.classList.add('hidden');
+                navBtnDash.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white text-blue-800 shadow text-center";
+                navBtnHouses.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all text-blue-100 hover:text-white hover:bg-white/10 relative text-center";
+            } else {
+                pageDashboard.classList.add('hidden');
+                pageHouses.classList.remove('hidden');
+                navBtnHouses.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white text-blue-800 shadow text-center";
+                navBtnDash.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all text-blue-100 hover:text-white hover:bg-white/10 relative text-center";
+                renderHouseStatus();
+            }
+        };
+
+        window.switchMainView = window.switchMainPage;
+
+        window.switchForm = function(type) {
+            const formIncome = document.getElementById('form-income');
+            const formExpense = document.getElementById('form-expense');
+            const btnInc = document.getElementById('btn-form-income');
+            const btnExp = document.getElementById('btn-form-expense');
+
+            if (type === 'income') {
+                formIncome.classList.remove('hidden');
+                formExpense.classList.add('hidden');
+                btnInc.className = "py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1";
+                btnExp.className = "py-1.5 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1";
+            } else {
+                formIncome.classList.add('hidden');
+                formExpense.classList.remove('hidden');
+                btnExp.className = "py-1.5 text-xs font-bold rounded-lg transition-all bg-rose-600 text-white shadow-sm flex items-center justify-center gap-1";
+                btnInc.className = "py-1.5 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1";
+            }
+        };
+
+        window.switchDataTab = function(tab) {
+            currentActiveTab = tab;
+            localStorage.setItem('kasRtActiveDataTab', tab);
+            const viewHistory = document.getElementById('view-history');
+            const viewRecap = document.getElementById('view-recap');
+            const tabHistory = document.getElementById('tab-data-history');
+            const tabRecap = document.getElementById('tab-data-recap');
+
+            if (tab === 'history') {
+                viewHistory.classList.remove('hidden');
+                viewHistory.classList.add('flex');
+                viewRecap.classList.add('hidden');
+                viewRecap.classList.remove('flex');
+                tabHistory.className = "pb-2.5 text-xs sm:text-sm transition-all tab-active";
+                tabRecap.className = "pb-2.5 text-xs sm:text-sm transition-all tab-inactive";
+            } else {
+                viewHistory.classList.add('hidden');
+                viewHistory.classList.remove('flex');
+                viewRecap.classList.remove('hidden');
+                viewRecap.classList.add('flex');
+                tabRecap.className = "pb-2.5 text-xs sm:text-sm transition-all tab-active";
+                tabHistory.className = "pb-2.5 text-xs sm:text-sm transition-all tab-inactive";
+                renderRecap();
+            }
+        };
+
+        // ============================================================
+        // WARGA LOGIN
+        // ============================================================
+        window.openWargaLogin = function() {
+            if (currentWargaHouse) {
+                openInfoWarga();
+                return;
+            }
+
+            document.getElementById('warga-login-input').value = '';
+            document.getElementById('warga-remember').checked = true;
+            document.getElementById('warga-login-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('warga-login-input').focus(), 100);
+        };
+
+        window.closeWargaLogin = function() {
+            document.getElementById('warga-login-modal').classList.add('hidden');
+        };
+
+        window.logoutWarga = function() {
+            if (!confirm('Yakin ingin keluar? Anda perlu memasukkan No. Rumah lagi di kunjungan berikutnya.')) return;
+            
+            currentWargaHouse = null;
+            localStorage.removeItem('kasRtWargaHouse');
+            updateWargaUI();
+            showToast('Anda telah keluar. Terima kasih! 👋', 'info');
+        };
+
+        function updateWargaUI() {
+            const banner = document.getElementById('warga-welcome-banner');
+            const btnText = document.getElementById('warga-btn-text');
+
+            if (currentWargaHouse) {
+                if (banner) banner.classList.remove('hidden');
+                document.getElementById('warga-welcome-name').textContent = currentWargaHouse.ownerName || '-';
+                document.getElementById('warga-welcome-house').textContent = `Rumah ${currentWargaHouse.houseNumber}`;
+                if (btnText) btnText.textContent = 'Cek Iuran Saya';
+            } else {
+                if (banner) banner.classList.add('hidden');
+                if (btnText) btnText.textContent = 'Cek Iuran Saya';
+            }
+        }
+
+        // ============================================================
+        // INIT (PALING BAWAH)
+        // ============================================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const incDateEl = document.getElementById('inc-date');
+            const expDateEl = document.getElementById('exp-date');
+            if (incDateEl) incDateEl.value = todayStr;
+            if (expDateEl) expDateEl.value = todayStr;
+
+            const dateContainer = document.getElementById('current-date');
+            if (dateContainer) {
+                dateContainer.textContent = new Date().toLocaleDateString('id-ID', { 
+                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
+                });
+            }
+
+            await getAdminPinHash();
+            updateAdminUI();
+
+            // Delay sedikit supaya semua fungsi sudah didefinisikan
+            setTimeout(() => {
+                const savedPage = localStorage.getItem('kasRtActivePage') || 'dashboard';
+                if (typeof switchMainPage === 'function') switchMainPage(savedPage);
+
+                const savedTab = localStorage.getItem('kasRtActiveDataTab') || 'history';
+                if (typeof switchDataTab === 'function') switchDataTab(savedTab);
+
+                if (localStorage.getItem('methodBalanceOpen') === 'true') {
+                    const content = document.getElementById('method-balance-content');
+                    const icon = document.getElementById('method-balance-toggle-icon');
+                    if (content && icon) {
+                        content.classList.remove('hidden');
+                        icon.classList.add('rotate-180');
+                    }
+                }
+
+                const savedWarga = localStorage.getItem('kasRtWargaHouse');
+                if (savedWarga) {
+                    const found = houses.find(h => h.houseNumber === savedWarga);
+                    if (found) {
+                        currentWargaHouse = found;
+                        updateWargaUI();
+                    }
+                }
+
+                startFirebaseSync();
+            }, 100);
+        });
+    </script>
+</body>
+</html>
