@@ -355,9 +355,9 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">
                                 Nominal (Rp) <span class="text-rose-500">*</span>
-                                <span class="text-emerald-600 font-normal text-[10px]">(Standar: Rp 50.000)</span>
+                                <span class="text-emerald-600 font-normal text-[10px]" id="nominal-subtitle">(Standar: Rp 50.000)</span>
                             </label>
-                            <input type="number" id="inc-amount" min="0" value="50000" placeholder="50000" oninput="updateAllocationPreview(this.value)" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none font-semibold">
+                            <input type="number" id="inc-amount" min="1" value="50000" placeholder="50000" oninput="updateAllocationPreview(this.value)" required class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none font-semibold">
                             <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
                                 <button type="button" onclick="setNominal(50000)" class="text-[10px] px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded">50rb</button>
                                 <button type="button" onclick="setNominal(30000)" class="text-[10px] px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold rounded">30rb</button>
@@ -388,7 +388,7 @@
                                 <div id="manual-allocation-inputs" class="space-y-2"></div>
                                 <div class="pt-2 border-t border-emerald-200">
                                     <div class="flex justify-between text-[10px]">
-                                        <span class="text-slate-600">Total Alokasi:</span>
+                                        <span class="text-slate-600 font-medium">Total Alokasi Manual:</span>
                                         <span id="manual-total-alloc" class="font-bold text-emerald-700">Rp 0</span>
                                     </div>
                                 </div>
@@ -1261,6 +1261,9 @@
         // ALOKASI MANUAL
         // ============================================================
         window.setNominal = function(value) {
+            if (alokasiMode === 'manual') {
+                kembaliOtomatis();
+            }
             const input = document.getElementById('inc-amount');
             if (!input) return;
             input.value = value;
@@ -1274,13 +1277,19 @@
             document.getElementById('alokasi-auto-container').classList.add('hidden');
             document.getElementById('alokasi-manual-container').classList.remove('hidden');
             
-            // ✅ SET NOMINAL JADI 0
+            // Set input nominal menjadi readonly agar tersinkronisasi dari rincian manual
             const amountInput = document.getElementById('inc-amount');
             if (amountInput) {
-                amountInput.value = 0;
+                amountInput.readOnly = true;
+                amountInput.classList.add('bg-slate-100', 'cursor-not-allowed');
+            }
+            const subtitle = document.getElementById('nominal-subtitle');
+            if (subtitle) {
+                subtitle.textContent = '(Otomatis dari rincian manual di bawah)';
+                subtitle.className = 'text-amber-600 font-normal text-[10px]';
             }
             
-            // RESET total: semua kategori = 0
+            // Inisialisasi kategori alokasi manual
             manualAllocation = {};
             if (feeAllocations && feeAllocations.length > 0) {
                 feeAllocations.forEach((item) => {
@@ -1300,14 +1309,22 @@
             document.getElementById('alokasi-manual-container').classList.add('hidden');
             document.getElementById('alokasi-auto-container').classList.remove('hidden');
             
-            // ✅ Kembalikan nominal ke 50.000
             const amountInput = document.getElementById('inc-amount');
-            if (amountInput && (parseFloat(amountInput.value) === 0 || !amountInput.value)) {
-                amountInput.value = 50000;
+            if (amountInput) {
+                amountInput.readOnly = false;
+                amountInput.classList.remove('bg-slate-100', 'cursor-not-allowed');
+                // Kembalikan nominal ke 50.000 jika kosong atau 0
+                if (parseFloat(amountInput.value) === 0 || !amountInput.value) {
+                    amountInput.value = 50000;
+                }
+            }
+            const subtitle = document.getElementById('nominal-subtitle');
+            if (subtitle) {
+                subtitle.textContent = '(Standar: Rp 50.000)';
+                subtitle.className = 'text-emerald-600 font-normal text-[10px]';
             }
             
-            // Refresh preview otomatis
-            const amount = amountInput.value;
+            const amount = amountInput ? amountInput.value : 50000;
             updateAllocationPreview(amount);
         };
 
@@ -1348,11 +1365,22 @@
         };
 
         window.updateManualSummary = function() {
-            const totalAlloc = Object.values(manualAllocation).reduce((sum, v) => sum + v, 0);
+            const totalAlloc = Object.values(manualAllocation).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
             
             const allocEl = document.getElementById('manual-total-alloc');
             if (allocEl) {
                 allocEl.textContent = formatRupiah(totalAlloc);
+            }
+
+            // Sinkronisasikan ke input nominal transaksi utama
+            const amountInput = document.getElementById('inc-amount');
+            if (amountInput) {
+                amountInput.value = totalAlloc;
+            }
+
+            const totalNominalEl = document.getElementById('preview-total-nominal');
+            if (totalNominalEl) {
+                totalNominalEl.textContent = formatRupiah(totalAlloc);
             }
         };
 
@@ -1716,8 +1744,6 @@
         // ============================================================
         window.renderDashboard = function() {
             let totalInc = 0, incCash = 0, incMandiri = 0, incBca = 0, totalExp = 0;
-            let totalIuranWarga = 0;
-            let totalDanaTambahan = 0;
 
             transactions.forEach(t => {
                 const amt = parseFloat(t.amount) || 0;
@@ -1727,12 +1753,6 @@
                     if (m.includes('mandiri')) incMandiri += amt;
                     else if (m.includes('bca')) incBca += amt;
                     else incCash += amt;
-
-                    if (t.houseNumber && t.houseNumber.trim()) {
-                        totalIuranWarga += amt;
-                    } else {
-                        totalDanaTambahan += amt;
-                    }
                 } else if (t.type === 'expense') {
                     totalExp += amt;
                 }
@@ -1750,28 +1770,51 @@
             );
 
             const incomeAllocByCategory = {};
+            let autoIuranWarga = 0;
+            let autoDanaTambahan = 0;
 
-            if (totalDefaultAlloc > 0 && totalIuranWarga > 0) {
-                const jumlahRumahBayar = totalIuranWarga / totalDefaultAlloc;
+            transactions.forEach(t => {
+                if (t.type !== 'income') return;
+                const amt = parseFloat(t.amount) || 0;
+                if (amt <= 0) return;
+
+                if (t.allocations && typeof t.allocations === 'object' && Object.keys(t.allocations).length > 0) {
+                    // Manual allocation: gunakan nominal persis per kategori yang diinput
+                    Object.entries(t.allocations).forEach(([cat, catAmt]) => {
+                        const val = parseFloat(catAmt) || 0;
+                        if (val > 0) {
+                            incomeAllocByCategory[cat] = (incomeAllocByCategory[cat] || 0) + val;
+                        }
+                    });
+                } else if (t.houseNumber && t.houseNumber.trim()) {
+                    autoIuranWarga += amt;
+                } else {
+                    autoDanaTambahan += amt;
+                }
+            });
+
+            if (totalDefaultAlloc > 0 && autoIuranWarga > 0) {
+                const jumlahRumahBayar = autoIuranWarga / totalDefaultAlloc;
 
                 (feeAllocations || []).forEach(item => {
-                    incomeAllocByCategory[item.title] =
-                        (parseFloat(item.amount) || 0) * jumlahRumahBayar;
+                    incomeAllocByCategory[item.title] = (incomeAllocByCategory[item.title] || 0) +
+                        ((parseFloat(item.amount) || 0) * jumlahRumahBayar);
                 });
 
-                const totalSetelahAlokasi = Object.values(incomeAllocByCategory)
-                    .reduce((s, v) => s + Math.round(v), 0);
+                const totalSetelahAlokasi = (feeAllocations || []).reduce((s, item) => {
+                    return s + Math.round((parseFloat(item.amount) || 0) * jumlahRumahBayar);
+                }, 0);
 
-                const selisih = totalIuranWarga - totalSetelahAlokasi;
+                const selisih = autoIuranWarga - totalSetelahAlokasi;
                 if (Math.abs(selisih) >= 1) {
-                    incomeAllocByCategory['Kas Umum (Sisa)'] = selisih;
+                    incomeAllocByCategory['Kas Umum (Sisa)'] = (incomeAllocByCategory['Kas Umum (Sisa)'] || 0) + selisih;
                 }
-            } else if (totalIuranWarga > 0) {
-                incomeAllocByCategory['Kas Umum'] = totalIuranWarga;
+            } else if (autoIuranWarga > 0) {
+                incomeAllocByCategory['Kas Umum'] = (incomeAllocByCategory['Kas Umum'] || 0) + autoIuranWarga;
             }
 
-            if (totalDanaTambahan > 0) {
-                incomeAllocByCategory['Kas Umum (Dana Tambahan)'] = totalDanaTambahan;
+            if (autoDanaTambahan > 0) {
+                incomeAllocByCategory['Kas Umum (Dana Tambahan)'] = (incomeAllocByCategory['Kas Umum (Dana Tambahan)'] || 0) + autoDanaTambahan;
             }
 
             const expenseByCategory = {};
@@ -2062,7 +2105,6 @@
                 else dailyExpense += amt;
 
                 const isInc = t.type === 'income';
-                const isDanaTambahan = isInc && (!t.houseNumber || !t.houseNumber.trim());
 
                 let methodBadge = '';
                 const m = t.paymentMethod || 'Cash';
@@ -2561,13 +2603,41 @@
                 document.getElementById('inc-desc').value = t.description || '';
                 document.getElementById('inc-amount').value = t.amount || '';
                 
-                // Reset ke mode otomatis
-                alokasiMode = 'auto';
-                manualAllocation = {};
-                document.getElementById('alokasi-manual-container').classList.add('hidden');
-                document.getElementById('alokasi-auto-container').classList.remove('hidden');
+                const amountInput = document.getElementById('inc-amount');
+                const subtitle = document.getElementById('nominal-subtitle');
+
+                if (t.allocationMode === 'manual' && t.allocations) {
+                    alokasiMode = 'manual';
+                    manualAllocation = { ...t.allocations };
+                    document.getElementById('alokasi-auto-container').classList.add('hidden');
+                    document.getElementById('alokasi-manual-container').classList.remove('hidden');
+                    if (amountInput) {
+                        amountInput.readOnly = true;
+                        amountInput.classList.add('bg-slate-100', 'cursor-not-allowed');
+                    }
+                    if (subtitle) {
+                        subtitle.textContent = '(Otomatis dari rincian manual di bawah)';
+                        subtitle.className = 'text-amber-600 font-normal text-[10px]';
+                    }
+                    renderManualAllocationInputs();
+                    updateManualSummary();
+                } else {
+                    // Reset ke mode otomatis
+                    alokasiMode = 'auto';
+                    manualAllocation = {};
+                    document.getElementById('alokasi-manual-container').classList.add('hidden');
+                    document.getElementById('alokasi-auto-container').classList.remove('hidden');
+                    if (amountInput) {
+                        amountInput.readOnly = false;
+                        amountInput.classList.remove('bg-slate-100', 'cursor-not-allowed');
+                    }
+                    if (subtitle) {
+                        subtitle.textContent = '(Standar: Rp 50.000)';
+                        subtitle.className = 'text-emerald-600 font-normal text-[10px]';
+                    }
+                    updateAllocationPreview(t.amount || 0);
+                }
                 
-                updateAllocationPreview(t.amount || 0);
                 document.getElementById('inc-submit-btn').innerHTML = '<i class="fas fa-save"></i> Perbarui Pemasukan';
 
                 currentIncomeProofs = Array.isArray(t.proofs) ? [...t.proofs] : (t.proof ? [t.proof] : []);
@@ -2608,6 +2678,16 @@
             manualAllocation = {};
             document.getElementById('alokasi-manual-container').classList.add('hidden');
             document.getElementById('alokasi-auto-container').classList.remove('hidden');
+            const amountInput = document.getElementById('inc-amount');
+            if (amountInput) {
+                amountInput.readOnly = false;
+                amountInput.classList.remove('bg-slate-100', 'cursor-not-allowed');
+            }
+            const subtitle = document.getElementById('nominal-subtitle');
+            if (subtitle) {
+                subtitle.textContent = '(Standar: Rp 50.000)';
+                subtitle.className = 'text-emerald-600 font-normal text-[10px]';
+            }
 
             updateAllocationPreview('50000');
             currentIncomeProofs = [];
@@ -3424,10 +3504,38 @@
             const paymentMethod = document.getElementById('inc-method').value;
             const houseNumber = document.getElementById('inc-house').value.trim().toUpperCase();
             const description = document.getElementById('inc-desc').value.trim();
-            const amount = parseFloat(document.getElementById('inc-amount').value) || 0;
+            
+            let amount = parseFloat(document.getElementById('inc-amount').value) || 0;
+            
+            // Jika dalam mode alokasi manual, pastikan nominal diambil dari total alokasi manual
+            if (alokasiMode === 'manual') {
+                const totalManual = Object.values(manualAllocation).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
+                if (totalManual > 0) {
+                    amount = totalManual;
+                }
+            }
+
+            if (amount <= 0) {
+                showToast('Nominal transaksi harus lebih dari Rp 0!', 'error');
+                return;
+            }
+
             const proofs = [...currentIncomeProofs];
 
-            const txData = { type: 'income', date, paymentMethod, houseNumber, description, amount, proofs };
+            const txData = { 
+                type: 'income', 
+                date, 
+                paymentMethod, 
+                houseNumber, 
+                description, 
+                amount, 
+                proofs 
+            };
+
+            if (alokasiMode === 'manual') {
+                txData.allocationMode = 'manual';
+                txData.allocations = { ...manualAllocation };
+            }
 
             if (firebaseReady) {
                 if (id) firebaseDb.ref(`kasRt/transactions/${id}`).update(txData);
@@ -3458,6 +3566,11 @@
             const category = document.getElementById('exp-category').value;
             const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
             const proofs = [...currentExpenseProofs];
+
+            if (amount <= 0) {
+                showToast('Nominal pengeluaran harus lebih dari Rp 0!', 'error');
+                return;
+            }
 
             const txData = { type: 'expense', date, paymentMethod, description, category, amount, proofs };
 
