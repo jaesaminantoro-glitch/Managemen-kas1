@@ -159,17 +159,17 @@
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check.js";
 
     // ==========================================
-    // 2. KONFIGURASI FIREBASE (GANTI DENGAN MILIK ANDA)
+    // 2. KONFIGURASI FIREBASE (SUDAH DARI GAMBAR ANDA)
     // ==========================================
-    // Silakan salin dari Firebase Console > Project Settings > General > Your apps
     const firebaseConfig = {
-      apiKey: "AIzaSy...", // <--- GANTI DENGAN API KEY ANDA
+      apiKey: "AIzaSyA5XIndeyBJw4MDNebedRKDcjsVcuR1Zx8",
       authDomain: "jaes-c1b52.firebaseapp.com",
       databaseURL: "https://jaes-c1b52-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "jaes-c1b52",
-      storageBucket: "jaes-c1b52.appspot.com",
-      messagingSenderId: "1234567890", // <--- GANTI DENGAN SENDER ID ANDA
-      appId: "1:1234567890:web:abcdef" // <--- GANTI DENGAN APP ID ANDA
+      storageBucket: "jaes-c1b52.firebasestorage.app",
+      messagingSenderId: "934203338301",
+      appId: "1:934203338301:web:2bd353cec0b3f127e48454",
+      measurementId: "G-QT5XKJSQ1X"
     };
 
     // ==========================================
@@ -180,10 +180,9 @@
     // ==========================================
     // 4. INISIALISASI APP CHECK (RECAPTCHA ENTERPRISE)
     // ==========================================
-    // Site Key sudah dimasukkan sesuai permintaan Anda
     const appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaEnterpriseProvider('6LcUO7wtAAAAAB9coinGrKNTXYjk-zzmrdKo64vg'),
-      isTokenAutoRefreshEnabled: true // Token diperbarui otomatis
+      isTokenAutoRefreshEnabled: true 
     });
 
     // ==========================================
@@ -201,21 +200,18 @@
     loginBtn.addEventListener('click', async () => {
       const pin = pinInput.value.trim();
 
-      // Validasi input kosong
       if (!pin) {
         statusEl.innerHTML = "⚠️ PIN tidak boleh kosong.";
         statusEl.style.color = "#ff9800";
         return;
       }
 
-      // Tampilkan loading
       loginBtn.disabled = true;
       statusEl.innerHTML = '<span class="spinner"></span> Memeriksa PIN...';
       statusEl.style.color = "#aaa";
 
       try {
-        // Mengambil data PIN dari database
-        // Path: kasRt/adminPin (sesuai struktur database Anda)
+        // Mengambil data PIN admin dari database
         const snapshot = await get(ref(db, 'kasRt/adminPin'));
 
         if (!snapshot.exists()) {
@@ -227,16 +223,13 @@
 
         const adminPin = String(snapshot.val());
 
-        // Cek kecocokan PIN
         if (pin === adminPin) {
           statusEl.innerHTML = "✅ Login berhasil! Mengalihkan...";
           statusEl.style.color = "#4CAF50";
 
-          // Simpan status login (opsional)
           sessionStorage.setItem('isAdminLoggedIn', 'true');
 
-          // Redirect ke halaman dashboard setelah 1 detik
-          // Ganti 'dashboard.html' dengan nama file halaman utama Anda
+          // Redirect ke halaman dashboard
           setTimeout(() => {
             window.location.href = "dashboard.html";
           }, 1000);
@@ -245,14 +238,13 @@
           statusEl.innerHTML = "❌ PIN salah. Silakan coba lagi.";
           statusEl.style.color = "#f44336";
           loginBtn.disabled = false;
-          pinInput.value = ''; // Kosongkan input
+          pinInput.value = ''; 
           pinInput.focus();
         }
 
       } catch (error) {
         console.error("Login Error:", error);
         
-        // Menangani error spesifik
         if (error.message.includes("permission") || error.message.includes("Permission")) {
           statusEl.innerHTML = "⛔ Akses ditolak. Pastikan App Check sudah di-Enforce dan aturan database benar.";
         } else if (error.message.includes("network") || error.message.includes("Network")) {
@@ -265,7 +257,6 @@
       }
     });
 
-    // Memungkinkan login dengan tombol Enter
     pinInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         loginBtn.click();
