@@ -90,7 +90,6 @@
             .mode-card-title { font-size: 26px; }
             .mode-card-desc { font-size: 15px; }
         }
-        /* === INLINE EDIT HINT === */
         .editable-cell { position: relative; cursor: pointer; transition: background 0.15s; }
         .editable-cell:hover { background-color: #fef3c7 !important; }
         .editable-cell:hover::after {
@@ -326,6 +325,242 @@
             <div class="modal-footer-sticky p-4 flex gap-2">
                 <button onclick="closePreinstallModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg text-sm">Batal</button>
                 <button onclick="confirmPreinstall()" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 rounded-lg text-sm">✅ Terapkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL AI: PRECEDENCE ============ -->
+    <div id="precedenceModal" class="modal-bg" onclick="if(event.target===this) closePrecedenceModal()">
+        <div class="modal-content sticky-layout" style="max-width: 700px;">
+            <div class="modal-header-fixed p-4 border-b border-gray-200 flex justify-between items-center">
+                <div>
+                    <h3 class="text-base font-bold text-gray-800">🔗 Atur Precedence</h3>
+                    <p class="text-[10px] text-gray-500 mt-0.5">Elemen berikut HARUS dikerjakan setelah elemen pendahulu</p>
+                </div>
+                <button onclick="closePrecedenceModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="modal-body-scroll p-4 space-y-3">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-2 text-[11px] text-blue-800">
+                    💡 Contoh: "Pasang screw 3-4" setelah "Pasang screw 1-2" → pilih keduanya di form bawah.
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                    <div class="text-[10px] font-bold text-gray-600 uppercase mb-2">➕ Tambah Aturan</div>
+                    <div class="space-y-2">
+                        <div>
+                            <label class="block text-[10px] text-gray-600 font-semibold mb-1">Elemen (yang dikerjakan)</label>
+                            <select id="precElementSelect" class="w-full text-xs border border-gray-300 rounded-lg px-2 py-2 bg-white"></select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-gray-600 font-semibold mb-1">⬅️ HARUS setelah</label>
+                            <select id="precPredSelect" class="w-full text-xs border border-gray-300 rounded-lg px-2 py-2 bg-white"></select>
+                        </div>
+                        <button onclick="addPrecedenceRule()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded-lg">➕ Tambah Aturan</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-gray-600 uppercase mb-2">📋 Aturan Tersimpan (<span id="precCount">0</span>)</div>
+                    <div id="precListContainer" class="space-y-1 max-h-64 overflow-y-auto"></div>
+                </div>
+            </div>
+            <div class="modal-footer-sticky p-4 flex gap-2">
+                <button onclick="closePrecedenceModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg text-sm">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL AI: MOVABLE ============ -->
+    <div id="movableModal" class="modal-bg" onclick="if(event.target===this) closeMovableModal()">
+        <div class="modal-content sticky-layout" style="max-width: 700px;">
+            <div class="modal-header-fixed p-4 border-b border-gray-200 flex justify-between items-center">
+                <div>
+                    <h3 class="text-base font-bold text-gray-800">🔒 Atur Elemen Bisa Dipindah</h3>
+                    <p class="text-[10px] text-gray-500 mt-0.5">Uncheck jika elemen TIDAK BOLEH digeser oleh AI</p>
+                </div>
+                <button onclick="closeMovableModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="modal-body-scroll p-4 space-y-3">
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 text-[11px] text-amber-800">
+                    💡 Default: semua elemen bisa dipindah. Uncheck untuk yang tidak boleh (misal: QC di akhir, atau proses terikat fixture).
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="movableSelectAll(true)" class="flex-1 text-[10px] bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 font-bold px-2 py-1.5 rounded">✅ Centang Semua</button>
+                    <button onclick="movableSelectAll(false)" class="flex-1 text-[10px] bg-red-50 hover:bg-red-100 text-red-700 border border-red-300 font-bold px-2 py-1.5 rounded">⛔ Uncheck Semua</button>
+                </div>
+                <div>
+                    <input type="text" id="movableSearch" oninput="renderMovableList()" placeholder="🔍 Cari elemen..." class="w-full text-xs border border-gray-300 rounded-lg px-2 py-2 mb-2">
+                    <div id="movableListContainer" class="space-y-1 max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-2 bg-gray-50"></div>
+                </div>
+            </div>
+            <div class="modal-footer-sticky p-4 flex gap-2">
+                <button onclick="closeMovableModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg text-sm">Tutup</button>
+                <button onclick="saveMovableSettings()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg text-sm">💾 Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL AI: LLM SETTINGS ============ -->
+    <div id="llmModal" class="modal-bg" onclick="if(event.target===this) closeLLMSettings()">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-base font-bold text-gray-800">⚙️ Pengaturan LLM (Opsional)</h3>
+                <button onclick="closeLLMSettings()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="p-4 space-y-3">
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-2 text-[11px] text-purple-800">
+                    💡 Kosongkan API Key untuk mode offline.
+                </div>
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-600 uppercase mb-1">Provider</label>
+                    <select id="llmProvider" class="w-full text-xs border border-gray-300 rounded-lg px-2 py-2 bg-white">
+                        <option value="off">⛔ Matikan LLM</option>
+                        <option value="openai">OpenAI (GPT-4o-mini)</option>
+                        <option value="gemini">Google Gemini</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-600 uppercase mb-1">API Key</label>
+                    <input type="password" id="llmApiKey" placeholder="sk-..." class="w-full text-xs border border-gray-300 rounded-lg px-2 py-2 font-mono">
+                    <p class="text-[10px] text-gray-500 mt-1">🔒 Disimpan di localStorage browser Anda saja.</p>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200 flex gap-2">
+                <button onclick="closeLLMSettings()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg text-sm">Batal</button>
+                <button onclick="saveLLMSettings()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg text-sm">💾 Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL AI: APPLY ============ -->
+    <div id="applyModal" class="modal-bg" onclick="if(event.target===this) closeApplyModal()">
+        <div class="modal-content sticky-layout" style="max-width: 700px;">
+            <div class="modal-header-fixed p-4 border-b border-gray-200 flex justify-between items-center">
+                <div>
+                    <h3 class="text-base font-bold text-emerald-800">✅ Review & Terapkan</h3>
+                    <p class="text-[10px] text-gray-500 mt-0.5">Perubahan akan mengubah No. SOP di master data</p>
+                </div>
+                <button onclick="closeApplyModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="modal-body-scroll p-4 space-y-3" id="applyModalBody"></div>
+            <div class="modal-footer-sticky p-4 flex gap-2">
+                <button onclick="closeApplyModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg text-sm">Batal</button>
+                <button onclick="confirmApplyAI()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg text-sm">✅ Terapkan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL AI: AUTO PRECEDENCE ============ -->
+    <div id="autoPrecModal" class="modal-bg" onclick="if(event.target===this) closeAutoPrecedenceModal()">
+        <div class="modal-content sticky-layout" style="max-width: 700px;">
+            <div class="modal-header-fixed p-4 border-b border-gray-200 flex justify-between items-center">
+                <div>
+                    <h3 class="text-base font-bold text-cyan-800">✨ Auto-Generate Precedence</h3>
+                    <p class="text-[10px] text-gray-500 mt-0.5">Heuristik: deteksi urutan dari nama elemen</p>
+                </div>
+                <button onclick="closeAutoPrecedenceModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="modal-body-scroll p-4 space-y-3">
+                <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-2 text-[11px] text-cyan-800">
+                    💡 AI akan analisa nama elemen dan mendeteksi pola seperti:
+                    <ul class="list-disc ml-4 mt-1">
+                        <li>"screw 1-2" → "screw 3-4" (urutan angka)</li>
+                        <li>"ambil X" → "pasang X" (ambil sebelum pasang)</li>
+                        <li>"pasang X" → "cek X" (pasang sebelum cek)</li>
+                    </ul>
+                </div>
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-2 text-[11px] text-yellow-800">
+                    ⚠️ Hasil heuristik <b>perlu direview manual</b>. Gunakan sebagai starting point, bukan final.
+                </div>
+                <div>
+                    <label class="flex items-center gap-2 text-xs">
+                        <input type="checkbox" id="autoPrecMerge" class="checkbox-custom" checked>
+                        <span>Gabung dengan precedence yang sudah ada</span>
+                    </label>
+                </div>
+                <div id="autoPrecPreview" class="hidden">
+                    <div class="text-[10px] font-bold text-gray-600 uppercase mb-2">Preview Hasil:</div>
+                    <div id="autoPrecPreviewList" class="space-y-1 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-2 bg-gray-50"></div>
+                </div>
+            </div>
+            <div class="modal-footer-sticky p-4 flex gap-2">
+                <button onclick="closeAutoPrecedenceModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg text-sm">Batal</button>
+                <button onclick="previewAutoPrecedence()" class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 rounded-lg text-sm">🔍 Preview</button>
+                <button onclick="applyAutoPrecedence()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg text-sm">✅ Terapkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL AI: WHAT-IF ============ -->
+    <div id="whatIfModal" class="modal-bg" onclick="if(event.target===this) closeWhatIfModal()">
+        <div class="modal-content sticky-layout" style="max-width: 800px;">
+            <div class="modal-header-fixed p-4 border-b border-gray-200 flex justify-between items-center">
+                <div>
+                    <h3 class="text-base font-bold text-orange-800">🎚️ Simulasi What-If</h3>
+                    <p class="text-[10px] text-gray-500 mt-0.5">Coba ubah takt time virtual & lihat dampaknya</p>
+                </div>
+                <button onclick="closeWhatIfModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="modal-body-scroll p-4 space-y-4">
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                    <label class="block text-[10px] font-bold text-orange-700 uppercase mb-2">Takt Time Virtual (detik/unit)</label>
+                    <div class="flex items-center gap-2">
+                        <input type="range" id="whatIfTakt" min="1" max="60" step="0.5" value="10" class="flex-1" oninput="updateWhatIfPreview()">
+                        <input type="number" id="whatIfTaktNum" min="1" max="60" step="0.5" value="10" class="w-20 px-2 py-1 text-center border border-orange-300 rounded text-sm font-bold text-orange-700" oninput="syncWhatIfSlider()">
+                    </div>
+                    <div class="flex justify-between text-[10px] text-orange-600 mt-1">
+                        <span>1s (cepat)</span>
+                        <span id="whatIfUphLabel" class="font-bold">UPH: 360</span>
+                        <span>60s (lambat)</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="bg-gray-50 rounded-lg p-2 text-center">
+                        <div class="text-[10px] text-gray-500 uppercase">Real Takt</div>
+                        <div id="whatIfRealTakt" class="text-lg font-bold text-gray-700">-</div>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-2 text-center">
+                        <div class="text-[10px] text-blue-600 uppercase">Virtual Takt</div>
+                        <div id="whatIfVirtualTakt" class="text-lg font-bold text-blue-700">-</div>
+                    </div>
+                    <div class="bg-emerald-50 rounded-lg p-2 text-center">
+                        <div class="text-[10px] text-emerald-600 uppercase">Delta</div>
+                        <div id="whatIfDelta" class="text-lg font-bold text-emerald-700">-</div>
+                    </div>
+                </div>
+                <div id="whatIfResultContainer" class="space-y-3"></div>
+                <details class="bg-gray-50 rounded-lg p-3">
+                    <summary class="cursor-pointer text-xs font-bold text-gray-700">📊 Perbandingan Detail Per Stasiun</summary>
+                    <div id="whatIfDetail" class="mt-2 space-y-1 max-h-64 overflow-y-auto"></div>
+                </details>
+            </div>
+            <div class="modal-footer-sticky p-4 flex gap-2">
+                <button onclick="resetWhatIf()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg text-sm">🔄 Reset</button>
+                <button onclick="closeWhatIfModal()" class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 rounded-lg text-sm">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL AI: HISTORY ============ -->
+    <div id="aiHistoryModal" class="modal-bg" onclick="if(event.target===this) closeAIHistoryModal()">
+        <div class="modal-content sticky-layout" style="max-width: 800px;">
+            <div class="modal-header-fixed p-4 border-b border-gray-200 flex justify-between items-center">
+                <div>
+                    <h3 class="text-base font-bold text-pink-800">📜 History AI Balancing</h3>
+                    <p class="text-[10px] text-gray-500 mt-0.5">Bandingkan hasil run AI dari waktu ke waktu</p>
+                </div>
+                <div class="flex gap-1">
+                    <button onclick="clearAIHistory()" class="text-[10px] bg-red-50 hover:bg-red-100 text-red-700 border border-red-300 font-bold px-2 py-1.5 rounded">🗑️ Clear</button>
+                    <button onclick="closeAIHistoryModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body-scroll p-4 space-y-3">
+                <div id="aiHistoryChart" class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg p-3 border border-pink-200"></div>
+                <div>
+                    <div class="text-[10px] font-bold text-gray-600 uppercase mb-2">Detail Run (<span id="aiHistCount">0</span>)</div>
+                    <div id="aiHistoryList" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                </div>
+            </div>
+            <div class="modal-footer-sticky p-4 flex gap-2">
+                <button onclick="closeAIHistoryModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg text-sm">Tutup</button>
             </div>
         </div>
     </div>
@@ -681,6 +916,53 @@
                         <div>Last Update: <span id="serverLastUpdate" class="font-bold">-</span></div>
                     </div>
                 </div>
+
+                <!-- ============ AI BALANCING PANEL ============ -->
+                <div class="bg-white rounded-xl shadow-sm border-2 border-purple-300 p-4 md:p-6 mb-4 mt-4">
+                    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">🤖</span>
+                            <div>
+                                <h2 class="text-sm md:text-base font-bold text-purple-800">AI Element Balancing</h2>
+                                <p class="text-[10px] text-purple-600">Saran pemindahan elemen kerja untuk menyeimbangkan line</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-1 flex-wrap">
+                            <button onclick="openPrecedenceModal()" class="text-[10px] bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-300 font-bold px-2 py-1.5 rounded">🔗 Precedence</button>
+                            <button onclick="openMovableModal()" class="text-[10px] bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 font-bold px-2 py-1.5 rounded">🔒 Movable</button>
+                            <button onclick="openAutoPrecedenceModal()" class="text-[10px] bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border border-cyan-300 font-bold px-2 py-1.5 rounded">✨ Auto-Prec</button>
+                            <button onclick="openWhatIfModal()" class="text-[10px] bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-300 font-bold px-2 py-1.5 rounded">🎚️ What-If</button>
+                            <button onclick="openAIHistoryModal()" class="text-[10px] bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-300 font-bold px-2 py-1.5 rounded">📜 History</button>
+                            <button onclick="runAIUnitTest()" class="text-[10px] bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-300 font-bold px-2 py-1.5 rounded">🧪 Test</button>
+                            <button onclick="openLLMSettings()" class="text-[10px] bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-300 font-bold px-2 py-1.5 rounded">⚙️ LLM</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                        <div class="bg-purple-50 rounded-lg p-2">
+                            <div class="text-[10px] text-purple-600 font-semibold uppercase">Line · Model</div>
+                            <div id="aiLineModel" class="text-xs font-bold text-purple-800">-</div>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-2">
+                            <div class="text-[10px] text-blue-600 font-semibold uppercase">Takt Time</div>
+                            <div id="aiTaktTime" class="text-xs font-bold text-blue-800">-</div>
+                        </div>
+                        <div class="bg-amber-50 rounded-lg p-2">
+                            <div class="text-[10px] text-amber-600 font-semibold uppercase">Bottleneck</div>
+                            <div id="aiBottleneck" class="text-xs font-bold text-amber-800">-</div>
+                        </div>
+                        <div class="bg-emerald-50 rounded-lg p-2">
+                            <div class="text-[10px] text-emerald-600 font-semibold uppercase">Balance Rate</div>
+                            <div id="aiBalanceRate" class="text-xs font-bold text-emerald-800">-</div>
+                        </div>
+                    </div>
+
+                    <button onclick="runAIBalancing()" id="aiRunBtn" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3 rounded-lg text-sm shadow-md">
+                        🚀 Jalankan AI Balancing
+                    </button>
+
+                    <div id="aiResultContainer" class="mt-4"></div>
+                </div>
             </div>
         </div>
 
@@ -897,7 +1179,7 @@
             setTimeout(() => window.dispatchEvent(new Event('firebaseReady')), 100);
         }
     </script>
-        <script>
+            <script>
 // ============================================================
 // STATE
 // ============================================================
@@ -966,6 +1248,25 @@ const LS_KEY_ACTIVE_MODEL = 'timeStudy_activeModel_v1';
 const LS_KEY_ARCHIVE = 'timeStudy_archive_v1';
 
 // ============================================================
+// EXPOSE GLOBAL (untuk AI Engine)
+// ============================================================
+window.getLineStandardUph = getLineStandardUph;
+window.getRowStats = getRowStats;
+window.showToast = showToast;
+window.escapeHtml = escapeHtml;
+window.downloadBlob = downloadBlob;
+window.recordIdentityMatch = recordIdentityMatch;
+window.loadAllFromFirebaseOnce = loadAllFromFirebaseOnce;
+window.saveMasterToLS = saveMasterToLS;
+window.saveLineListToFirebase = saveLineListToFirebase;
+window.saveMachinesToFirebase = saveMachinesToFirebase;
+window.saveElemenMasterToFirebase = saveElemenMasterToFirebase;
+window.saveSiklusMasterToFirebase = saveSiklusMasterToFirebase;
+window.saveModelListToFirebase = saveModelListToFirebase;
+window.saveArchiveToFirebase = saveArchiveToFirebase;
+window.saveMasterToFirebase = saveMasterToFirebase;
+
+// ============================================================
 // UTILS
 // ============================================================
 function lsSave(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
@@ -1009,7 +1310,7 @@ function downloadBlob(blob, filename) {
 }
 
 // ============================================================
-// INLINE EDIT (Universal)
+// INLINE EDIT
 // ============================================================
 function startInlineEdit(idx, field, cellEl) {
     const item = masterData[idx];
@@ -2957,7 +3258,6 @@ function renderMasterTableElemen(fd, tb, th) {
                 out += `<td rowspan="${rs}" class="px-3 py-2 font-bold text-gray-800 border-r border-b bg-purple-50/40 align-middle whitespace-nowrap">${escapeHtml(g.namaSop || '-')}</td>`;
             }
             out += `<td class="px-3 py-2 text-gray-700 border-r border-b font-medium whitespace-nowrap">${escapeHtml(r.elemen || '-')}${sb}${pb}</td>`;
-            // Operator — editable (semua baris grup)
             if (ri === 0) {
                 out += `<td rowspan="${rs}" class="px-2 py-2 text-center border-r border-b bg-amber-50 align-middle whitespace-nowrap font-bold text-amber-800 editable-cell" onclick="startInlineEditGroup([${allIdx.join(',')}], 'operators', this)" title="Klik untuk edit Operator (semua baris grup)">${g.operators || 1}</td>`;
             }
@@ -3030,7 +3330,6 @@ function renderMasterTableSiklus(fd, tb, th) {
                 out += `<td rowspan="${rs}" class="px-2 py-2 text-center font-bold border-r border-b bg-emerald-50 align-middle whitespace-nowrap text-emerald-700">${escapeHtml(g.noSop || '-')}</td>`;
             }
             out += `<td class="px-3 py-2 font-bold text-gray-800 border-r border-b bg-emerald-50/40 whitespace-nowrap">${escapeHtml(r.namaSop || '-')}${sb}${pb}</td>`;
-            // Operator — editable (per baris)
             out += `<td class="px-2 py-2 text-center border-r border-b bg-amber-50 whitespace-nowrap font-bold text-amber-800 editable-cell" onclick="startInlineEdit(${r.originalIndex}, 'operators', this)" title="Klik untuk edit Operator">${r.operators || 1}</td>`;
             for (let i = 0; i < mL; i++) {
                 const lv = r.laps[i];
@@ -3102,13 +3401,10 @@ function renderMasterTableMesin(fd, tb, th) {
                 } else out += `<td class="px-2 py-2 text-center text-gray-300 border-r border-b">—</td>`;
             }
             out += `<td class="px-2 py-2 text-center font-bold text-yellow-700 bg-yellow-50 border-r border-b whitespace-nowrap">${st.avg.toFixed(2)}</td>`;
-            // NG% — editable
             out += `<td class="px-2 py-2 text-center border-r border-b whitespace-nowrap editable-cell" onclick="startInlineEdit(${r.originalIndex}, 'ngRate', this)" title="Klik untuk edit NG%">${r.ngRate || 0}%</td>`;
-            // Gerakan — editable
             out += `<td class="px-2 py-2 text-center font-mono text-amber-700 bg-amber-50 border-r border-b whitespace-nowrap editable-cell" onclick="startInlineEdit(${r.originalIndex}, 'gerakan', this)" title="Klik untuk edit Gerakan">${st.gerakan.toFixed(2)}</td>`;
             out += `<td class="px-2 py-2 text-center font-mono text-orange-700 bg-orange-50 border-r border-b whitespace-nowrap">${st.ctPlusG.toFixed(2)}</td>`;
             out += `<td class="px-2 py-2 text-center font-bold text-emerald-700 bg-emerald-50 border-r border-b whitespace-nowrap">${st.capacity}</td>`;
-            // Jml Mesin — editable
             out += `<td class="px-2 py-2 text-center font-bold text-pink-700 bg-pink-50 border-r border-b whitespace-nowrap editable-cell" onclick="startInlineEdit(${r.originalIndex}, 'actualMachine', this)" title="Klik untuk edit Jml Mesin">${st.actualMachine}</td>`;
             if (ri === 0) out += `<td rowspan="${rs}" class="px-3 py-2 text-center font-extrabold border-r border-b align-middle whitespace-nowrap text-sm ${tc}">${g.totalCapacity}</td>`;
             out += `<td class="px-2 py-2 text-center border-b whitespace-nowrap"><button onclick="deleteMasterRow(${r.originalIndex})" class="text-red-500 hover:text-red-700 font-medium text-xs">Hapus</button></td></tr>`;
@@ -3476,7 +3772,7 @@ function updateArsipCount() {
 }
 
 // ============================================================
-// EXCEL STYLING + BUILDERS + EXPORT
+// EXCEL STYLING
 // ============================================================
 function applySheetStyle(ws, opts) {
     const { headerFill = 'C6E0B4', headerFont = '000000', columnStyles = {}, numFmtCols = [], mL = 0, s1Col = 0, defaultBorderColor = '9CA3AF' } = opts;
@@ -3894,7 +4190,7 @@ function openBackupModal() {
 }
 function closeBackupModal() { document.getElementById('backupModal').classList.remove('active'); }
 function downloadBackup() {
-    const b = { version: '2.3', timestamp: new Date().toISOString(), lineList, machineList, elemenMasterList, siklusMasterList, modelList, archiveList, masterData };
+    const b = { version: '2.4', timestamp: new Date().toISOString(), lineList, machineList, elemenMasterList, siklusMasterList, modelList, archiveList, masterData };
     const j = JSON.stringify(b, null, 2);
     const bl = new Blob([j], { type: 'application/json' });
     if (downloadBlob(bl, `TimeStudy_Backup_${new Date().toISOString().slice(0, 10)}_${Date.now()}.json`)) {
@@ -4078,5 +4374,7 @@ async function init() {
 }
 init();
 </script>
+    <!-- ============ AI ENGINE (Modular) ============ -->
+    <script src="ai-engine.js"></script>
 </body>
 </html>
