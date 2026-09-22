@@ -1,7 +1,7 @@
 // ============================================================
-// AI ELEMENT BALANCING ENGINE v1.1
+// AI ELEMENT BALANCING ENGINE v1.2
 // Modular untuk Time Study Toolkit
-// Update: Fix klasifikasi Overload / Seimbang / Underutilized
+// Update v1.2: Fix logika Overload (deteksi stasiun overload individual)
 // ============================================================
 
 (function() {
@@ -516,7 +516,7 @@ Jawab ringkas & praktis.`;
 }
 
 // ============================================================
-// RENDER RESULT (FIXED)
+// RENDER RESULT (v1.2 FIXED)
 // ============================================================
 function renderAIResult(r) {
     const elLine = document.getElementById('aiLineModel');
@@ -531,28 +531,36 @@ function renderAIResult(r) {
     const c = document.getElementById('aiResultContainer');
     if (!c) return;
 
-    // ============ CLASSIFICATION ============
+    // ============ CLASSIFICATION (v1.2) ============
+    // Deteksi stasiun overload dulu (lebih akurat dari balance rate)
     const br = r.balanceBefore;
+    const overloadedStations = r.stationsBefore.filter(s => s.totalTime > r.taktTime);
+    const hasOverload = overloadedStations.length > 0;
+    
     let statusColor, statusIcon, statusTitle, statusMsg, statusType;
 
-    if (br > 105) {
+    if (hasOverload) {
+        // PRIORITAS 1: Kalau ada stasiun overload → OVERLOAD
         statusType = 'overload';
         statusColor = 'red';
         statusIcon = '🔴';
-        statusTitle = 'Line OVERLOAD!';
-        statusMsg = `Balance Rate ${br.toFixed(1)}% melebihi 105%. Line tidak mampu memenuhi target UPH. Perlu tambah kapasitas / pecah stasiun.`;
-    } else if (br >= 85 && br <= 105) {
-        statusType = 'balanced';
-        statusColor = 'emerald';
-        statusIcon = '✅';
-        statusTitle = 'Line Sudah Seimbang!';
-        statusMsg = `Balance Rate ${br.toFixed(1)}% — dalam range ideal (85%-105%).`;
-    } else {
+        const worstStation = [...overloadedStations].sort((a, b) => b.totalTime - a.totalTime)[0];
+        statusTitle = `Line OVERLOAD — ${overloadedStations.length} Stasiun Tidak Achieve Target!`;
+        statusMsg = `Stasiun No ${worstStation.noSop} (${worstStation.totalTime.toFixed(1)}s) melebihi Takt Time ${r.taktTime.toFixed(2)}s. Meskipun Balance Rate ${br.toFixed(1)}%, ada ${overloadedStations.length} stasiun yang tidak achieve target UPH.`;
+    } else if (br < 85) {
+        // PRIORITAS 3: Balance rate rendah tanpa overload → underutilized
         statusType = 'underutilized';
         statusColor = 'amber';
         statusIcon = '⚠️';
         statusTitle = 'Line Underutilized';
-        statusMsg = `Balance Rate ${br.toFixed(1)}% di bawah 85%. Ada stasiun yang tidak efisien.`;
+        statusMsg = `Balance Rate ${br.toFixed(1)}% di bawah 85%. Tidak ada stasiun overload, tapi banyak stasiun terlalu cepat (bisa digabung).`;
+    } else {
+        // PRIORITAS 2: Balance rate normal & tidak ada overload → seimbang
+        statusType = 'balanced';
+        statusColor = 'emerald';
+        statusIcon = '✅';
+        statusTitle = 'Line Sudah Seimbang!';
+        statusMsg = `Balance Rate ${br.toFixed(1)}% — tidak ada stasiun overload. Semua stasiun achieve target UPH ${r.stdUph}.`;
     }
 
     // Kalau tidak ada saran sama sekali
@@ -581,6 +589,7 @@ function renderAIResult(r) {
                 <div>
                     <div class="text-[10px] text-purple-600 font-semibold uppercase">Hasil Simulasi AI</div>
                     <div class="text-sm font-bold text-purple-800 mt-0.5">${r.suggestions.length} elemen disarankan digeser</div>
+                    ${hasOverload ? `<div class="text-[10px] text-red-600 font-semibold mt-0.5">⚠️ ${overloadedStations.length} stasiun masih overload setelah optimasi</div>` : ''}
                 </div>
                 <div class="flex gap-2">
                     <button onclick="window.exportAIResultExcel()" class="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1.5 rounded">📊 Excel</button>
@@ -659,36 +668,53 @@ function renderAIResult(r) {
 }
 
 // ============================================================
-// HELPER: OVERLOAD DETAIL
+// HELPER: OVERLOAD DETAIL (v1.2 enhanced)
 // ============================================================
 function renderOverloadDetail(r) {
     const overStations = r.stationsBefore.filter(s => s.totalTime > r.taktTime).sort((a, b) => b.totalTime - a.totalTime);
     if (overStations.length === 0) return '';
 
+    let totalExcess = 0;
+    overStations.forEach(s => { totalExcess += (s.totalTime - r.taktTime); });
+
     let html = `
-        <div class="mt-3 text-left bg-white border border-red-200 rounded-lg p-3">
-            <div class="text-[11px] font-bold text-red-700 mb-2">🔍 Stasiun Overload (CT > Takt Time ${r.taktTime.toFixed(2)}s)</div>
-            <div class="space-y-1 max-h-48 overflow-y-auto">
+        <div class="mt-3 text-left bg-white border-2 border-red-300 rounded-lg p-3">
+            <div class="flex items-center justify-between mb-2 flex-wrap gap-1">
+                <div class="text-[11px] font-bold text-red-700">🔴 ${overStations.length} Stasiun Overload (CT > Takt Time ${r.taktTime.toFixed(2)}s)</div>
+                <div class="text-[10px] text-red-600 font-bold bg-red-100 px-2 py-0.5 rounded">Total excess: +${totalExcess.toFixed(1)}s</div>
+            </div>
+            <div class="space-y-1 max-h-64 overflow-y-auto">
     `;
     overStations.forEach(s => {
         const excess = s.totalTime - r.taktTime;
+        const excessPct = (excess / r.taktTime * 100).toFixed(0);
         html += `
-            <div class="flex items-center gap-2 text-[11px] bg-red-50 rounded px-2 py-1">
-                <span class="font-bold text-red-700 w-12 shrink-0">No ${_esc(String(s.noSop))}</span>
+            <div class="flex items-center gap-2 text-[11px] bg-red-50 rounded px-2 py-1.5 border border-red-200">
+                <span class="font-bold text-red-700 w-14 shrink-0">No ${_esc(String(s.noSop))}</span>
                 <span class="flex-1 truncate text-gray-700">${_esc(s.namaSop || '-')}</span>
                 <span class="font-mono font-bold text-red-600">${s.totalTime.toFixed(1)}s</span>
-                <span class="text-[10px] text-red-600">+${excess.toFixed(1)}s</span>
+                <span class="text-[10px] text-red-600 bg-red-100 px-1.5 py-0.5 rounded font-bold">+${excess.toFixed(1)}s (+${excessPct}%)</span>
             </div>
         `;
     });
     html += `</div>
-        <div class="mt-2 text-[10px] text-red-700">
-            <b>💡 Rekomendasi:</b>
+        <div class="mt-3 text-[10px] text-red-700 bg-red-50 rounded p-2">
+            <b>💡 Mengapa AI belum bisa geser elemen?</b>
             <ul class="list-disc ml-4 mt-1 space-y-0.5">
-                <li>Cek 🔒 <b>Movable</b>: mungkin ada elemen yang di-lock sehingga AI tidak bisa geser</li>
-                <li>Cek 🔗 <b>Precedence</b>: mungkin ada constraint yang menghalangi</li>
-                <li>Kalau semua elemen sudah optimal → <b>tambah operator</b> atau <b>pecah stasiun</b></li>
+                <li><b>Semua elemen sudah ditandai "tidak bisa pindah" (Movable)</b> — cek tombol 🔒 <b>Movable</b></li>
+                <li><b>Precedence constraint</b> — cek tombol 🔗 <b>Precedence</b></li>
+                <li><b>Semua elemen di stasiun ini wajib ada di sini</b> — cek tooltip elemen</li>
+                <li><b>Tidak ada stasiun penerima yang muat</b> — semua stasiun lain sudah mendekati takt time</li>
             </ul>
+            <div class="mt-2 pt-2 border-t border-red-200">
+                <b>🎯 Solusi realistis:</b>
+                <ul class="list-disc ml-4 mt-1 space-y-0.5">
+                    <li>Kalau ada elemen movable → aktifkan via 🔒 <b>Movable</b> dan jalankan AI ulang</li>
+                    <li>Kalau semua elemen wajib → <b>tambah operator</b> di stasiun ini (dengan preinstall mode)</li>
+                    <li>Atau <b>pecah stasiun</b> menjadi 2 sub-stasiun</li>
+                    <li>Atau <b>investigasi kenapa stasiun ini lambat</b> (metode kerja, fixture, training)</li>
+                </ul>
+            </div>
         </div>
     </div>`;
     return html;
@@ -1508,7 +1534,7 @@ window.AIEngine = {
     loadLastAIResult
 };
 
-console.log('✅ AI Engine v1.1 loaded. Available: window.AIEngine');
+console.log('✅ AI Engine v1.2 loaded. Available: window.AIEngine');
 
 // Auto-load last result
 if (document.readyState === 'loading') {
