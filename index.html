@@ -4372,6 +4372,23 @@ async function init() {
         if (skP && skP.classList.contains('open')) { if (skB && !skB.contains(e.target) && !skP.contains(e.target)) closeSiklusDropdown(); }
     });
 }
+// Sync global ke window (fix AI Engine)
+setInterval(() => {
+    if (typeof currentMode !== 'undefined') window.currentMode = currentMode;
+    if (typeof activeLine !== 'undefined') window.activeLine = activeLine;
+    if (typeof activeModel !== 'undefined') window.activeModel = activeModel;
+    if (typeof masterData !== 'undefined') window.masterData = masterData;
+    if (typeof getRowStats !== 'undefined') window.getRowStats = getRowStats;
+    if (typeof getLineStandardUph !== 'undefined') window.getLineStandardUph = getLineStandardUph;
+    if (typeof showToast !== 'undefined') window.showToast = showToast;
+    if (typeof escapeHtml !== 'undefined') window.escapeHtml = escapeHtml;
+    if (typeof downloadBlob !== 'undefined') window.downloadBlob = downloadBlob;
+    if (typeof saveMasterToLS !== 'undefined') window.saveMasterToLS = saveMasterToLS;
+    if (typeof renderMasterTable !== 'undefined') window.renderMasterTable = renderMasterTable;
+    if (typeof renderStandardCheck !== 'undefined') window.renderStandardCheck = renderStandardCheck;
+    if (typeof updateCounters !== 'undefined') window.updateCounters = updateCounters;
+}, 300);
+
 init();
 </script>
     <!-- ============ AI ENGINE (Modular) ============ -->
