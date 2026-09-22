@@ -1,7 +1,7 @@
 // ============================================================
-// AI ELEMENT BALANCING ENGINE v1.2
+// AI ELEMENT BALANCING ENGINE v1.3
 // Modular untuk Time Study Toolkit
-// Update v1.2: Fix logika Overload (deteksi stasiun overload individual)
+// Update v1.3: Saran struktural saat AI tidak bisa geser elemen
 // ============================================================
 
 (function() {
@@ -117,14 +117,14 @@ window.addPrecedenceRule = function() {
 
 function hasCycle(map, a, b) {
     const visited = new Set();
-    function dfs(node) {
-        if (node === a) return true;
+    function dfs(node, target) {
+        if (node === target) return true;
         if (visited.has(node)) return false;
         visited.add(node);
         const preds = map[node] || [];
-        return preds.some(p => dfs(p));
+        return preds.some(p => dfs(p, target));
     }
-    return dfs(b);
+    return dfs(b, a) || dfs(a, b);
 }
 
 // ============================================================
@@ -516,7 +516,7 @@ Jawab ringkas & praktis.`;
 }
 
 // ============================================================
-// RENDER RESULT (v1.2 FIXED)
+// RENDER RESULT (v1.3)
 // ============================================================
 function renderAIResult(r) {
     const elLine = document.getElementById('aiLineModel');
@@ -531,8 +531,7 @@ function renderAIResult(r) {
     const c = document.getElementById('aiResultContainer');
     if (!c) return;
 
-    // ============ CLASSIFICATION (v1.2) ============
-    // Deteksi stasiun overload dulu (lebih akurat dari balance rate)
+    // ============ CLASSIFICATION ============
     const br = r.balanceBefore;
     const overloadedStations = r.stationsBefore.filter(s => s.totalTime > r.taktTime);
     const hasOverload = overloadedStations.length > 0;
@@ -540,7 +539,6 @@ function renderAIResult(r) {
     let statusColor, statusIcon, statusTitle, statusMsg, statusType;
 
     if (hasOverload) {
-        // PRIORITAS 1: Kalau ada stasiun overload → OVERLOAD
         statusType = 'overload';
         statusColor = 'red';
         statusIcon = '🔴';
@@ -548,14 +546,12 @@ function renderAIResult(r) {
         statusTitle = `Line OVERLOAD — ${overloadedStations.length} Stasiun Tidak Achieve Target!`;
         statusMsg = `Stasiun No ${worstStation.noSop} (${worstStation.totalTime.toFixed(1)}s) melebihi Takt Time ${r.taktTime.toFixed(2)}s. Meskipun Balance Rate ${br.toFixed(1)}%, ada ${overloadedStations.length} stasiun yang tidak achieve target UPH.`;
     } else if (br < 85) {
-        // PRIORITAS 3: Balance rate rendah tanpa overload → underutilized
         statusType = 'underutilized';
         statusColor = 'amber';
         statusIcon = '⚠️';
         statusTitle = 'Line Underutilized';
         statusMsg = `Balance Rate ${br.toFixed(1)}% di bawah 85%. Tidak ada stasiun overload, tapi banyak stasiun terlalu cepat (bisa digabung).`;
     } else {
-        // PRIORITAS 2: Balance rate normal & tidak ada overload → seimbang
         statusType = 'balanced';
         statusColor = 'emerald';
         statusIcon = '✅';
@@ -563,7 +559,6 @@ function renderAIResult(r) {
         statusMsg = `Balance Rate ${br.toFixed(1)}% — tidak ada stasiun overload. Semua stasiun achieve target UPH ${r.stdUph}.`;
     }
 
-    // Kalau tidak ada saran sama sekali
     if (r.suggestions.length === 0) {
         c.innerHTML = `
             <div class="bg-${statusColor}-50 border-2 border-${statusColor}-300 rounded-lg p-4">
@@ -579,7 +574,6 @@ function renderAIResult(r) {
         return;
     }
 
-    // Kalau ada saran → render lengkap
     const delta = r.balanceAfter - r.balanceBefore;
     const deltaColor = delta > 0 ? 'text-emerald-600' : 'text-gray-600';
 
@@ -668,7 +662,7 @@ function renderAIResult(r) {
 }
 
 // ============================================================
-// HELPER: OVERLOAD DETAIL (v1.2 enhanced)
+// HELPER: OVERLOAD DETAIL (v1.3)
 // ============================================================
 function renderOverloadDetail(r) {
     const overStations = r.stationsBefore.filter(s => s.totalTime > r.taktTime).sort((a, b) => b.totalTime - a.totalTime);
@@ -697,28 +691,169 @@ function renderOverloadDetail(r) {
             </div>
         `;
     });
-    html += `</div>
-        <div class="mt-3 text-[10px] text-red-700 bg-red-50 rounded p-2">
-            <b>💡 Mengapa AI belum bisa geser elemen?</b>
-            <ul class="list-disc ml-4 mt-1 space-y-0.5">
-                <li><b>Semua elemen sudah ditandai "tidak bisa pindah" (Movable)</b> — cek tombol 🔒 <b>Movable</b></li>
-                <li><b>Precedence constraint</b> — cek tombol 🔗 <b>Precedence</b></li>
-                <li><b>Semua elemen di stasiun ini wajib ada di sini</b> — cek tooltip elemen</li>
-                <li><b>Tidak ada stasiun penerima yang muat</b> — semua stasiun lain sudah mendekati takt time</li>
-            </ul>
-            <div class="mt-2 pt-2 border-t border-red-200">
-                <b>🎯 Solusi realistis:</b>
-                <ul class="list-disc ml-4 mt-1 space-y-0.5">
-                    <li>Kalau ada elemen movable → aktifkan via 🔒 <b>Movable</b> dan jalankan AI ulang</li>
-                    <li>Kalau semua elemen wajib → <b>tambah operator</b> di stasiun ini (dengan preinstall mode)</li>
-                    <li>Atau <b>pecah stasiun</b> menjadi 2 sub-stasiun</li>
-                    <li>Atau <b>investigasi kenapa stasiun ini lambat</b> (metode kerja, fixture, training)</li>
-                </ul>
+    html += `</div>`;
+
+    // ===== SARAN ALTERNATIF PER STASIUN OVERLOAD =====
+    html += `
+        <div class="mt-3 bg-amber-50 border border-amber-300 rounded-lg p-3">
+            <div class="text-[11px] font-bold text-amber-800 mb-2">🎯 Solusi AI untuk Stasiun Overload</div>
+            <div class="space-y-3">
+    `;
+
+    overStations.forEach((s, idx) => {
+        const excess = s.totalTime - r.taktTime;
+        const ratio = s.totalTime / r.taktTime;
+        const idealOperators = Math.ceil(ratio);
+        
+        const bigElements = s.elements
+            .filter(e => e.stdTime >= 2.0)
+            .sort((a, b) => b.stdTime - a.stdTime)
+            .slice(0, 3);
+
+        const halfTarget = s.totalTime / 2;
+
+        html += `
+            <div class="bg-white rounded-lg p-2.5 border border-amber-200">
+                <div class="text-[11px] font-bold text-amber-900 mb-2">Stasiun No ${_esc(String(s.noSop))} · ${_esc(s.namaSop || '-')} (${s.totalTime.toFixed(1)}s)</div>
+                
+                <div class="space-y-2 text-[10px]">
+
+                    <!-- SARAN 1: TAMBAH OPERATOR -->
+                    <div class="bg-blue-50 border border-blue-200 rounded p-2">
+                        <div class="font-bold text-blue-800 mb-0.5">👥 Saran 1: Tambah Operator</div>
+                        <div class="text-blue-700">
+                            Stasiun ini CT = <b>${s.totalTime.toFixed(1)}s</b>, Takt Time = <b>${r.taktTime.toFixed(1)}s</b>, rasio = <b>${ratio.toFixed(2)}x</b>.
+                            Idealnya butuh <b>${idealOperators} operator</b> → CT efektif per operator = <b>${(s.totalTime / idealOperators).toFixed(1)}s</b> ✅
+                            ${s.operators >= idealOperators ? `<div class="mt-1 text-emerald-700">✓ Sudah ada ${s.operators} operator (cukup). Investigasi metode kerja!</div>` : `<div class="mt-1 text-amber-700">⚠️ Saat ini hanya ${s.operators || 1} operator. Tambah <b>${idealOperators - (s.operators || 1)}</b> operator.</div>`}
+                        </div>
+                    </div>
+
+                    <!-- SARAN 2: PECAH STASIUN -->
+                    <div class="bg-purple-50 border border-purple-200 rounded p-2">
+                        <div class="font-bold text-purple-800 mb-0.5">✂️ Saran 2: Pecah Stasiun jadi 2</div>
+                        <div class="text-purple-700">
+                            Split stasiun jadi <b>${_esc(String(s.noSop))}A</b> dan <b>${_esc(String(s.noSop))}B</b>, masing-masing target <b>≤${halfTarget.toFixed(1)}s</b>.
+                            Total elemen: <b>${s.elements.length}</b>. Distribusi ulang agar tiap sub-stasiun ≤ ${r.taktTime.toFixed(1)}s.
+                        </div>
+                    </div>
+
+                    <!-- SARAN 3: PECAH ELEMEN BESAR -->
+                    ${bigElements.length > 0 ? `
+                    <div class="bg-orange-50 border border-orange-200 rounded p-2">
+                        <div class="font-bold text-orange-800 mb-0.5">🔨 Saran 3: Pecah Elemen Besar</div>
+                        <div class="text-orange-700 mb-1">Elemen berikut > 2s — bisa dipecah jadi sub-task untuk pindah ke stasiun lain:</div>
+                        <ul class="space-y-0.5">
+                            ${bigElements.map(e => `<li>· <b>${_esc(e.elemen)}</b> (${e.stdTime.toFixed(2)}s) — pecah jadi 2 sub-task @ ~${(e.stdTime/2).toFixed(1)}s</li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+
+                    <!-- SARAN 4: TARGET CT -->
+                    <div class="bg-emerald-50 border border-emerald-200 rounded p-2">
+                        <div class="font-bold text-emerald-800 mb-0.5">📊 Saran 4: Target Cycle Time</div>
+                        <div class="text-emerald-700">
+                            Perlu kurangi <b>${excess.toFixed(1)}s</b> (${(excess / s.totalTime * 100).toFixed(0)}%) dari total CT.
+                            Target per elemen rata-rata: <b>≤ ${(r.taktTime / s.elements.length).toFixed(2)}s</b> (saat ini rata-rata ${(s.totalTime / s.elements.length).toFixed(2)}s).
+                            Cek: metode kerja, jarak jangkauan, fixture, training operator.
+                        </div>
+                    </div>
+
+                    <!-- ACTION BUTTONS -->
+                    <div class="flex gap-1 pt-1">
+                        <button onclick="window.showStationDetail('${_esc(s.key).replace(/'/g, "\\'")}')" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold px-2 py-1.5 rounded">📋 Lihat Detail Elemen</button>
+                    </div>
+                </div>
             </div>
+        `;
+    });
+
+    html += `</div></div>`;
+
+    // ===== CATATAN UMUM =====
+    html += `
+        <div class="mt-3 text-[10px] text-red-700 bg-red-50 rounded p-2">
+            <b>💡 Mengapa AI belum bisa geser elemen otomatis?</b>
+            <ul class="list-disc ml-4 mt-1 space-y-0.5">
+                <li><b>Movable flag</b> — cek tombol 🔒 <b>Movable</b>. Aktifkan elemen yang boleh digeser.</li>
+                <li><b>Precedence constraint</b> — cek tombol 🔗 <b>Precedence</b>. Elemen wajib setelah pendahulu.</li>
+                <li><b>Tidak ada stasiun penerima</b> — semua stasiun lain sudah mendekati takt time.</li>
+                <li><b>Semua elemen wajib di sini</b> — tidak ada yang bisa dipindah.</li>
+            </ul>
         </div>
     </div>`;
     return html;
 }
+
+// ============================================================
+// HELPER: SHOW STATION DETAIL
+// ============================================================
+window.showStationDetail = function(stationKey) {
+    const r = window.__aiLastResult;
+    if (!r) return;
+    const st = r.stationsBefore.find(s => s.key === stationKey);
+    if (!st) { _toast('❌ Stasiun tidak ditemukan', 'error'); return; }
+    
+    const movMap = getMovableMap();
+    const precMap = getPrecedenceMap();
+    
+    let html = `
+        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-3 mb-3">
+            <div class="text-sm font-bold text-indigo-800">📋 Stasiun No ${_esc(String(st.noSop))} · ${_esc(st.namaSop || '-')}</div>
+            <div class="grid grid-cols-3 gap-2 mt-2 text-[11px]">
+                <div class="bg-white rounded p-2">
+                    <div class="text-[10px] text-gray-500 uppercase">Total CT</div>
+                    <div class="text-lg font-bold ${st.totalTime > r.taktTime ? 'text-red-600' : 'text-emerald-600'}">${st.totalTime.toFixed(2)}s</div>
+                </div>
+                <div class="bg-white rounded p-2">
+                    <div class="text-[10px] text-gray-500 uppercase">Takt Time</div>
+                    <div class="text-lg font-bold text-blue-600">${r.taktTime.toFixed(2)}s</div>
+                </div>
+                <div class="bg-white rounded p-2">
+                    <div class="text-[10px] text-gray-500 uppercase">Jumlah Elemen</div>
+                    <div class="text-lg font-bold text-purple-600">${st.elements.length}</div>
+                </div>
+            </div>
+        </div>
+        <div class="text-[11px] font-bold text-gray-700 mb-2">Detail Elemen (${st.elements.length})</div>
+        <div class="space-y-1 max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-2 bg-gray-50">
+    `;
+    
+    st.elements.sort((a, b) => b.stdTime - a.stdTime).forEach(e => {
+        const isMovable = movMap[e.key] !== false;
+        const preds = precMap[e.key] || [];
+        const hasPrec = preds.length > 0;
+        
+        html += `
+            <div class="bg-white border border-gray-200 rounded p-2 text-[11px]">
+                <div class="flex items-center gap-1.5 mb-1 flex-wrap">
+                    <span class="font-bold text-gray-800">${_esc(e.elemen)}</span>
+                    <span class="bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded text-[10px] font-bold">${e.stdTime.toFixed(2)}s</span>
+                    ${isMovable 
+                        ? '<span class="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded text-[10px] font-bold">✓ Movable</span>'
+                        : '<span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-[10px] font-bold">🔒 Locked</span>'
+                    }
+                    ${hasPrec ? `<span class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold">🔗 ${preds.length} predecessor</span>` : ''}
+                </div>
+                ${hasPrec ? `<div class="text-[10px] text-blue-600">Harus setelah: ${preds.length} elemen</div>` : ''}
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
+    
+    const c = document.getElementById('aiResultContainer');
+    if (c) {
+        const scrollY = window.scrollY;
+        c.innerHTML = html + '<button onclick="window.closeStationDetail()" class="mt-3 w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg text-sm">← Kembali</button>';
+        window.scrollTo({ top: scrollY, behavior: 'instant' });
+    }
+};
+
+window.closeStationDetail = function() {
+    if (window.__aiLastResult) {
+        renderAIResult(window.__aiLastResult);
+    }
+};
 
 // ============================================================
 // HELPER: UNDERUTILIZED DETAIL
@@ -1534,7 +1669,7 @@ window.AIEngine = {
     loadLastAIResult
 };
 
-console.log('✅ AI Engine v1.2 loaded. Available: window.AIEngine');
+console.log('✅ AI Engine v1.3 loaded. Available: window.AIEngine');
 
 // Auto-load last result
 if (document.readyState === 'loading') {
