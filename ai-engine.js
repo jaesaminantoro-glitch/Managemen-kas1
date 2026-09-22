@@ -1,7 +1,7 @@
 // ============================================================
-// AI ELEMENT BALANCING ENGINE v1.0
+// AI ELEMENT BALANCING ENGINE v1.1
 // Modular untuk Time Study Toolkit
-// Bekerja untuk semua Line + Model
+// Update: Fix klasifikasi Overload / Seimbang / Underutilized
 // ============================================================
 
 (function() {
@@ -28,7 +28,7 @@ let tempMovable = {};
 function _lsSave(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
 function _lsLoad(k, d) { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : d; } catch(e) { return d; } }
 function _esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
-function _toast(msg, type) { if (typeof showToast === 'function') showToast(msg, type || 'info'); }
+function _toast(msg, type) { if (typeof window.showToast === 'function') window.showToast(msg, type || 'info'); }
 
 // ============================================================
 // PRECEDENCE
@@ -38,8 +38,8 @@ function savePrecedenceMap(m) { _lsSave(LS_KEY_PRECEDENCE, m); }
 function elementKey(el) { return `${el.noSop}|${el.namaSop}|${el.elemen}`; }
 
 window.openPrecedenceModal = function() {
-    if (currentMode !== 'elemen') { _toast('⚠️ Hanya mode Elemen', 'warning'); return; }
-    if (!activeLine) { _toast('⚠️ Pilih Line dulu', 'error'); return; }
+    if (window.currentMode !== 'elemen') { _toast('⚠️ Hanya mode Elemen', 'warning'); return; }
+    if (!window.activeLine) { _toast('⚠️ Pilih Line dulu', 'error'); return; }
     const els = extractElementsForAI();
     if (els.length < 2) { _toast('⚠️ Minimal 2 elemen', 'warning'); return; }
     renderPrecedenceSelectors();
@@ -134,8 +134,8 @@ function getMovableMap() { return _lsLoad(LS_KEY_MOVABLE, {}); }
 function saveMovableMap(m) { _lsSave(LS_KEY_MOVABLE, m); }
 
 window.openMovableModal = function() {
-    if (currentMode !== 'elemen') { _toast('⚠️ Hanya mode Elemen', 'warning'); return; }
-    if (!activeLine) { _toast('⚠️ Pilih Line dulu', 'error'); return; }
+    if (window.currentMode !== 'elemen') { _toast('⚠️ Hanya mode Elemen', 'warning'); return; }
+    if (!window.activeLine) { _toast('⚠️ Pilih Line dulu', 'error'); return; }
     const els = extractElementsForAI();
     if (els.length === 0) { _toast('⚠️ Belum ada elemen', 'warning'); return; }
     tempMovable = { ...getMovableMap() };
@@ -240,14 +240,17 @@ async function askLLM(prompt) {
 // AI CORE
 // ============================================================
 function extractElementsForAI() {
-    if (typeof currentMode === 'undefined' || currentMode !== 'elemen') return [];
-    const _activeLine = window.activeLine || activeLine;
-    const _activeModel = window.activeModel || activeModel;
-    return masterData.filter(d =>
+    if (typeof window.currentMode === 'undefined' || window.currentMode !== 'elemen') return [];
+    const _activeLine = window.activeLine;
+    const _activeModel = window.activeModel;
+    const _masterData = window.masterData || [];
+    const _getRowStats = window.getRowStats;
+    if (!_getRowStats) return [];
+    return _masterData.filter(d =>
         d.line === _activeLine &&
         (_activeModel ? (d.model || '-') === _activeModel : true)
     ).map(item => {
-        const st = getRowStats(item);
+        const st = _getRowStats(item);
         return {
             key: `${item.noSop}|${item.namaSop}|${item.elemen}`,
             noSop: item.noSop,
@@ -368,7 +371,7 @@ function simulateWithTakt(taktTime) {
 }
 
 function generateAISuggestions() {
-    const stdUph = getLineStandardUph();
+    const stdUph = window.getLineStandardUph ? window.getLineStandardUph() : 0;
     if (stdUph <= 0) return { error: 'UPH Line belum di-set.' };
     const taktTime = 3600 / stdUph;
     const elements = extractElementsForAI();
@@ -455,8 +458,8 @@ function generateAISuggestions() {
 // RUN AI
 // ============================================================
 window.runAIBalancing = async function() {
-    if (currentMode !== 'elemen') { _toast('⚠️ Hanya mode Elemen', 'warning'); return; }
-    if (!activeLine) { _toast('⚠️ Pilih Line dulu', 'error'); return; }
+    if (window.currentMode !== 'elemen') { _toast('⚠️ Hanya mode Elemen', 'warning'); return; }
+    if (!window.activeLine) { _toast('⚠️ Pilih Line dulu', 'error'); return; }
     const btn = document.getElementById('aiRunBtn');
     if (btn) { btn.disabled = true; btn.innerText = '⏳ Menganalisa...'; }
     try {
@@ -466,7 +469,7 @@ window.runAIBalancing = async function() {
             document.getElementById('aiResultContainer').innerHTML = `<div class="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">${result.error}</div>`;
         } else {
             aiLastResult = result;
-            _lsSave(LS_KEY_AI_LAST, { line: activeLine, model: activeModel, ts: Date.now(), result });
+            _lsSave(LS_KEY_AI_LAST, { line: window.activeLine, model: window.activeModel, ts: Date.now(), result });
             window.__aiLastResult = result;
             renderAIResult(result);
             recordAIHistory(result);
@@ -495,7 +498,7 @@ async function explainWithLLM(r) {
     ).join('\n');
     const prompt = `Kamu adalah Industrial Engineer. Analisa line balancing berikut:
 
-Line: ${activeLine} · Model: ${activeModel || '-'}
+Line: ${window.activeLine} · Model: ${window.activeModel || '-'}
 Takt Time: ${r.taktTime.toFixed(2)} detik (UPH ${r.stdUph})
 Balance Rate: ${r.balanceBefore.toFixed(1)}% → ${r.balanceAfter.toFixed(1)}%
 Bottleneck: Stasiun ${r.bottleneckBefore.noSop} (${r.bottleneckBefore.totalTime.toFixed(2)}s)
@@ -513,11 +516,11 @@ Jawab ringkas & praktis.`;
 }
 
 // ============================================================
-// RENDER RESULT
+// RENDER RESULT (FIXED)
 // ============================================================
 function renderAIResult(r) {
     const elLine = document.getElementById('aiLineModel');
-    if (elLine) elLine.innerText = `${activeLine} · ${activeModel || '-'}`;
+    if (elLine) elLine.innerText = `${window.activeLine} · ${window.activeModel || '-'}`;
     const elTakt = document.getElementById('aiTaktTime');
     if (elTakt) elTakt.innerText = `${r.taktTime.toFixed(2)}s (UPH ${r.stdUph})`;
     const elBn = document.getElementById('aiBottleneck');
@@ -527,16 +530,48 @@ function renderAIResult(r) {
 
     const c = document.getElementById('aiResultContainer');
     if (!c) return;
+
+    // ============ CLASSIFICATION ============
+    const br = r.balanceBefore;
+    let statusColor, statusIcon, statusTitle, statusMsg, statusType;
+
+    if (br > 105) {
+        statusType = 'overload';
+        statusColor = 'red';
+        statusIcon = '🔴';
+        statusTitle = 'Line OVERLOAD!';
+        statusMsg = `Balance Rate ${br.toFixed(1)}% melebihi 105%. Line tidak mampu memenuhi target UPH. Perlu tambah kapasitas / pecah stasiun.`;
+    } else if (br >= 85 && br <= 105) {
+        statusType = 'balanced';
+        statusColor = 'emerald';
+        statusIcon = '✅';
+        statusTitle = 'Line Sudah Seimbang!';
+        statusMsg = `Balance Rate ${br.toFixed(1)}% — dalam range ideal (85%-105%).`;
+    } else {
+        statusType = 'underutilized';
+        statusColor = 'amber';
+        statusIcon = '⚠️';
+        statusTitle = 'Line Underutilized';
+        statusMsg = `Balance Rate ${br.toFixed(1)}% di bawah 85%. Ada stasiun yang tidak efisien.`;
+    }
+
+    // Kalau tidak ada saran sama sekali
     if (r.suggestions.length === 0) {
         c.innerHTML = `
-            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-center">
-                <div class="text-3xl mb-1">✅</div>
-                <div class="text-sm font-bold text-emerald-700">Line Sudah Seimbang!</div>
-                <div class="text-xs text-emerald-600 mt-1">Balance Rate: ${r.balanceBefore.toFixed(1)}%</div>
-            </div>`;
+            <div class="bg-${statusColor}-50 border-2 border-${statusColor}-300 rounded-lg p-4">
+                <div class="text-center">
+                    <div class="text-4xl mb-2">${statusIcon}</div>
+                    <div class="text-base font-bold text-${statusColor}-700">${statusTitle}</div>
+                    <div class="text-xs text-${statusColor}-600 mt-1">${statusMsg}</div>
+                </div>
+                ${statusType === 'overload' ? renderOverloadDetail(r) : ''}
+                ${statusType === 'underutilized' ? renderUnderutilizedDetail(r) : ''}
+            </div>
+        `;
         return;
     }
 
+    // Kalau ada saran → render lengkap
     const delta = r.balanceAfter - r.balanceBefore;
     const deltaColor = delta > 0 ? 'text-emerald-600' : 'text-gray-600';
 
@@ -624,6 +659,77 @@ function renderAIResult(r) {
 }
 
 // ============================================================
+// HELPER: OVERLOAD DETAIL
+// ============================================================
+function renderOverloadDetail(r) {
+    const overStations = r.stationsBefore.filter(s => s.totalTime > r.taktTime).sort((a, b) => b.totalTime - a.totalTime);
+    if (overStations.length === 0) return '';
+
+    let html = `
+        <div class="mt-3 text-left bg-white border border-red-200 rounded-lg p-3">
+            <div class="text-[11px] font-bold text-red-700 mb-2">🔍 Stasiun Overload (CT > Takt Time ${r.taktTime.toFixed(2)}s)</div>
+            <div class="space-y-1 max-h-48 overflow-y-auto">
+    `;
+    overStations.forEach(s => {
+        const excess = s.totalTime - r.taktTime;
+        html += `
+            <div class="flex items-center gap-2 text-[11px] bg-red-50 rounded px-2 py-1">
+                <span class="font-bold text-red-700 w-12 shrink-0">No ${_esc(String(s.noSop))}</span>
+                <span class="flex-1 truncate text-gray-700">${_esc(s.namaSop || '-')}</span>
+                <span class="font-mono font-bold text-red-600">${s.totalTime.toFixed(1)}s</span>
+                <span class="text-[10px] text-red-600">+${excess.toFixed(1)}s</span>
+            </div>
+        `;
+    });
+    html += `</div>
+        <div class="mt-2 text-[10px] text-red-700">
+            <b>💡 Rekomendasi:</b>
+            <ul class="list-disc ml-4 mt-1 space-y-0.5">
+                <li>Cek 🔒 <b>Movable</b>: mungkin ada elemen yang di-lock sehingga AI tidak bisa geser</li>
+                <li>Cek 🔗 <b>Precedence</b>: mungkin ada constraint yang menghalangi</li>
+                <li>Kalau semua elemen sudah optimal → <b>tambah operator</b> atau <b>pecah stasiun</b></li>
+            </ul>
+        </div>
+    </div>`;
+    return html;
+}
+
+// ============================================================
+// HELPER: UNDERUTILIZED DETAIL
+// ============================================================
+function renderUnderutilizedDetail(r) {
+    const underStations = r.stationsBefore.filter(s => s.totalTime < r.taktTime * 0.7).sort((a, b) => a.totalTime - b.totalTime);
+    if (underStations.length === 0) return '';
+
+    let html = `
+        <div class="mt-3 text-left bg-white border border-amber-200 rounded-lg p-3">
+            <div class="text-[11px] font-bold text-amber-700 mb-2">🔍 Stasiun Underutilized (CT < 70% Takt Time)</div>
+            <div class="space-y-1 max-h-48 overflow-y-auto">
+    `;
+    underStations.forEach(s => {
+        const diff = r.taktTime * 0.7 - s.totalTime;
+        html += `
+            <div class="flex items-center gap-2 text-[11px] bg-amber-50 rounded px-2 py-1">
+                <span class="font-bold text-amber-700 w-12 shrink-0">No ${_esc(String(s.noSop))}</span>
+                <span class="flex-1 truncate text-gray-700">${_esc(s.namaSop || '-')}</span>
+                <span class="font-mono font-bold text-amber-600">${s.totalTime.toFixed(1)}s</span>
+                <span class="text-[10px] text-amber-600">-${diff.toFixed(1)}s</span>
+            </div>
+        `;
+    });
+    html += `</div>
+        <div class="mt-2 text-[10px] text-amber-700">
+            <b>💡 Rekomendasi:</b>
+            <ul class="list-disc ml-4 mt-1 space-y-0.5">
+                <li>Gabung stasiun underutilized dengan stasiun terdekat</li>
+                <li>Tambah elemen dari stasiun overload (kalau ada)</li>
+            </ul>
+        </div>
+    </div>`;
+    return html;
+}
+
+// ============================================================
 // APPLY
 // ============================================================
 window.openApplyModal = function() {
@@ -663,8 +769,8 @@ window.confirmApplyAI = function() {
             version: '2.4-auto',
             timestamp: new Date().toISOString(),
             reason: 'AI Apply',
-            masterData: JSON.parse(JSON.stringify(masterData)),
-            line: activeLine, model: activeModel
+            masterData: JSON.parse(JSON.stringify(window.masterData || [])),
+            line: window.activeLine, model: window.activeModel
         };
         const key = `timeStudy_autoBackup_${Date.now()}`;
         localStorage.setItem(key, JSON.stringify(backup));
@@ -673,11 +779,12 @@ window.confirmApplyAI = function() {
     } catch(e) { console.warn('Backup gagal:', e); }
 
     let applied = 0;
+    const _masterData = window.masterData || [];
     r.suggestions.forEach(s => {
         const [oldNoSop, namaSop, elemen] = s.elementKey.split('|');
-        masterData.forEach(item => {
-            if (item.line === activeLine &&
-                (activeModel ? (item.model || '-') === activeModel : true) &&
+        _masterData.forEach(item => {
+            if (item.line === window.activeLine &&
+                (window.activeModel ? (item.model || '-') === window.activeModel : true) &&
                 item.noSop === oldNoSop &&
                 item.namaSop === namaSop &&
                 item.elemen === elemen) {
@@ -688,14 +795,14 @@ window.confirmApplyAI = function() {
         });
     });
 
-    if (typeof saveMasterToLS === 'function') {
-        saveMasterToLS((serverArr) => {
+    if (typeof window.saveMasterToLS === 'function') {
+        window.saveMasterToLS((serverArr) => {
             const arr = serverArr.map(x => ({ ...x, laps: x.laps ? [...x.laps] : x.laps }));
             r.suggestions.forEach(s => {
                 const [oldNoSop, namaSop, elemen] = s.elementKey.split('|');
                 arr.forEach(item => {
-                    if (item.line === activeLine &&
-                        (activeModel ? (item.model || '-') === activeModel : true) &&
+                    if (item.line === window.activeLine &&
+                        (window.activeModel ? (item.model || '-') === window.activeModel : true) &&
                         item.noSop === oldNoSop &&
                         item.namaSop === namaSop &&
                         item.elemen === elemen) {
@@ -709,9 +816,9 @@ window.confirmApplyAI = function() {
     }
 
     window.closeApplyModal();
-    if (typeof renderMasterTable === 'function') renderMasterTable();
-    if (typeof renderStandardCheck === 'function') renderStandardCheck();
-    if (typeof updateCounters === 'function') updateCounters();
+    if (typeof window.renderMasterTable === 'function') window.renderMasterTable();
+    if (typeof window.renderStandardCheck === 'function') window.renderStandardCheck();
+    if (typeof window.updateCounters === 'function') window.updateCounters();
     _toast(`✅ ${applied} elemen dipindahkan`, 'success');
     setTimeout(() => window.runAIBalancing(), 500);
 };
@@ -727,7 +834,7 @@ window.exportAIResultExcel = function() {
         const wb = XLSX.utils.book_new();
         const aoa = [];
         aoa.push(['AI Element Balancing Report']);
-        aoa.push(['Line', activeLine, 'Model', activeModel || '-']);
+        aoa.push(['Line', window.activeLine, 'Model', window.activeModel || '-']);
         aoa.push(['Takt Time (s)', r.taktTime.toFixed(2), 'UPH', r.stdUph]);
         aoa.push(['Balance Before (%)', r.balanceBefore.toFixed(2), 'Balance After (%)', r.balanceAfter.toFixed(2)]);
         aoa.push(['Bottleneck Before', `No ${r.bottleneckBefore.noSop} (${r.bottleneckBefore.totalTime.toFixed(2)}s)`]);
@@ -760,8 +867,8 @@ window.exportAIResultExcel = function() {
         XLSX.utils.book_append_sheet(wb, ws, 'AI Report');
         const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
         const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        const filename = `AI_Balancing_${activeLine}_${activeModel || 'all'}_${new Date().toISOString().slice(0,10)}.xlsx`;
-        if (typeof downloadBlob === 'function') downloadBlob(blob, filename);
+        const filename = `AI_Balancing_${window.activeLine}_${window.activeModel || 'all'}_${new Date().toISOString().slice(0,10)}.xlsx`;
+        if (typeof window.downloadBlob === 'function') window.downloadBlob(blob, filename);
         _toast('📊 Report diunduh', 'success');
     } catch(e) {
         console.error(e);
@@ -775,9 +882,9 @@ window.exportAIResultExcel = function() {
 let whatIfCache = null;
 
 window.openWhatIfModal = function() {
-    if (currentMode !== 'elemen') { _toast('⚠️ Hanya mode Elemen', 'warning'); return; }
-    if (!activeLine) { _toast('⚠️ Pilih Line dulu', 'error'); return; }
-    const stdUph = getLineStandardUph();
+    if (window.currentMode !== 'elemen') { _toast('⚠️ Hanya mode Elemen', 'warning'); return; }
+    if (!window.activeLine) { _toast('⚠️ Pilih Line dulu', 'error'); return; }
+    const stdUph = window.getLineStandardUph ? window.getLineStandardUph() : 0;
     if (stdUph <= 0) { _toast('⚠️ UPH belum di-set', 'error'); return; }
     const realTakt = 3600 / stdUph;
     const slider = document.getElementById('whatIfTakt');
@@ -789,7 +896,7 @@ window.openWhatIfModal = function() {
 };
 window.closeWhatIfModal = function() { document.getElementById('whatIfModal').classList.remove('active'); };
 window.resetWhatIf = function() {
-    const stdUph = getLineStandardUph();
+    const stdUph = window.getLineStandardUph ? window.getLineStandardUph() : 0;
     const realTakt = 3600 / stdUph;
     document.getElementById('whatIfTakt').value = realTakt.toFixed(1);
     document.getElementById('whatIfTaktNum').value = realTakt.toFixed(1);
@@ -803,7 +910,7 @@ window.syncWhatIfSlider = function() {
 window.updateWhatIfPreview = function() {
     const virtualTakt = parseFloat(document.getElementById('whatIfTakt').value) || 10;
     const virtualUph = virtualTakt > 0 ? Math.round(3600 / virtualTakt) : 0;
-    const stdUph = getLineStandardUph();
+    const stdUph = window.getLineStandardUph ? window.getLineStandardUph() : 0;
     const realTakt = 3600 / stdUph;
     document.getElementById('whatIfUphLabel').innerText = `UPH: ${virtualUph}`;
     document.getElementById('whatIfRealTakt').innerText = `${realTakt.toFixed(2)}s`;
@@ -921,8 +1028,8 @@ function renderWhatIfComparison(realR, virtR, realTakt, virtTakt) {
 // AUTO PRECEDENCE
 // ============================================================
 window.openAutoPrecedenceModal = function() {
-    if (currentMode !== 'elemen') { _toast('⚠️ Hanya mode Elemen', 'warning'); return; }
-    if (!activeLine) { _toast('⚠️ Pilih Line dulu', 'error'); return; }
+    if (window.currentMode !== 'elemen') { _toast('⚠️ Hanya mode Elemen', 'warning'); return; }
+    if (!window.activeLine) { _toast('⚠️ Pilih Line dulu', 'error'); return; }
     const els = extractElementsForAI();
     if (els.length < 2) { _toast('⚠️ Minimal 2 elemen', 'warning'); return; }
     document.getElementById('autoPrecPreview').classList.add('hidden');
@@ -1116,8 +1223,8 @@ function recordAIHistory(result) {
     hist.unshift({
         id: 'ai_' + Date.now(),
         ts: Date.now(),
-        line: activeLine,
-        model: activeModel || '-',
+        line: window.activeLine,
+        model: window.activeModel || '-',
         taktTime: result.taktTime,
         stdUph: result.stdUph,
         balanceBefore: result.balanceBefore,
@@ -1149,7 +1256,7 @@ window.openAIHistoryModal = function() {
 window.closeAIHistoryModal = function() { document.getElementById('aiHistoryModal').classList.remove('active'); };
 
 function renderAIHistory() {
-    const hist = getAIHistory().filter(h => h.line === activeLine && (activeModel ? h.model === (activeModel || '-') : true));
+    const hist = getAIHistory().filter(h => h.line === window.activeLine && (window.activeModel ? h.model === (window.activeModel || '-') : true));
     const list = document.getElementById('aiHistoryList');
     const count = document.getElementById('aiHistCount');
     const chart = document.getElementById('aiHistoryChart');
@@ -1372,7 +1479,7 @@ window.runAIUnitTest = function() {
 // ============================================================
 function loadLastAIResult() {
     const last = _lsLoad(LS_KEY_AI_LAST, null);
-    if (last && last.result && last.line === activeLine && last.model === activeModel) {
+    if (last && last.result && last.line === window.activeLine && last.model === window.activeModel) {
         window.__aiLastResult = last.result;
         aiLastResult = last.result;
     }
@@ -1401,7 +1508,7 @@ window.AIEngine = {
     loadLastAIResult
 };
 
-console.log('✅ AI Engine loaded. Available: window.AIEngine');
+console.log('✅ AI Engine v1.1 loaded. Available: window.AIEngine');
 
 // Auto-load last result
 if (document.readyState === 'loading') {
