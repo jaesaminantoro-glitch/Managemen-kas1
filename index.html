@@ -225,17 +225,7 @@
             <div id="admin-tab-menu" class="hidden space-y-4">
                 <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-xs sm:text-sm">
-                            <thead>
-                                <tr class="bg-slate-50 border-b border-slate-200 text-[10px] sm:text-xs font-extrabold uppercase text-slate-500">
-                                    <th class="p-3 sm:p-4">Nama Menu</th>
-                                    <th class="p-3 sm:p-4">Harga (Rp)</th>
-                                    <th class="p-3 sm:p-4">Status</th>
-                                    <th class="p-3 sm:p-4 text-center">Aksi Stok</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-menu-table" class="divide-y divide-slate-100"></tbody>
-                        </table>
+                        <div id="admin-menu-table" class="divide-y divide-slate-100"></div>
                     </div>
                 </div>
             </div>
@@ -418,7 +408,7 @@
                 return `<div class="bg-white rounded-xl border p-4 shadow-sm space-y-2">
                     <div class="flex justify-between gap-2 font-black break-words"><span>#${o.id} - ${esc(o.name)}</span><span>${fmt(o.total)}</span></div>
                     <p class="text-xs text-slate-600 font-bold">${esc(o.department)} | ${esc(o.location)} | ${jam}</p>
-                    <p class="text-xs text-slate-700">${o.items.map(i => `${esc(i.name)} x${i.qty}`).join(', ')}</p>
+                    <ul class="divide-y divide-slate-100 border-t border-slate-100">${o.items.map(i => `<li class="flex justify-between gap-3 py-1.5 text-sm"><span class="font-bold min-w-0 break-words">${esc(i.name)} <span class="text-orange-600">x${i.qty}</span></span><span class="text-slate-500 shrink-0">${fmt(i.price * i.qty)}</span></li>`).join('')}</ul>
                     <div class="flex items-center justify-between gap-2 pt-1">
                         <span class="text-xs font-black px-2 py-1 rounded bg-amber-100 text-amber-900">${o.status}</span>
                         ${next ? `<button onclick="advanceOrder(${o.id})" class="text-xs font-bold bg-slate-900 text-white px-3 py-1.5 rounded-lg">Tandai ${next}</button>` : ''}
@@ -478,12 +468,17 @@
         }
 
         function renderAdminMenuTable() {
-            $('admin-menu-table').innerHTML = menuItems.map(item => `<tr>
-                <td class="p-3 font-bold">${esc(item.name)}</td>
-                <td class="p-3"><input type="number" min="0" step="500" value="${item.price}" onchange="updatePrice(${item.id}, this.value)" class="w-24 px-2 py-1 border border-slate-300 rounded font-bold"></td>
-                <td class="p-3"><span class="px-2 py-1 rounded font-bold ${item.available ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}">${item.available ? 'Tersedia' : 'Habis'}</span></td>
-                <td class="p-3 text-center"><button onclick="toggleItemAvailability(${item.id})" class="text-xs bg-slate-100 text-slate-800 px-2 py-1 rounded font-bold">${item.available ? 'Tandai Habis' : 'Tandai Tersedia'}</button></td>
-            </tr>`).join('');
+            $('admin-menu-table').innerHTML = menuItems.map(item => `
+                <div class="p-3 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="font-bold text-sm min-w-0 break-words">${esc(item.name)}</span>
+                        <span class="shrink-0 px-2 py-1 rounded text-xs font-bold ${item.available ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}">${item.available ? 'Tersedia' : 'Habis'}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="number" min="0" step="500" value="${item.price}" onchange="updatePrice(${item.id}, this.value)" class="flex-1 min-w-0 px-3 py-2 border border-slate-300 rounded-lg font-bold text-sm">
+                        <button onclick="toggleItemAvailability(${item.id})" class="shrink-0 text-xs bg-slate-100 text-slate-800 px-3 py-2.5 rounded-lg font-bold">${item.available ? 'Tandai Habis' : 'Tandai Tersedia'}</button>
+                    </div>
+                </div>`).join('');
         }
 
         function updatePrice(id, val) {
