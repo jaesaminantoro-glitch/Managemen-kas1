@@ -184,6 +184,7 @@
                 <button onclick="switchAdminTab('orders')" id="tab-btn-orders" class="pb-2.5 font-extrabold text-orange-600 border-b-2 border-orange-600 transition shrink-0">Pesanan Masuk</button>
                 <button onclick="switchAdminTab('recap')" id="tab-btn-recap" class="pb-2.5 font-extrabold text-slate-400 hover:text-slate-700 transition shrink-0">Rekapan Bulanan</button>
                 <button onclick="switchAdminTab('menu')" id="tab-btn-menu" class="pb-2.5 font-extrabold text-slate-400 hover:text-slate-700 transition shrink-0">Stok & Harga Menu</button>
+                <button onclick="switchAdminTab('settings')" id="tab-btn-settings" class="pb-2.5 font-extrabold text-slate-400 hover:text-slate-700 transition shrink-0">Divisi & Lokasi</button>
             </div>
 
             <!-- TAB 1: Orders -->
@@ -219,6 +220,35 @@
                         </table>
                     </div>
                 </div>
+            </div>
+
+            <!-- TAB 4: Pengaturan -->
+            <div id="admin-tab-settings" class="hidden space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-3">
+                        <h3 class="font-extrabold text-sm sm:text-base text-slate-900">Daftar Divisi / Department</h3>
+                        <div class="flex gap-2">
+                            <input id="new-departments" type="text" maxlength="40" placeholder="Tambah divisi baru..." onkeydown="if(event.key==='Enter')addListItem('departments')" class="flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-300 font-bold text-sm">
+                            <button onclick="addListItem('departments')" class="shrink-0 bg-orange-600 text-white font-bold px-4 rounded-xl text-sm">Tambah</button>
+                        </div>
+                        <div id="list-departments" class="divide-y divide-slate-100"></div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-3">
+                        <h3 class="font-extrabold text-sm sm:text-base text-slate-900">Daftar Lokasi Makan</h3>
+                        <div class="flex gap-2">
+                            <input id="new-locations" type="text" maxlength="40" placeholder="Tambah lokasi baru..." onkeydown="if(event.key==='Enter')addListItem('locations')" class="flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-300 font-bold text-sm">
+                            <button onclick="addListItem('locations')" class="shrink-0 bg-orange-600 text-white font-bold px-4 rounded-xl text-sm">Tambah</button>
+                        </div>
+                        <div id="list-locations" class="divide-y divide-slate-100"></div>
+                    </div>
+                </div>
+                <form onsubmit="changePassword(event)" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-3 max-w-md">
+                    <h3 class="font-extrabold text-sm sm:text-base text-slate-900"><i class="fa-solid fa-lock text-orange-600"></i> Ganti Password Admin</h3>
+                    <input id="pw-old" type="password" autocomplete="current-password" required placeholder="Password lama" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-sm">
+                    <input id="pw-new" type="password" autocomplete="new-password" required minlength="4" placeholder="Password baru (min. 4 karakter)" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-sm">
+                    <input id="pw-confirm" type="password" autocomplete="new-password" required placeholder="Ulangi password baru" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-sm">
+                    <button type="submit" class="w-full bg-slate-900 text-white font-bold py-2.5 rounded-xl text-sm">Simpan Password</button>
+                </form>
             </div>
 
             <!-- TAB 3: Menu -->
@@ -310,6 +340,10 @@
         </div>
     </div>
 
+    <div id="login-modal" onclick="if(event.target===this)closeLoginModal()" class="fixed inset-0 z-50 bg-slate-900/80 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl"><div id="login-content"></div></div>
+    </div>
+
     <div id="toast" class="pointer-events-none max-w-[calc(100vw-2rem)] fixed bottom-24 right-4 z-50 bg-slate-950 text-white px-5 py-3.5 rounded-2xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 text-xs font-black border border-amber-400">
         <span id="toast-message">Notifikasi</span>
     </div>
@@ -339,6 +373,8 @@
         ];
 
         let storeConfig = { openTime: "08:00", closeTime: "20:00", manualOverride: 'auto' };
+        let lists = { departments: ['Produksi', 'QC', 'Warehouse', 'Office'], locations: ['Kantin Utama', 'Mess Karyawan', 'Kantor Lt. 2'] };
+        let adminHash = '', failedLogins = 0, lockUntil = 0;
         let cart = [];
         let ordersList = [];
         let nextOrderId = 1001;
@@ -352,7 +388,7 @@
         const $ = id => document.getElementById(id);
 
         function saveState() {
-            try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ menuItems, storeConfig, ordersList, nextOrderId })); } catch (e) {}
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ menuItems, storeConfig, ordersList, nextOrderId, lists, adminHash })); } catch (e) {}
         }
         function loadState() {
             try {
@@ -362,11 +398,124 @@
                 if (d.storeConfig) storeConfig = { ...storeConfig, ...d.storeConfig };
                 if (Array.isArray(d.ordersList)) ordersList = d.ordersList;
                 if (d.nextOrderId) nextOrderId = d.nextOrderId;
+                if (d.lists && Array.isArray(d.lists.departments) && Array.isArray(d.lists.locations)) lists = d.lists;
+                if (typeof d.adminHash === 'string') adminHash = d.adminHash;
             } catch (e) {}
         }
 
         function toggleAdminMode() {
-            isAdminMode = !isAdminMode;
+            if (isAdminMode) setAdminView(false); else openLoginModal();
+        }
+
+        async function hashPw(pw) {
+            const data = new TextEncoder().encode('warteg-bahariku:' + pw);
+            if (window.crypto && crypto.subtle) {
+                const b = await crypto.subtle.digest('SHA-256', data);
+                return 'sha256:' + [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+            }
+            let h = 5381; for (const c of data) h = ((h << 5) + h + c) >>> 0;
+            return 'djb2:' + h;
+        }
+
+        function openLoginModal() {
+            renderLoginContent();
+            $('login-modal').classList.remove('opacity-0', 'pointer-events-none');
+        }
+        function closeLoginModal() { $('login-modal').classList.add('opacity-0', 'pointer-events-none'); }
+
+        function renderLoginContent(msg = '') {
+            const setup = !adminHash, inp = 'w-full px-4 py-3 rounded-xl border-2 border-slate-300 font-bold';
+            $('login-content').innerHTML = `<h4 class="font-black text-lg mb-1">${setup ? 'Buat Password Admin' : 'Login Admin'}</h4>
+                <p class="text-xs text-slate-600 font-bold mb-3">${setup ? 'Belum ada password. Buat password untuk melindungi Mode Dapur.' : 'Masukkan password untuk membuka Mode Dapur.'}</p>
+                <form onsubmit="submitLogin(event)" class="space-y-3">
+                    <input id="login-pw" type="password" required autocomplete="${setup ? 'new-password' : 'current-password'}" placeholder="Password" class="${inp}">
+                    ${setup ? `<input id="login-pw2" type="password" required autocomplete="new-password" placeholder="Ulangi password" class="${inp}">` : ''}
+                    <p class="text-sm font-bold text-red-600">${msg}</p>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="closeLoginModal()" class="flex-1 py-3 rounded-xl border-2 border-slate-300 font-bold">Batal</button>
+                        <button type="submit" class="flex-1 py-3 rounded-xl bg-slate-900 text-white font-black">${setup ? 'Simpan & Masuk' : 'Masuk'}</button>
+                    </div></form>`;
+            setTimeout(() => { const i = $('login-pw'); if (i) i.focus(); }, 100);
+        }
+
+        async function submitLogin(e) {
+            e.preventDefault();
+            const pw = $('login-pw').value;
+            if (!adminHash) {
+                if (pw.length < 4) return renderLoginContent('Password minimal 4 karakter.');
+                if (pw !== $('login-pw2').value) return renderLoginContent('Konfirmasi password tidak sama.');
+                adminHash = await hashPw(pw); saveState();
+            } else {
+                if (Date.now() < lockUntil) return renderLoginContent(`Terlalu banyak percobaan. Coba lagi ${Math.ceil((lockUntil - Date.now()) / 1000)} detik lagi.`);
+                if (await hashPw(pw) !== adminHash) {
+                    if (++failedLogins >= 5) { failedLogins = 0; lockUntil = Date.now() + 30000; }
+                    return renderLoginContent('Password salah.');
+                }
+                failedLogins = 0;
+            }
+            closeLoginModal(); setAdminView(true);
+        }
+
+        async function changePassword(e) {
+            e.preventDefault();
+            const o = $('pw-old').value, n = $('pw-new').value, c = $('pw-confirm').value;
+            if (await hashPw(o) !== adminHash) return showToast('Password lama salah');
+            if (n.length < 4) return showToast('Password baru minimal 4 karakter');
+            if (n !== c) return showToast('Konfirmasi password tidak sama');
+            adminHash = await hashPw(n); saveState();
+            e.target.reset(); showToast('Password berhasil diganti');
+        }
+
+        const LIST_META = { departments: ['buyer-department', '-- Pilih Department --'], locations: ['buyer-location', '-- Pilih Lokasi --'] };
+
+        function renderCheckoutOptions() {
+            Object.entries(LIST_META).forEach(([k, [id, ph]]) => {
+                const sel = $(id), cur = sel.value;
+                sel.innerHTML = `<option value="" disabled selected>${ph}</option>` + lists[k].map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+                if (lists[k].includes(cur)) sel.value = cur;
+            });
+        }
+
+        function renderSettings() {
+            Object.keys(LIST_META).forEach(k => {
+                $(`list-${k}`).innerHTML = lists[k].map((v, i) => `
+                    <div class="flex items-center justify-between gap-2 py-2">
+                        <span class="font-bold text-sm min-w-0 break-words">${esc(v)}</span>
+                        <div class="flex gap-1.5 shrink-0">
+                            <button onclick="editListItem('${k}', ${i})" class="text-xs font-bold bg-slate-100 text-slate-800 px-3 py-2 rounded-lg">Edit</button>
+                            <button onclick="deleteListItem('${k}', ${i})" class="text-xs font-bold bg-red-50 text-red-600 px-3 py-2 rounded-lg">Hapus</button>
+                        </div>
+                    </div>`).join('');
+            });
+        }
+
+        function validListName(k, name, skip = -1) {
+            if (!name) { showToast('Nama tidak boleh kosong'); return false; }
+            if (lists[k].some((v, i) => i !== skip && v.toLowerCase() === name.toLowerCase())) { showToast('Nama sudah ada'); return false; }
+            return true;
+        }
+        function commitLists() { saveState(); renderSettings(); renderCheckoutOptions(); }
+
+        function addListItem(k) {
+            const inp = $(`new-${k}`), name = inp.value.trim();
+            if (!validListName(k, name)) return;
+            lists[k].push(name); inp.value = ''; commitLists(); showToast('Ditambahkan');
+        }
+        function editListItem(k, i) {
+            const name = prompt('Ubah nama:', lists[k][i]);
+            if (name === null) return;
+            const t = name.trim();
+            if (!validListName(k, t, i)) return;
+            lists[k][i] = t; commitLists(); showToast('Diperbarui');
+        }
+        function deleteListItem(k, i) {
+            if (lists[k].length <= 1) { showToast('Minimal harus ada 1 pilihan'); return; }
+            if (!confirm(`Hapus "${lists[k][i]}"?`)) return;
+            lists[k].splice(i, 1); commitLists(); showToast('Dihapus');
+        }
+
+        function setAdminView(on) {
+            isAdminMode = on;
             $('view-customer').classList.toggle('hidden', isAdminMode);
             $('view-admin').classList.toggle('hidden', !isAdminMode);
             ['customer-status-btn', 'customer-cart-btn', 'mobile-cart-bar'].forEach(id => $(id).style.display = isAdminMode ? 'none' : '');
@@ -379,7 +528,7 @@
         }
 
         function switchAdminTab(tabName) {
-            ['orders', 'recap', 'menu'].forEach(t => {
+            ['orders', 'recap', 'menu', 'settings'].forEach(t => {
                 $(`admin-tab-${t}`).classList.toggle('hidden', t !== tabName);
                 $(`tab-btn-${t}`).className = t === tabName
                     ? "pb-2.5 font-extrabold text-orange-600 border-b-2 border-orange-600 transition shrink-0"
@@ -388,6 +537,7 @@
             if (tabName === 'orders') renderAdminOrders();
             if (tabName === 'recap') renderRecapTable();
             if (tabName === 'menu') renderAdminMenuTable();
+            if (tabName === 'settings') renderSettings();
         }
 
         function renderAdminDashboard() {
@@ -665,7 +815,7 @@
                 Array.from({ length: 31 }, (_, i) => `<th class="p-1.5 border border-emerald-600 text-center w-8 font-semibold">${i + 1}</th>`).join(''));
             $('store-open-time').value = storeConfig.openTime;
             $('store-close-time').value = storeConfig.closeTime;
-            updateStoreStatusUI(); updateCartUI();
+            renderCheckoutOptions(); updateStoreStatusUI(); updateCartUI();
             setInterval(updateStoreStatusUI, 30000);
         };
     
