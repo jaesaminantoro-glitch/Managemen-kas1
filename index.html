@@ -9,14 +9,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         html, body { overflow-x: hidden; max-width: 100%; }
-        body { overflow-wrap: break-word; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
+        body { overflow-wrap: break-word;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-        
+
         .sticky-col-1 {
             position: sticky;
             left: 0;
@@ -24,7 +24,7 @@
         }
         .sticky-col-2 {
             position: sticky;
-            left: 40px; /* Lebar kolom No */
+            left: 40px;
             z-index: 10;
         }
 
@@ -85,8 +85,8 @@
                         <i class="fa-solid fa-hand-pointer text-base"></i> CARA PESAN: TEKAN TOMBOL ORANYE (+) DI MENU
                     </div>
                     <div id="hero-status-tag" class="block sm:inline-flex items-center gap-2 bg-emerald-500/20 border-2 border-emerald-400/40 text-emerald-300 font-black text-xs sm:text-sm px-3 py-1.5 rounded-xl uppercase tracking-wider mb-2 sm:mb-3">
-                        <span id="hero-status-dot" class="inline-block w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span> 
-                        <span id="hero-status-text">WARTEG BUKA PRASMANAN (<span id="store-hours-display">08.00 - 20.00</span> WIB)</span>
+                        <span id="hero-status-dot" class="inline-block w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="hero-status-text">WARTEG BUKA PRASMANAN (08.00 - 20.00 WIB)</span>
                     </div>
                     <h2 class="text-xl sm:text-3xl font-black tracking-tight leading-snug mb-1">Pesan Makanan Sangat Mudah & Cepat</h2>
                     <p class="text-slate-200 text-xs sm:text-base leading-relaxed mb-3 font-semibold">
@@ -196,7 +196,7 @@
                 <div id="admin-orders-container" class="space-y-3"></div>
             </div>
 
-            <!-- TAB 2: Recap (Fixed Sticky Background Bug) -->
+            <!-- TAB 2: Recap -->
             <div id="admin-tab-recap" class="hidden space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
@@ -208,7 +208,7 @@
                     <div class="overflow-x-auto max-h-[500px]">
                         <table class="w-full text-left border-collapse text-[11px] sm:text-xs whitespace-nowrap">
                             <thead class="bg-emerald-700 text-white sticky top-0 z-20">
-                                <tr>
+                                <tr id="recap-header-row">
                                     <th class="p-2.5 border border-emerald-600 text-center w-10 font-bold sticky-col-1 bg-emerald-700">No</th>
                                     <th class="p-2.5 border border-emerald-600 font-bold min-w-[120px] sticky-col-2 bg-emerald-700">Nama</th>
                                     <th class="p-2.5 border border-emerald-600 font-bold min-w-[130px]">Department</th>
@@ -327,7 +327,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-black text-slate-900 mb-2">Nama Lengkap *</label>
-                    <input type="text" id="buyer-name" required placeholder="Nama Anda..." class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 font-bold">
+                    <input type="text" id="buyer-name" required maxlength="60" placeholder="Nama Anda..." class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 font-bold">
                 </div>
                 <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-2xl shadow-lg">KIRIM PESANAN</button>
             </form>
@@ -381,14 +381,25 @@
         let lastOrderId = '';
         let isAdminMode = false;
         let toastTimer = null;
+        let storeStatusTimer = null;
         const STATUSES = ['Diterima', 'Diproses', 'Siap', 'Selesai'];
         const STORAGE_KEY = 'warteg-bahariku-v1';
+        const LOCK_KEY = 'warteg-bahariku-lock';
         const fmt = n => 'Rp ' + Number(n).toLocaleString('id-ID');
         const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         const $ = id => document.getElementById(id);
 
         function saveState() {
             try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ menuItems, storeConfig, ordersList, nextOrderId, lists, adminHash })); } catch (e) {}
+        }
+        function saveLock() {
+            try { localStorage.setItem(LOCK_KEY, JSON.stringify({ failedLogins, lockUntil })); } catch (e) {}
+        }
+        function loadLock() {
+            try {
+                const d = JSON.parse(localStorage.getItem(LOCK_KEY) || 'null');
+                if (d) { failedLogins = d.failedLogins || 0; lockUntil = d.lockUntil || 0; }
+            } catch (e) {}
         }
         function loadState() {
             try {
@@ -448,10 +459,11 @@
             } else {
                 if (Date.now() < lockUntil) return renderLoginContent(`Terlalu banyak percobaan. Coba lagi ${Math.ceil((lockUntil - Date.now()) / 1000)} detik lagi.`);
                 if (await hashPw(pw) !== adminHash) {
-                    if (++failedLogins >= 5) { failedLogins = 0; lockUntil = Date.now() + 30000; }
+                    if (++failedLogins >= 5) { failedLogins = 0; lockUntil = Date.now() + 30000; saveLock(); }
+                    else saveLock();
                     return renderLoginContent('Password salah.');
                 }
-                failedLogins = 0;
+                failedLogins = 0; lockUntil = 0; saveLock();
             }
             closeLoginModal(); setAdminView(true);
         }
@@ -523,7 +535,14 @@
             $('mode-switch-text-mobile').innerText = isAdminMode ? 'Pelanggan' : 'Dapur';
             $('mode-subtitle').innerText = isAdminMode ? 'Panel Dapur / Admin' : 'Makan Nikmat, Harga Bersahabat';
             closeCartDrawer();
-            if (isAdminMode) { renderAdminDashboard(); switchAdminTab('orders'); } else { renderMenu(); }
+            if (isAdminMode) {
+                if (storeStatusTimer) { clearInterval(storeStatusTimer); storeStatusTimer = null; }
+                renderAdminDashboard();
+                switchAdminTab('orders');
+            } else {
+                renderMenu();
+                if (!storeStatusTimer) storeStatusTimer = setInterval(updateStoreStatusUI, 30000);
+            }
             window.scrollTo(0, 0);
         }
 
@@ -608,7 +627,7 @@
             if (!rows.length) { showToast('Belum ada data untuk diexport'); return; }
             const q = v => `"${String(v).replace(/"/g, '""')}"`;
             const head = ['No', 'Nama', 'Department', 'Lokasi Makan', ...Array.from({ length: 31 }, (_, i) => i + 1), 'Total (Rp)'];
-            const lines = [head.map(q).join(',')].concat(rows.map((r, i) => [i + 1, r.name, r.department, r.location, ...r.days.map(v => v || ''), r.total].map(q).join(',')));
+            const lines = [head.map(q).join(',')].concat(rows.map((r, i) => [i + 1, r.name, r.department, r.location, ...r.days.map(v => v || 0), r.total].map(q).join(',')));
             const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -642,7 +661,10 @@
             const item = menuItems.find(i => i.id === id);
             if (!item) return;
             item.available = !item.available;
-            cart = cart.filter(c => menuItems.find(m => m.id === c.id).available);
+            cart = cart.filter(c => {
+                const m = menuItems.find(x => x.id === c.id);
+                return m && m.available;
+            });
             saveState(); renderAdminMenuTable(); renderMenu(); updateCartUI();
         }
 
@@ -656,22 +678,57 @@
             return o <= c ? (cur >= o && cur < c) : (cur >= o || cur < c);
         }
 
-        function updateStoreStatusUI() {
-            const open = isStoreOpen(), tone = open ? 'emerald' : 'red';
-            const hours = `${storeConfig.openTime.replace(':', '.')} - ${storeConfig.closeTime.replace(':', '.')}`;
-            $('header-store-badge').className = `hidden sm:inline-flex items-center gap-1.5 bg-${tone}-100 border-2 border-${tone}-500 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black`;
-            $('header-store-dot').className = `w-3 h-3 rounded-full bg-${tone}-600 animate-pulse`;
-            $('header-store-text').className = `text-${tone}-900`;
+        function applyStoreTone(open) {
+            const tone = open ? 'emerald' : 'red';
+            const toneMap = {
+                emerald: {
+                    badge: 'bg-emerald-100 border-emerald-500',
+                    dot: 'bg-emerald-600',
+                    text: 'text-emerald-900',
+                    heroTag: 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300',
+                    heroDot: 'bg-emerald-400',
+                    statText: 'text-emerald-600',
+                    statIconBg: 'bg-emerald-50 text-emerald-600'
+                },
+                red: {
+                    badge: 'bg-red-100 border-red-500',
+                    dot: 'bg-red-600',
+                    text: 'text-red-900',
+                    heroTag: 'bg-red-500/20 border-red-400/40 text-red-300',
+                    heroDot: 'bg-red-400',
+                    statText: 'text-red-600',
+                    statIconBg: 'bg-red-50 text-red-600'
+                }
+            };
+            const t = toneMap[tone];
+
+            $('header-store-badge').className = `hidden sm:inline-flex items-center gap-1.5 border-2 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black ${t.badge}`;
+            $('header-store-dot').className = `w-3 h-3 rounded-full animate-pulse ${t.dot}`;
+            $('header-store-text').className = `font-black ${t.text}`;
             $('header-store-text').innerText = open ? 'WARTEG BUKA' : 'WARTEG TUTUP';
-            $('hero-status-tag').className = `block sm:inline-flex items-center gap-2 bg-${tone}-500/20 border-2 border-${tone}-400/40 text-${tone}-300 font-black text-[11px] sm:text-sm px-3 py-1.5 rounded-xl uppercase tracking-wider mb-2 sm:mb-3`;
-            $('hero-status-dot').className = `inline-block w-3 h-3 rounded-full bg-${tone}-400 animate-pulse`;
-            $('hero-status-text').innerHTML = open ? `WARTEG BUKA PRASMANAN (<span id="store-hours-display">${hours}</span> WIB)` : 'WARTEG SEDANG TUTUP';
+
+            $('hero-status-tag').className = `block sm:inline-flex items-center gap-2 border-2 font-black text-xs sm:text-sm px-3 py-1.5 rounded-xl uppercase tracking-wider mb-2 sm:mb-3 ${t.heroTag}`;
+            $('hero-status-dot').className = `inline-block w-3 h-3 rounded-full animate-pulse ${t.heroDot}`;
+
+            $('admin-stat-status-text').className = `text-base sm:text-2xl font-extrabold mt-0.5 ${t.statText}`;
+            $('admin-stat-status-icon').className = `w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-lg sm:text-xl font-bold shrink-0 ${t.statIconBg}`;
+        }
+
+        function updateStoreStatusUI() {
+            const open = isStoreOpen();
+            const hours = `${storeConfig.openTime.replace(':', '.')} - ${storeConfig.closeTime.replace(':', '.')}`;
+
+            applyStoreTone(open);
+
+            $('hero-status-text').innerText = open
+                ? `WARTEG BUKA PRASMANAN (${hours} WIB)`
+                : 'WARTEG SEDANG TUTUP';
+
             $('closed-store-banner').classList.toggle('hidden', open);
             $('closed-banner-hours').innerText = `${storeConfig.openTime} - ${storeConfig.closeTime} WIB`;
             $('admin-stat-status-text').innerText = open ? 'BUKA' : 'TUTUP';
-            $('admin-stat-status-text').className = `text-base sm:text-2xl font-extrabold mt-0.5 text-${tone}-600`;
-            $('admin-stat-status-icon').className = `w-10 h-10 sm:w-12 sm:h-12 bg-${tone}-50 text-${tone}-600 rounded-xl flex items-center justify-center text-lg sm:text-xl font-bold shrink-0`;
             $('admin-stat-status-icon').innerHTML = `<i class="fa-solid ${open ? 'fa-door-open' : 'fa-door-closed'}"></i>`;
+
             [['admin-btn-force-open', true], ['admin-btn-force-close', false], ['admin-btn-force-auto', 'auto']].forEach(([id, v]) => {
                 $(id).className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition ' + (storeConfig.manualOverride === v ? 'bg-slate-900 text-white' : 'text-slate-600');
             });
@@ -811,14 +868,15 @@
 
         window.onload = () => {
             loadState();
+            loadLock();
             $('recap-total-th').insertAdjacentHTML('beforebegin',
                 Array.from({ length: 31 }, (_, i) => `<th class="p-1.5 border border-emerald-600 text-center w-8 font-semibold">${i + 1}</th>`).join(''));
             $('store-open-time').value = storeConfig.openTime;
             $('store-close-time').value = storeConfig.closeTime;
             renderCheckoutOptions(); updateStoreStatusUI(); updateCartUI();
-            setInterval(updateStoreStatusUI, 30000);
+            storeStatusTimer = setInterval(updateStoreStatusUI, 30000);
         };
-    
-</script>
+
+    </script>
 </body>
 </html>
