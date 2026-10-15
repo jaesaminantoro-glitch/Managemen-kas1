@@ -1,388 +1,668 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+// ============================================================
+//  TRANSLATION FIXER — Tanpa AI
+//  100% offline, berbasis glosarium & aturan penggantian
+// ============================================================
+
+// ====== STATE ======
+let glossary = []; // { id, from, to, mode, active }
+let rules = [];    // { id, from, to, isRegex, active }
+let lastStats = [];
+
+// ====== STORAGE KEYS ======
+const LS_GLOSSARY = "tfx_glossary";
+const LS_RULES = "tfx_rules";
+
+// ====== HELPERS ======
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+function loadState() {
+  try {
+    glossary = JSON.parse(localStorage.getItem(LS_GLOSSARY) || "[]");
+    rules = JSON.parse(localStorage.getItem(LS_RULES) || "[]");
+  } catch {
+    glossary = [];
+    rules = [];
+  }
 }
 
-body {
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-  min-height: 100vh;
-  padding: 24px;
-  color: #1a1a1a;
+function saveGlossary() {
+  localStorage.setItem(LS_GLOSSARY, JSON.stringify(glossary));
 }
 
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
+function saveRules() {
+  localStorage.setItem(LS_RULES, JSON.stringify(rules));
 }
 
-header {
-  text-align: center;
-  color: white;
-  margin-bottom: 24px;
+// ====== TAB SWITCHING ======
+document.querySelectorAll(".main-tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".main-tab").forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+    const target = tab.dataset.tab;
+    document.querySelectorAll(".tab-panel").forEach((p) => (p.style.display = "none"));
+    document.getElementById("panel-" + target).style.display = "block";
+  });
+});
+
+// ============================================================
+//                    GLOSARIUM
+// ============================================================
+
+const glossaryBody = document.getElementById("glossaryBody");
+const glossaryEmpty = document.getElementById("glossaryEmpty");
+const glossarySearch = document.getElementById("glossarySearch");
+
+function renderGlossary() {
+  const keyword = glossarySearch.value.trim().toLowerCase();
+  const filtered = glossary.filter(
+    (g) =>
+      !keyword ||
+      g.from.toLowerCase().includes(keyword) ||
+      g.to.toLowerCase().includes(keyword)
+  );
+
+  glossaryBody.innerHTML = "";
+
+  if (filtered.length === 0) {
+    glossaryEmpty.style.display = "block";
+    glossaryEmpty.textContent =
+      glossary.length === 0
+        ? "Belum ada istilah. Paste daftar di atas, atau klik + Tambah Manual."
+        : "Tidak ada istilah yang cocok dengan pencarian.";
+    return;
+  }
+
+  glossaryEmpty.style.display = "none";
+
+  filtered.forEach((item) => {
+    const tr = document.createElement("tr");
+
+    // checkbox
+    const tdCheck = document.createElement("td");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = item.active;
+    cb.addEventListener("change", () => {
+      item.active = cb.checked;
+      saveGlossary();
+    });
+    tdCheck.appendChild(cb);
+
+    // from
+    const tdFrom = document.createElement("td");
+    const inpFrom = document.createElement("input");
+    inpFrom.type = "text";
+    inpFrom.value = item.from;
+    inpFrom.placeholder = "contoh: pelayan";
+    inpFrom.addEventListener("input", () => {
+      item.from = inpFrom.value;
+      saveGlossary();
+    });
+    tdFrom.appendChild(inpFrom);
+
+    // to
+    const tdTo = document.createElement("td");
+    const inpTo = document.createElement("input");
+    inpTo.type = "text";
+    inpTo.value = item.to;
+    inpTo.placeholder = "contoh: server";
+    inpTo.addEventListener("input", () => {
+      item.to = inpTo.value;
+      saveGlossary();
+    });
+    tdTo.appendChild(inpTo);
+
+    // mode
+    const tdMode = document.createElement("td");
+    const sel = document.createElement("select");
+    [
+      { v: "exact", l: "Persis" },
+      { v: "word", l: "Kata utuh" },
+      { v: "regex", l: "Regex" },
+    ].forEach((opt) => {
+      const o = document.createElement("option");
+      o.value = opt.v;
+      o.textContent = opt.l;
+      if (opt.v === item.mode) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.addEventListener("change", () => {
+      item.mode = sel.value;
+      saveGlossary();
+    });
+    tdMode.appendChild(sel);
+
+    // delete
+    const tdDel = document.createElement("td");
+    const delBtn = document.createElement("button");
+    delBtn.className = "btn-icon";
+    delBtn.textContent = "🗑️";
+    delBtn.title = "Hapus";
+    delBtn.addEventListener("click", () => {
+      glossary = glossary.filter((g) => g.id !== item.id);
+      saveGlossary();
+      renderGlossary();
+    });
+    tdDel.appendChild(delBtn);
+
+    tr.append(tdCheck, tdFrom, tdTo, tdMode, tdDel);
+    glossaryBody.appendChild(tr);
+  });
 }
 
-header h1 { font-size: 2rem; margin-bottom: 8px; }
-.subtitle { opacity: 0.9; font-size: 0.95rem; }
+glossarySearch.addEventListener("input", renderGlossary);
 
-/* ====== MAIN TABS ====== */
-.main-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+document.getElementById("addGlossaryBtn").addEventListener("click", () => {
+  glossary.unshift({
+    id: uid(),
+    from: "",
+    to: "",
+    mode: "word",
+    active: true,
+  });
+  saveGlossary();
+  renderGlossary();
+  const firstInput = glossaryBody.querySelector("tr input[type='text']");
+  if (firstInput) firstInput.focus();
+});
+
+// ============================================================
+//          PASTE MASSAL (BULK PASTE)
+// ============================================================
+
+const bulkPaste = document.getElementById("bulkPaste");
+const parseBulkBtn = document.getElementById("parseBulkBtn");
+const clearBulkBtn = document.getElementById("clearBulkBtn");
+const bulkPreview = document.getElementById("bulkPreview");
+
+/**
+ * Deteksi separator & pisahkan baris
+ * Support: TAB (Excel), |, →, ,, ;, :, =
+ */
+function parseLine(line) {
+  const separators = ["\t", "|", "→", ";", ",", " = ", ":"];
+  for (const sep of separators) {
+    if (line.includes(sep)) {
+      const parts = line.split(sep).map((s) => s.trim());
+      if (parts.length >= 2 && parts[0] && parts[1]) {
+        return { from: parts[0], to: parts[1] };
+      }
+    }
+  }
+  return null;
 }
 
-.main-tab {
-  padding: 12px 22px;
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  border: 2px solid transparent;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
-  backdrop-filter: blur(10px);
+function parseBulkText(text) {
+  const lines = text.split(/\r?\n/);
+  const parsed = [];
+  const skipped = [];
+
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+
+    const lower = trimmed.toLowerCase();
+    if (
+      idx === 0 &&
+      (lower.includes("from") ||
+        lower.includes("istilah salah") ||
+        lower.includes("cari") ||
+        lower.includes("salah"))
+    ) {
+      return;
+    }
+
+    const result = parseLine(trimmed);
+    if (result) {
+      parsed.push({
+        id: uid(),
+        from: result.from,
+        to: result.to,
+        mode: "word",
+        active: true,
+      });
+    } else {
+      skipped.push(trimmed);
+    }
+  });
+
+  return { parsed, skipped };
 }
 
-.main-tab:hover { background: rgba(255, 255, 255, 0.25); }
+parseBulkBtn.addEventListener("click", () => {
+  const text = bulkPaste.value;
+  if (!text.trim()) {
+    alert("Belum ada teks yang ditempel. Copy dari Excel/Word lalu paste di kotak.");
+    return;
+  }
 
-.main-tab.active {
-  background: white;
-  color: #1e3c72;
+  const { parsed, skipped } = parseBulkText(text);
+
+  if (parsed.length === 0) {
+    alert(
+      "Tidak ada istilah yang bisa diparse.\n\n" +
+        "Format yang didukung:\n" +
+        "  pelayan | server\n" +
+        "  pelayan → server\n" +
+        "  pelayan, server\n" +
+        "  Atau copy langsung dari Excel (TAB)"
+    );
+    return;
+  }
+
+  let addedCount = 0;
+  parsed.forEach((p) => {
+    const dup = glossary.some(
+      (g) => g.from.toLowerCase() === p.from.toLowerCase()
+    );
+    if (!dup) {
+      glossary.unshift(p);
+      addedCount++;
+    }
+  });
+
+  saveGlossary();
+  renderGlossary();
+
+  bulkPreview.style.display = "block";
+  let html = `<div class="preview-success">✅ <strong>${addedCount} istilah berhasil ditambahkan</strong>`;
+  if (parsed.length - addedCount > 0) {
+    html += ` <span style="color:#c33;">(${parsed.length - addedCount} duplikat di-skip)</span>`;
+  }
+  html += "</div>";
+
+  if (skipped.length > 0) {
+    html += `<div class="preview-warning">⚠️ <strong>${skipped.length} baris dilewati</strong> (format tidak dikenali):`;
+    html += `<ul>${skipped.slice(0, 5).map((s) => `<li><code>${escapeHtml(s)}</code></li>`).join("")}`;
+    if (skipped.length > 5) html += `<li>...dan ${skipped.length - 5} lainnya</li>`;
+    html += `</ul></div>`;
+  }
+
+  html += `<div class="preview-list"><strong>Daftar yang ditambahkan:</strong><ul>`;
+  parsed.slice(0, 10).forEach((p) => {
+    if (glossary.some((g) => g.id === p.id)) {
+      html += `<li><code>${escapeHtml(p.from)}</code> → <code>${escapeHtml(p.to)}</code></li>`;
+    }
+  });
+  if (parsed.length > 10) html += `<li>...dan ${parsed.length - 10} lainnya</li>`;
+  html += `</ul></div>`;
+
+  bulkPreview.innerHTML = html;
+
+  bulkPaste.value = "";
+});
+
+clearBulkBtn.addEventListener("click", () => {
+  bulkPaste.value = "";
+  bulkPreview.style.display = "none";
+});
+
+// ====== EXPORT GLOSARIUM ======
+document.getElementById("exportGlossaryBtn").addEventListener("click", () => {
+  if (glossary.length === 0) {
+    alert("Glosarium masih kosong.");
+    return;
+  }
+  const data = glossary.map(({ from, to, mode, active }) => ({ from, to, mode, active }));
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
+  downloadBlob(blob, "glosarium.json");
+});
+
+// ============================================================
+//                    ATURAN GANTI
+// ============================================================
+
+const rulesBody = document.getElementById("rulesBody");
+const rulesEmpty = document.getElementById("rulesEmpty");
+
+function renderRules() {
+  rulesBody.innerHTML = "";
+
+  if (rules.length === 0) {
+    rulesEmpty.style.display = "block";
+    return;
+  }
+  rulesEmpty.style.display = "none";
+
+  rules.forEach((item) => {
+    const tr = document.createElement("tr");
+
+    const tdCheck = document.createElement("td");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = item.active;
+    cb.addEventListener("change", () => {
+      item.active = cb.checked;
+      saveRules();
+    });
+    tdCheck.appendChild(cb);
+
+    const tdFrom = document.createElement("td");
+    const inpFrom = document.createElement("input");
+    inpFrom.type = "text";
+    inpFrom.value = item.from;
+    inpFrom.placeholder = "pola yang dicari";
+    inpFrom.addEventListener("input", () => {
+      item.from = inpFrom.value;
+      saveRules();
+    });
+    tdFrom.appendChild(inpFrom);
+
+    const tdTo = document.createElement("td");
+    const inpTo = document.createElement("input");
+    inpTo.type = "text";
+    inpTo.value = item.to;
+    inpTo.placeholder = "ganti dengan";
+    inpTo.addEventListener("input", () => {
+      item.to = inpTo.value;
+      saveRules();
+    });
+    tdTo.appendChild(inpTo);
+
+    const tdRegex = document.createElement("td");
+    const cbRegex = document.createElement("input");
+    cbRegex.type = "checkbox";
+    cbRegex.checked = !!item.isRegex;
+    cbRegex.addEventListener("change", () => {
+      item.isRegex = cbRegex.checked;
+      saveRules();
+    });
+    tdRegex.appendChild(cbRegex);
+
+    const tdDel = document.createElement("td");
+    const delBtn = document.createElement("button");
+    delBtn.className = "btn-icon";
+    delBtn.textContent = "🗑️";
+    delBtn.addEventListener("click", () => {
+      rules = rules.filter((r) => r.id !== item.id);
+      saveRules();
+      renderRules();
+    });
+    tdDel.appendChild(delBtn);
+
+    tr.append(tdCheck, tdFrom, tdTo, tdRegex, tdDel);
+    rulesBody.appendChild(tr);
+  });
 }
 
-/* ====== CARDS ====== */
-.card {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+document.getElementById("addRuleBtn").addEventListener("click", () => {
+  rules.unshift({
+    id: uid(),
+    from: "",
+    to: "",
+    isRegex: false,
+    active: true,
+  });
+  saveRules();
+  renderRules();
+  const firstInput = rulesBody.querySelector("tr input[type='text']");
+  if (firstInput) firstInput.focus();
+});
+
+// ============================================================
+//          MESIN PERBAIKAN (CORE)
+// ============================================================
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+function applyRule(text, rule, stats, label) {
+  if (!rule.active || !rule.from) return text;
+
+  const { from, to, mode, isRegex } = rule;
+  let regex;
+  let counter = 0;
+
+  try {
+    if (isRegex || mode === "regex") {
+      regex = new RegExp(from, "g");
+    } else if (mode === "exact" || mode === undefined) {
+      regex = new RegExp(escapeRegex(from), "g");
+    } else {
+      regex = new RegExp(`\\b${escapeRegex(from)}\\b`, "gi");
+    }
+  } catch (err) {
+    return text;
+  }
+
+  const result = text.replace(regex, (match) => {
+    counter++;
+    return to;
+  });
+
+  if (counter > 0) {
+    stats.push({
+      label: label || "aturan",
+      from,
+      to,
+      count: counter,
+    });
+  }
+
+  return result;
 }
 
-.panel-header h2 { font-size: 1.2rem; margin-bottom: 6px; }
+function fixDocument(text) {
+  const stats = [];
+  let result = text;
 
-.hint {
-  color: #666;
-  font-size: 0.85rem;
-  line-height: 1.5;
+  glossary.forEach((g) => {
+    result = applyRule(result, g, stats, "glosarium");
+  });
+
+  rules.forEach((r) => {
+    result = applyRule(result, r, stats, "aturan");
+  });
+
+  return { result, stats };
 }
 
-.hint code {
-  background: #f0f0f5;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.8rem;
+// ============================================================
+//          PANEL PROSES DOKUMEN
+// ============================================================
+
+const inputText = document.getElementById("inputText");
+const charCount = document.getElementById("charCount");
+const applyBtn = document.getElementById("applyBtn");
+const clearTextBtn = document.getElementById("clearTextBtn");
+const resultSection = document.getElementById("resultSection");
+const resultText = document.getElementById("resultText");
+const diffInfo = document.getElementById("diffInfo");
+const diffStats = document.getElementById("diffStats");
+const toggleDiffBtn = document.getElementById("toggleDiffBtn");
+const copyBtn = document.getElementById("copyBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+
+inputText.addEventListener("input", () => {
+  charCount.textContent = inputText.value.length;
+});
+
+clearTextBtn.addEventListener("click", () => {
+  inputText.value = "";
+  charCount.textContent = "0";
+  resultSection.style.display = "none";
+});
+
+applyBtn.addEventListener("click", () => {
+  const text = inputText.value;
+  if (!text.trim()) {
+    alert("Masukkan teks terlebih dahulu.");
+    return;
+  }
+
+  const activeGlossary = glossary.filter((g) => g.active && g.from).length;
+  const activeRules = rules.filter((r) => r.active && r.from).length;
+
+  if (activeGlossary === 0 && activeRules === 0) {
+    alert("Belum ada aturan aktif. Tambahkan istilah di tab 📚 Glosarium atau 🔧 Aturan Ganti.");
+    return;
+  }
+
+  const { result, stats } = fixDocument(text);
+  lastStats = stats;
+
+  resultText.textContent = result;
+  resultSection.style.display = "block";
+
+  highlightOn = false;
+  toggleDiffBtn.textContent = "👁️ Tampilkan Perubahan";
+
+  if (stats.length > 0) {
+    diffStats.innerHTML = "";
+    stats.forEach((s) => {
+      const div = document.createElement("div");
+      div.className = "diff-item";
+      div.innerHTML = `
+        <span><span class="from">${escapeHtml(s.from)}</span> → <span class="to">${escapeHtml(s.to)}</span></span>
+        <span class="count">${s.count}×</span>
+      `;
+      diffStats.appendChild(div);
+    });
+    diffInfo.style.display = "block";
+  } else {
+    diffStats.innerHTML = "<p>Tidak ada perubahan yang terjadi. Coba cek apakah istilah di glosarium cocok dengan teks Anda.</p>";
+    diffInfo.style.display = "block";
+  }
+
+  resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+// ====== TOGGLE HIGHLIGHT ======
+let highlightOn = false;
+toggleDiffBtn.addEventListener("click", () => {
+  highlightOn = !highlightOn;
+  if (highlightOn) {
+    const original = inputText.value;
+    const { result } = fixDocument(original);
+    let highlighted = escapeHtml(result);
+    lastStats.forEach((s) => {
+      if (!s.to) return;
+      const esc = escapeRegex(escapeHtml(s.to));
+      highlighted = highlighted.replace(
+        new RegExp(esc, "g"),
+        `<span class="highlight-change">${escapeHtml(s.to)}</span>`
+      );
+    });
+    resultText.innerHTML = highlighted;
+    toggleDiffBtn.textContent = "👁️ Sembunyikan Highlight";
+  } else {
+    resultText.textContent = lastStats.length ? fixDocument(inputText.value).result : inputText.value;
+    toggleDiffBtn.textContent = "👁️ Tampilkan Perubahan";
+  }
+});
+
+// ====== COPY & DOWNLOAD ======
+copyBtn.addEventListener("click", async () => {
+  const text = resultText.textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    copyBtn.textContent = "✅ Tersalin!";
+    setTimeout(() => (copyBtn.textContent = "📋 Salin"), 1500);
+  } catch {
+    alert("Gagal menyalin.");
+  }
+});
+
+downloadBtn.addEventListener("click", () => {
+  const text = resultText.textContent;
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  downloadBlob(blob, "hasil-perbaikan.txt");
+});
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
-.panel-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+// ============================================================
+//              CEK KONSISTENSI
+// ============================================================
+
+const checkerText = document.getElementById("checkerText");
+const checkBtn = document.getElementById("checkBtn");
+const checkerResult = document.getElementById("checkerResult");
+const checkerResultBody = document.getElementById("checkerResultBody");
+
+checkBtn.addEventListener("click", () => {
+  const text = checkerText.value.trim();
+  if (!text) {
+    alert("Masukkan teks terlebih dahulu.");
+    return;
+  }
+
+  const issues = [];
+
+  glossary.forEach((g) => {
+    if (!g.active || !g.from || !g.to) return;
+    const re = new RegExp(`\\b${escapeRegex(g.from)}\\b`, "gi");
+    const matches = text.match(re);
+    if (matches && matches.length > 0) {
+      issues.push({
+        term: g.to,
+        variants: [
+          { text: g.from, count: matches.length, type: "salah" },
+          { text: g.to, count: "-", type: "benar" },
+        ],
+        note: `Istilah "${g.from}" masih muncul ${matches.length}× dan seharusnya diganti jadi "${g.to}".`,
+      });
+    }
+  });
+
+  checkerResult.style.display = "block";
+  checkerResultBody.innerHTML = "";
+
+  if (issues.length === 0) {
+    const div = document.createElement("div");
+    div.className = "no-issue";
+    div.textContent = "✅ Tidak ditemukan inkonsistensi. Semua istilah sudah sesuai dengan glosarium Anda.";
+    checkerResultBody.appendChild(div);
+  } else {
+    issues.forEach((issue) => {
+      const div = document.createElement("div");
+      div.className = "inconsistency-item";
+      div.innerHTML = `
+        <div class="term">⚠️ ${escapeHtml(issue.term)}</div>
+        <div style="margin-bottom:6px; font-size:0.85rem; color:#555;">${escapeHtml(issue.note)}</div>
+        <div class="variants">
+          ${issue.variants
+            .map(
+              (v) =>
+                `<span class="variant" style="${v.type === "salah" ? "background:#fee;color:#c33;" : "background:#e8f5e9;color:#2e7d32;"}">
+                  ${escapeHtml(v.text)} ${v.count !== "-" ? `(${v.count}×)` : ""}
+                </span>`
+            )
+            .join("")}
+        </div>
+      `;
+      checkerResultBody.appendChild(div);
+    });
+  }
+});
+
+// ============================================================
+//              UTIL
+// ============================================================
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
-/* ====== FORM ====== */
-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 8px;
-  font-size: 0.9rem;
-  color: #333;
-}
+// ============================================================
+//              INIT
+// ============================================================
 
-input[type="text"],
-input[type="password"],
-select,
-textarea {
-  width: 100%;
-  padding: 12px 14px;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  transition: border-color 0.2s;
-  font-family: inherit;
-}
-
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: #2a5298;
-}
-
-textarea { resize: vertical; line-height: 1.6; }
-
-.search-row { margin-bottom: 16px; }
-
-.counter {
-  text-align: right;
-  font-size: 0.8rem;
-  color: #888;
-  margin-top: 4px;
-}
-
-/* ====== BUTTONS ====== */
-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  color: white;
-  flex: 1;
-  padding: 12px 24px;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(42, 82, 152, 0.4);
-}
-
-.btn-primary-sm {
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  color: white;
-}
-
-.btn-primary-sm:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(42, 82, 152, 0.3);
-}
-
-.btn-secondary {
-  background: #f0f0f5;
-  color: #333;
-}
-
-.btn-secondary:hover { background: #e4e4ec; }
-
-.btn-icon {
-  background: transparent;
-  color: #c33;
-  font-size: 1.1rem;
-  padding: 6px 10px;
-  border-radius: 6px;
-}
-
-.btn-icon:hover { background: #fee; }
-
-.btn-row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 16px;
-}
-
-.btn-row-inline {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-/* ====== TABLE ====== */
-.table-wrapper {
-  overflow-x: auto;
-  border-radius: 10px;
-  border: 1px solid #e5e5ea;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-.data-table th {
-  background: #f8f9fc;
-  text-align: left;
-  padding: 12px;
-  font-weight: 600;
-  color: #333;
-  border-bottom: 1px solid #e5e5ea;
-  font-size: 0.85rem;
-}
-
-.data-table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid #f0f0f5;
-}
-
-.data-table tr:last-child td { border-bottom: none; }
-
-.data-table input[type="text"] {
-  padding: 8px 10px;
-  font-size: 0.88rem;
-  border-width: 1px;
-}
-
-.data-table input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: #2a5298;
-}
-
-.data-table select {
-  padding: 6px 8px;
-  font-size: 0.82rem;
-  border-width: 1px;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  color: #999;
-  font-size: 0.9rem;
-  background: #fafafc;
-  border-radius: 10px;
-  border: 2px dashed #e5e5ea;
-}
-
-/* ====== RESULT ====== */
-.result-section { margin-top: 20px; }
-
-.result-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.result-header h2 { font-size: 1.2rem; }
-
-.result-box {
-  background: #f8f9ff;
-  border: 1px solid #e0e5ff;
-  border-radius: 10px;
-  padding: 18px;
-  line-height: 1.8;
-  font-size: 1rem;
-  white-space: pre-wrap;
-  min-height: 100px;
-}
-
-.diff-info {
-  margin-top: 20px;
-  padding: 16px;
-  background: #f8f9fc;
-  border-radius: 10px;
-  border-left: 4px solid #2a5298;
-}
-
-.diff-info h3 { font-size: 1rem; margin-bottom: 12px; }
-
-.diff-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
-  font-size: 0.88rem;
-  border-bottom: 1px dashed #e5e5ea;
-}
-
-.diff-item:last-child { border-bottom: none; }
-
-.diff-item .from { color: #c33; text-decoration: line-through; }
-.diff-item .to { color: #2a8f2a; font-weight: 600; }
-.diff-item .count {
-  background: #2a5298;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-/* ====== CHECKER ====== */
-.checker-input { margin-bottom: 16px; }
-
-#checkerResult {
-  margin-top: 20px;
-  padding: 16px;
-  background: #f8f9fc;
-  border-radius: 10px;
-}
-
-#checkerResult h3 {
-  font-size: 1rem;
-  margin-bottom: 12px;
-}
-
-.inconsistency-item {
-  padding: 12px;
-  background: #fffbf0;
-  border-left: 4px solid #f5a623;
-  border-radius: 6px;
-  margin-bottom: 10px;
-  font-size: 0.88rem;
-}
-
-.inconsistency-item .term {
-  font-weight: 700;
-  color: #d97706;
-  margin-bottom: 6px;
-}
-
-.inconsistency-item .variants {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.inconsistency-item .variant {
-  background: white;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid #e5e5ea;
-  font-size: 0.82rem;
-}
-
-.no-issue {
-  padding: 16px;
-  background: #e8f5e9;
-  border-left: 4px solid #4caf50;
-  border-radius: 6px;
-  color: #2e7d32;
-  font-weight: 600;
-}
-
-/* ====== FOOTER ====== */
-.footer-note {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.82rem;
-  padding: 16px;
-}
-
-/* ====== HIGHLIGHT ====== */
-.highlight-change {
-  background: #fff3cd;
-  border-radius: 3px;
-  padding: 1px 3px;
-  font-weight: 600;
-}
-
-/* ====== RESPONSIVE ====== */
-@media (max-width: 640px) {
-  header h1 { font-size: 1.4rem; }
-  .card { padding: 16px; }
-  .main-tabs { gap: 6px; }
-  .main-tab { padding: 10px 14px; font-size: 0.85rem; }
-  .panel-header { flex-direction: column; }
-}
+loadState();
+renderGlossary();
+renderRules();

@@ -28,12 +28,36 @@
           <p class="hint">Daftar istilah yang harus selalu diterjemahkan dengan cara tertentu. Contoh: <code>server → server</code>, <code>cloud → cloud</code></p>
         </div>
         <div class="panel-actions">
-          <button id="addGlossaryBtn" class="btn-primary-sm">+ Tambah</button>
-          <button id="importGlossaryBtn" class="btn-secondary">📥 Import</button>
+          <button id="addGlossaryBtn" class="btn-primary-sm">+ Tambah Manual</button>
           <button id="exportGlossaryBtn" class="btn-secondary">📤 Export</button>
-          <input type="file" id="glossaryFileInput" accept=".json,.csv" hidden />
         </div>
       </div>
+
+      <!-- AREA PASTE MASSAL -->
+      <div class="paste-area">
+        <label for="bulkPaste">📋 Tempel (Paste) Daftar Istilah</label>
+        <p class="paste-hint">
+          Copy dari Excel / Google Sheets / Word, lalu paste di sini. Format yang didukung:
+        </p>
+        <ul class="paste-format">
+          <li><code>pelayan | server</code> (pakai tanda pipa)</li>
+          <li><code>pelayan → server</code> (pakai tanda panah)</li>
+          <li><code>pelayan, server</code> (pakai koma)</li>
+          <li>Copy langsung dari Excel (kolom dipisah TAB)</li>
+        </ul>
+        <textarea id="bulkPaste" rows="6" placeholder="Contoh:
+pelayan | server
+awan | cloud
+penyebaran aplikasi | deployment
+pipa data | pipeline"></textarea>
+        <div class="paste-actions">
+          <button id="parseBulkBtn" class="btn-primary-sm">➕ Tambahkan ke Glosarium</button>
+          <button id="clearBulkBtn" class="btn-secondary">Bersihkan</button>
+        </div>
+        <div id="bulkPreview" class="bulk-preview" style="display:none;"></div>
+      </div>
+
+      <hr class="divider" />
 
       <div class="search-row">
         <input type="text" id="glossarySearch" placeholder="🔍 Cari istilah..." />
@@ -55,7 +79,7 @@
       </div>
 
       <div class="empty-state" id="glossaryEmpty">
-        Belum ada istilah. Klik <strong>+ Tambah</strong> atau <strong>📥 Import</strong> untuk mulai.
+        Belum ada istilah. Paste daftar di atas, atau klik <strong>+ Tambah Manual</strong>.
       </div>
     </section>
 
