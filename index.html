@@ -2,7 +2,7 @@
 <html lang="id" class="h-full bg-slate-100">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Warteg Bahariku - Pesan Online & Panel Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -39,7 +39,7 @@
     <header class="bg-white sticky top-0 z-30 border-b-2 border-slate-200 shadow-sm">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2.5 sm:gap-3">
-                <div class="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20 shrink-0">
+                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20 shrink-0">
                     <i class="fa-solid fa-bowl-rice text-xl sm:text-2xl"></i>
                 </div>
                 <div>
@@ -58,12 +58,12 @@
 
                 <button onclick="toggleAdminMode()" id="mode-switch-btn" class="bg-slate-900 hover:bg-slate-800 text-white px-3 sm:px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm shadow-sm flex items-center gap-1.5 sm:gap-2 transition active:scale-95 touch-btn">
                     <i class="fa-solid fa-kitchen-set text-amber-400 text-sm sm:text-base"></i>
-                    <span id="mode-switch-text" class="hidden xs:inline">Mode Dapur</span>
-                    <span id="mode-switch-text-mobile" class="xs:hidden">Dapur</span>
+                    <span id="mode-switch-text" class="hidden sm:inline">Mode Dapur</span>
+                    <span id="mode-switch-text-mobile" class="sm:hidden">Dapur</span>
                 </button>
 
-                <button onclick="toggleOrderStatusModal()" id="customer-status-btn" class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border-2 border-slate-300 text-slate-800 hover:bg-slate-50 font-bold text-xs sm:text-sm transition">
-                    <i class="fa-solid fa-receipt text-orange-600"></i> Cek Status
+                <button onclick="toggleOrderStatusModal()" id="customer-status-btn" aria-label="Cek Status" class="inline-flex items-center justify-center gap-2 px-3 sm:px-3.5 py-2.5 touch-btn rounded-xl border-2 border-slate-300 text-slate-800 hover:bg-slate-50 font-bold text-xs sm:text-sm transition">
+                    <i class="fa-solid fa-receipt text-orange-600"></i><span class="hidden sm:inline">Cek Status</span>
                 </button>
 
                 <button onclick="toggleCartDrawer()" id="customer-cart-btn" class="hidden sm:flex relative bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-xl font-black text-sm shadow-md shadow-orange-600/20 items-center gap-2 transition active:scale-95">
@@ -105,7 +105,7 @@
             </div>
 
             <section id="menu-section" class="scroll-mt-20">
-                <div class="flex items-center justify-between gap-2 mb-3 sm:mb-4 bg-white p-3 rounded-2xl border-2 border-slate-200 shadow-xs">
+                <div class="flex items-center justify-between gap-2 mb-3 sm:mb-4 bg-white p-3 rounded-2xl border-2 border-slate-200 shadow-sm">
                     <div>
                         <h3 class="text-lg sm:text-2xl font-black text-slate-900">PILIH MENU MAKANAN</h3>
                         <p class="text-xs sm:text-sm font-bold text-slate-600">Tekan tombol Oranye <span class="bg-orange-600 text-white font-black px-2 py-0.5 rounded-lg text-xs inline-block">+ TAMBAH</span> untuk memilih</p>
@@ -119,7 +119,7 @@
         <!-- ADMIN VIEW -->
         <div id="view-admin" class="hidden space-y-6">
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
-                <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+                <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Total Pesanan</p>
                         <h4 class="text-xl sm:text-3xl font-extrabold text-slate-900 mt-0.5" id="admin-stat-orders">0</h4>
@@ -128,7 +128,7 @@
                         <i class="fa-solid fa-receipt"></i>
                     </div>
                 </div>
-                <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+                <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Total Omset</p>
                         <h4 class="text-lg sm:text-3xl font-extrabold text-emerald-600 mt-0.5" id="admin-stat-revenue">Rp 0</h4>
@@ -137,7 +137,7 @@
                         <i class="fa-solid fa-wallet"></i>
                     </div>
                 </div>
-                <div class="col-span-2 sm:col-span-1 bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+                <div class="col-span-2 sm:col-span-1 bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Status Warteg</p>
                         <h4 class="text-base sm:text-2xl font-extrabold mt-0.5" id="admin-stat-status-text">BUKA</h4>
@@ -149,7 +149,7 @@
             </div>
 
             <!-- Jam Buka / Tutup Management Card -->
-            <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+            <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                     <div>
                         <h3 class="font-extrabold text-sm sm:text-base text-slate-900 flex items-center gap-2">
@@ -202,7 +202,7 @@
                     </div>
                     <button onclick="exportRecapCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold">Export CSV</button>
                 </div>
-                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
                     <div class="overflow-x-auto max-h-[500px]">
                         <table class="w-full text-left border-collapse text-[11px] sm:text-xs whitespace-nowrap">
                             <thead class="bg-emerald-700 text-white sticky top-0 z-20">
@@ -211,12 +211,7 @@
                                     <th class="p-2.5 border border-emerald-600 font-bold min-w-[120px] sticky-col-2 bg-emerald-700">Nama</th>
                                     <th class="p-2.5 border border-emerald-600 font-bold min-w-[130px]">Department</th>
                                     <th class="p-2.5 border border-emerald-600 font-bold min-w-[140px]">Lokasi Makan</th>
-                                    <script>
-                                        for(let d=1; d<=31; d++) {
-                                            document.write(`<th class="p-1.5 border border-emerald-600 text-center w-8 font-semibold">${d}</th>`);
-                                        }
-                                    </script>
-                                    <th class="p-2.5 border border-emerald-600 text-center font-extrabold bg-emerald-900 min-w-[70px]">Total (Rb)</th>
+                                    <th id="recap-total-th" class="p-2.5 border border-emerald-600 text-center font-extrabold bg-emerald-900 min-w-[70px]">Total (Rb)</th>
                                 </tr>
                             </thead>
                             <tbody id="recap-table-body" class="divide-y divide-slate-200 text-slate-700 font-medium"></tbody>
@@ -227,7 +222,7 @@
 
             <!-- TAB 3: Menu -->
             <div id="admin-tab-menu" class="hidden space-y-4">
-                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs sm:text-sm">
                             <thead>
@@ -251,7 +246,7 @@
         <div class="flex items-center justify-between gap-2 max-w-7xl mx-auto">
             <div class="flex items-center gap-3" onclick="toggleCartDrawer()">
                 <div class="relative">
-                    <div class="w-13 h-13 rounded-2xl bg-orange-600 text-white flex items-center justify-center text-2xl font-black shadow-md border-2 border-white">
+                    <div class="w-12 h-12 rounded-2xl bg-orange-600 text-white flex items-center justify-center text-2xl font-black shadow-md border-2 border-white">
                         <i class="fa-solid fa-cart-shopping"></i>
                     </div>
                     <span id="mobile-cart-badge" class="absolute -top-2 -right-2 bg-amber-400 text-slate-950 text-xs font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">0</span>
@@ -266,7 +261,7 @@
     </div>
 
     <!-- Modals & Drawers -->
-    <div id="cart-drawer" class="fixed inset-0 z-50 bg-slate-900/80 flex justify-end opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="cart-drawer" onclick="if(event.target===this)closeCartDrawer()" class="fixed inset-0 z-50 bg-slate-900/80 flex justify-end opacity-0 pointer-events-none transition-opacity duration-300">
         <div id="cart-panel" class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl transform translate-x-full transition-transform duration-300">
             <div class="p-4 border-b-2 border-slate-200 flex items-center justify-between bg-slate-100">
                 <h4 class="font-black text-lg text-slate-900">Keranjang Belanja</h4>
@@ -283,8 +278,8 @@
         </div>
     </div>
 
-    <div id="checkout-modal" class="fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden transform translate-y-full transition-transform duration-300">
+    <div id="checkout-modal" onclick="if(event.target===this)closeCheckoutModal()" class="fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="checkout-panel" class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden transform translate-y-full transition-transform duration-300">
             <div class="p-4 border-b-2 border-slate-200 flex items-center justify-between bg-orange-50">
                 <h4 class="font-black text-lg text-slate-900">Formulir Pesanan</h4>
                 <button onclick="closeCheckoutModal()" class="w-10 h-10 rounded-xl bg-white border border-slate-300">✕</button>
@@ -318,7 +313,7 @@
         </div>
     </div>
 
-    <div id="status-modal" class="fixed inset-0 z-50 bg-slate-900/80 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="status-modal" onclick="if(event.target===this)toggleOrderStatusModal()" class="fixed inset-0 z-50 bg-slate-900/80 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl">
             <div id="status-content"></div>
         </div>
@@ -355,26 +350,48 @@
         let storeConfig = { openTime: "08:00", closeTime: "20:00", manualOverride: 'auto' };
         let cart = [];
         let ordersList = [];
-        let currentOrder = null;
+        let nextOrderId = 1001;
+        let lastOrderId = '';
         let isAdminMode = false;
+        let toastTimer = null;
+        const STATUSES = ['Diterima', 'Diproses', 'Siap', 'Selesai'];
+        const STORAGE_KEY = 'warteg-bahariku-v1';
+        const fmt = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+        const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const $ = id => document.getElementById(id);
+
+        function saveState() {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ menuItems, storeConfig, ordersList, nextOrderId })); } catch (e) {}
+        }
+        function loadState() {
+            try {
+                const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+                if (!d) return;
+                if (Array.isArray(d.menuItems) && d.menuItems.length) menuItems = d.menuItems;
+                if (d.storeConfig) storeConfig = { ...storeConfig, ...d.storeConfig };
+                if (Array.isArray(d.ordersList)) ordersList = d.ordersList;
+                if (d.nextOrderId) nextOrderId = d.nextOrderId;
+            } catch (e) {}
+        }
 
         function toggleAdminMode() {
             isAdminMode = !isAdminMode;
-            document.getElementById('view-customer').classList.toggle('hidden', isAdminMode);
-            document.getElementById('view-admin').classList.toggle('hidden', !isAdminMode);
-            if (isAdminMode) {
-                renderAdminDashboard();
-                switchAdminTab('orders');
-            } else {
-                renderMenu();
-            }
+            $('view-customer').classList.toggle('hidden', isAdminMode);
+            $('view-admin').classList.toggle('hidden', !isAdminMode);
+            ['customer-status-btn', 'customer-cart-btn', 'mobile-cart-bar'].forEach(id => $(id).style.display = isAdminMode ? 'none' : '');
+            $('mode-switch-text').innerText = isAdminMode ? 'Mode Pelanggan' : 'Mode Dapur';
+            $('mode-switch-text-mobile').innerText = isAdminMode ? 'Pelanggan' : 'Dapur';
+            $('mode-subtitle').innerText = isAdminMode ? 'Panel Dapur / Admin' : 'Makan Nikmat, Harga Bersahabat';
+            closeCartDrawer();
+            if (isAdminMode) { renderAdminDashboard(); switchAdminTab('orders'); } else { renderMenu(); }
+            window.scrollTo(0, 0);
         }
 
         function switchAdminTab(tabName) {
             ['orders', 'recap', 'menu'].forEach(t => {
-                document.getElementById(`admin-tab-${t}`).classList.toggle('hidden', t !== tabName);
-                document.getElementById(`tab-btn-${t}`).className = t === tabName 
-                    ? "pb-2.5 font-extrabold text-orange-600 border-b-2 border-orange-600 transition shrink-0" 
+                $(`admin-tab-${t}`).classList.toggle('hidden', t !== tabName);
+                $(`tab-btn-${t}`).className = t === tabName
+                    ? "pb-2.5 font-extrabold text-orange-600 border-b-2 border-orange-600 transition shrink-0"
                     : "pb-2.5 font-extrabold text-slate-400 hover:text-slate-700 transition shrink-0";
             });
             if (tabName === 'orders') renderAdminOrders();
@@ -383,150 +400,279 @@
         }
 
         function renderAdminDashboard() {
-            const totalRevenue = ordersList.reduce((sum, o) => sum + o.total, 0);
-            document.getElementById('admin-stat-orders').innerText = ordersList.length;
-            document.getElementById('admin-stat-revenue').innerText = `Rp ${totalRevenue.toLocaleString('id-ID')}`;
+            $('admin-stat-orders').innerText = ordersList.length;
+            $('admin-stat-revenue').innerText = fmt(ordersList.reduce((s, o) => s + o.total, 0));
         }
 
         function renderAdminOrders() {
-            const container = document.getElementById('admin-orders-container');
-            if (ordersList.length === 0) {
-                container.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-slate-500 font-bold">Belum ada pesanan</div>`;
+            renderAdminDashboard();
+            const c = $('admin-orders-container');
+            if (!ordersList.length) {
+                c.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-slate-500 font-bold">Belum ada pesanan</div>`;
                 return;
             }
-            container.innerHTML = ordersList.map(o => `
-                <div class="bg-white rounded-xl border p-4 shadow-sm space-y-2">
-                    <div class="flex justify-between font-black"><span>#${o.id} - ${o.name}</span><span>Rp ${o.total.toLocaleString()}</span></div>
-                    <p class="text-xs text-slate-600 font-bold">${o.department} | ${o.location}</p>
-                </div>
-            `).join('');
+            c.innerHTML = ordersList.map(o => {
+                const next = STATUSES[STATUSES.indexOf(o.status) + 1];
+                const jam = new Date(o.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                return `<div class="bg-white rounded-xl border p-4 shadow-sm space-y-2">
+                    <div class="flex justify-between font-black"><span>#${o.id} - ${esc(o.name)}</span><span>${fmt(o.total)}</span></div>
+                    <p class="text-xs text-slate-600 font-bold">${esc(o.department)} | ${esc(o.location)} | ${jam}</p>
+                    <p class="text-xs text-slate-700">${o.items.map(i => `${esc(i.name)} x${i.qty}`).join(', ')}</p>
+                    <div class="flex items-center justify-between gap-2 pt-1">
+                        <span class="text-xs font-black px-2 py-1 rounded bg-amber-100 text-amber-900">${o.status}</span>
+                        ${next ? `<button onclick="advanceOrder(${o.id})" class="text-xs font-bold bg-slate-900 text-white px-3 py-1.5 rounded-lg">Tandai ${next}</button>` : ''}
+                    </div></div>`;
+            }).join('');
+        }
+
+        function advanceOrder(id) {
+            const o = ordersList.find(x => x.id === id);
+            if (!o) return;
+            const i = STATUSES.indexOf(o.status);
+            if (i < STATUSES.length - 1) o.status = STATUSES[i + 1];
+            saveState(); renderAdminOrders();
+        }
+
+        function resetOrders() {
+            if (!ordersList.length || !confirm('Hapus semua pesanan? Tindakan ini tidak bisa dibatalkan.')) return;
+            ordersList = []; saveState(); renderAdminOrders();
+        }
+
+        function getRecapRows() {
+            const now = new Date(), map = {};
+            ordersList.forEach(o => {
+                const d = new Date(o.createdAt);
+                if (d.getFullYear() !== now.getFullYear() || d.getMonth() !== now.getMonth()) return;
+                const k = [o.name, o.department, o.location].join('|');
+                const r = map[k] || (map[k] = { name: o.name, department: o.department, location: o.location, days: Array(31).fill(0), total: 0 });
+                r.days[d.getDate() - 1] += o.total; r.total += o.total;
+            });
+            return Object.values(map);
         }
 
         function renderRecapTable() {
-            const tbody = document.getElementById('recap-table-body');
-            tbody.innerHTML = `<tr><td colspan="36" class="p-4 text-center text-slate-400 font-bold">Belum ada data rekap.</td></tr>`;
+            const rows = getRecapRows();
+            $('recap-table-body').innerHTML = rows.length ? rows.map((r, i) => `<tr>
+                <td class="p-2 text-center border border-slate-200 sticky-col-1 bg-white">${i + 1}</td>
+                <td class="p-2 border border-slate-200 font-bold sticky-col-2 bg-white">${esc(r.name)}</td>
+                <td class="p-2 border border-slate-200">${esc(r.department)}</td>
+                <td class="p-2 border border-slate-200">${esc(r.location)}</td>
+                ${r.days.map(v => `<td class="p-1.5 border border-slate-200 text-center">${v ? v / 1000 : ''}</td>`).join('')}
+                <td class="p-2 border border-slate-200 text-center font-extrabold bg-emerald-50">${r.total / 1000}</td></tr>`).join('')
+                : `<tr><td colspan="36" class="p-4 text-center text-slate-400 font-bold">Belum ada data rekap bulan ini.</td></tr>`;
+        }
+
+        function exportRecapCSV() {
+            const rows = getRecapRows();
+            if (!rows.length) { showToast('Belum ada data untuk diexport'); return; }
+            const q = v => `"${String(v).replace(/"/g, '""')}"`;
+            const head = ['No', 'Nama', 'Department', 'Lokasi Makan', ...Array.from({ length: 31 }, (_, i) => i + 1), 'Total (Rp)'];
+            const lines = [head.map(q).join(',')].concat(rows.map((r, i) => [i + 1, r.name, r.department, r.location, ...r.days.map(v => v || ''), r.total].map(q).join(',')));
+            const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `rekap-warteg-${new Date().toISOString().slice(0, 7)}.csv`;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
         }
 
         function renderAdminMenuTable() {
-            const tbody = document.getElementById('admin-menu-table');
-            tbody.innerHTML = menuItems.map(item => `
-                <tr>
-                    <td class="p-3 font-bold">${item.name}</td>
-                    <td class="p-3">Rp ${item.price.toLocaleString()}</td>
-                    <td class="p-3"><span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded font-bold">Tersedia</span></td>
-                    <td class="p-3 text-center"><button onclick="toggleItemAvailability(${item.id})" class="text-xs bg-red-50 text-red-600 p-1 rounded font-bold">Ubah</button></td>
-                </tr>
-            `).join('');
+            $('admin-menu-table').innerHTML = menuItems.map(item => `<tr>
+                <td class="p-3 font-bold">${esc(item.name)}</td>
+                <td class="p-3"><input type="number" min="0" step="500" value="${item.price}" onchange="updatePrice(${item.id}, this.value)" class="w-24 px-2 py-1 border border-slate-300 rounded font-bold"></td>
+                <td class="p-3"><span class="px-2 py-1 rounded font-bold ${item.available ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}">${item.available ? 'Tersedia' : 'Habis'}</span></td>
+                <td class="p-3 text-center"><button onclick="toggleItemAvailability(${item.id})" class="text-xs bg-slate-100 text-slate-800 px-2 py-1 rounded font-bold">${item.available ? 'Tandai Habis' : 'Tandai Tersedia'}</button></td>
+            </tr>`).join('');
+        }
+
+        function updatePrice(id, val) {
+            const item = menuItems.find(i => i.id === id), p = parseInt(val, 10);
+            if (!item) return;
+            if (isNaN(p) || p < 0) { showToast('Harga tidak valid'); renderAdminMenuTable(); return; }
+            item.price = p; saveState(); renderMenu(); showToast('Harga diperbarui');
         }
 
         function toggleItemAvailability(id) {
             const item = menuItems.find(i => i.id === id);
-            if(item) { item.available = !item.available; renderAdminMenuTable(); renderMenu(); }
+            if (!item) return;
+            item.available = !item.available;
+            cart = cart.filter(c => menuItems.find(m => m.id === c.id).available);
+            saveState(); renderAdminMenuTable(); renderMenu(); updateCartUI();
         }
 
         function isStoreOpen() {
             if (storeConfig.manualOverride === true) return true;
             if (storeConfig.manualOverride === false) return false;
-            const now = new Date();
-            const curMin = now.getHours() * 60 + now.getMinutes();
+            const now = new Date(), cur = now.getHours() * 60 + now.getMinutes();
             const [oH, oM] = storeConfig.openTime.split(':').map(Number);
             const [cH, cM] = storeConfig.closeTime.split(':').map(Number);
-            return curMin >= (oH*60 + oM) && curMin < (cH*60 + cM);
+            const o = oH * 60 + oM, c = cH * 60 + cM;
+            return o <= c ? (cur >= o && cur < c) : (cur >= o || cur < c);
         }
 
         function updateStoreStatusUI() {
-            const open = isStoreOpen();
-            document.getElementById('header-store-text').innerText = open ? "WARTEG BUKA" : "WARTEG TUTUP";
+            const open = isStoreOpen(), tone = open ? 'emerald' : 'red';
+            const hours = `${storeConfig.openTime.replace(':', '.')} - ${storeConfig.closeTime.replace(':', '.')}`;
+            $('header-store-badge').className = `inline-flex items-center gap-1.5 bg-${tone}-100 border-2 border-${tone}-500 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black`;
+            $('header-store-dot').className = `w-3 h-3 rounded-full bg-${tone}-600 animate-pulse`;
+            $('header-store-text').className = `text-${tone}-900`;
+            $('header-store-text').innerText = open ? 'WARTEG BUKA' : 'WARTEG TUTUP';
+            $('hero-status-tag').className = `block sm:inline-flex items-center gap-2 bg-${tone}-500/20 border-2 border-${tone}-400/40 text-${tone}-300 font-black text-xs sm:text-sm px-3 py-1.5 rounded-xl uppercase tracking-wider mb-2 sm:mb-3`;
+            $('hero-status-dot').className = `inline-block w-3 h-3 rounded-full bg-${tone}-400 animate-pulse`;
+            $('hero-status-text').innerHTML = open ? `WARTEG BUKA PRASMANAN (<span id="store-hours-display">${hours}</span> WIB)` : 'WARTEG SEDANG TUTUP';
+            $('closed-store-banner').classList.toggle('hidden', open);
+            $('closed-banner-hours').innerText = `${storeConfig.openTime} - ${storeConfig.closeTime} WIB`;
+            $('admin-stat-status-text').innerText = open ? 'BUKA' : 'TUTUP';
+            $('admin-stat-status-text').className = `text-base sm:text-2xl font-extrabold mt-0.5 text-${tone}-600`;
+            $('admin-stat-status-icon').className = `w-10 h-10 sm:w-12 sm:h-12 bg-${tone}-50 text-${tone}-600 rounded-xl flex items-center justify-center text-lg sm:text-xl font-bold shrink-0`;
+            $('admin-stat-status-icon').innerHTML = `<i class="fa-solid ${open ? 'fa-door-open' : 'fa-door-closed'}"></i>`;
+            [['admin-btn-force-open', true], ['admin-btn-force-close', false], ['admin-btn-force-auto', 'auto']].forEach(([id, v]) => {
+                $(id).className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition ' + (storeConfig.manualOverride === v ? 'bg-slate-900 text-white' : 'text-slate-600');
+            });
             renderMenu();
         }
 
         function renderMenu() {
-            const grid = document.getElementById('menu-grid');
             const open = isStoreOpen();
-            grid.innerHTML = menuItems.map(item => `
-                <div class="bg-white rounded-xl border p-4 shadow-sm flex flex-col justify-between gap-3">
-                    <div>
-                        <h4 class="font-black text-slate-900">${item.name}</h4>
-                        <p class="text-orange-600 font-black">Rp ${item.price.toLocaleString()}</p>
-                    </div>
-                    ${open ? `<button onclick="addToCart(${item.id})" class="w-full bg-orange-600 text-white font-black py-2 rounded-lg text-sm">TAMBAH</button>` : `<button disabled class="w-full bg-slate-200 text-slate-500 font-bold py-2 rounded-lg text-sm">Tutup</button>`}
-                </div>
-            `).join('');
+            $('menu-counter').innerText = `${menuItems.filter(i => i.available).length} Pilihan Menu`;
+            $('menu-grid').innerHTML = menuItems.map(item => {
+                const btn = !item.available ? `<button disabled class="w-full bg-slate-200 text-slate-500 font-bold py-2 rounded-lg text-sm">Habis</button>`
+                    : open ? `<button onclick="addToCart(${item.id})" class="w-full bg-orange-600 text-white font-black py-2 rounded-lg text-sm">TAMBAH</button>`
+                    : `<button disabled class="w-full bg-slate-200 text-slate-500 font-bold py-2 rounded-lg text-sm">Tutup</button>`;
+                return `<div class="bg-white rounded-xl border p-4 shadow-sm flex flex-col justify-between gap-3 ${item.available ? '' : 'opacity-60'}">
+                    <div><h4 class="font-black text-slate-900">${esc(item.name)}</h4><p class="text-orange-600 font-black">${fmt(item.price)}</p></div>${btn}</div>`;
+            }).join('');
         }
 
         function addToCart(id) {
             const item = menuItems.find(i => i.id === id);
+            if (!item || !item.available) return;
+            if (!isStoreOpen()) { showToast('Maaf, warteg sedang tutup'); return; }
             const exist = cart.find(c => c.id === id);
             if (exist) exist.qty++; else cart.push({ ...item, qty: 1 });
             updateCartUI();
             showToast(`+ ${item.name} ditambahkan`);
         }
 
-        function updateCartUI() {
-            const totalItems = cart.reduce((s, i) => s + i.qty, 0);
-            const totalVal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-            document.getElementById('cart-badge').innerText = totalItems;
-            document.getElementById('mobile-cart-badge').innerText = totalItems;
-            document.getElementById('cart-total').innerText = `Rp ${totalVal.toLocaleString()}`;
-            document.getElementById('mobile-cart-total').innerText = `Rp ${totalVal.toLocaleString()}`;
-            document.getElementById('checkout-btn').disabled = cart.length === 0;
-            document.getElementById('mobile-checkout-btn').disabled = cart.length === 0;
-            
-            document.getElementById('cart-items').innerHTML = cart.map(i => `
-                <div class="py-2 flex justify-between text-sm font-bold">
-                    <span>${i.name} (x${i.qty})</span>
-                    <span>Rp ${(i.price * i.qty).toLocaleString()}</span>
-                </div>
-            `).join('');
+        function changeQty(id, d) {
+            const it = cart.find(c => c.id === id);
+            if (!it) return;
+            it.qty += d;
+            if (it.qty <= 0) cart = cart.filter(c => c.id !== id);
+            updateCartUI();
         }
 
+        function updateCartUI() {
+            const n = cart.reduce((s, i) => s + i.qty, 0), t = cart.reduce((s, i) => s + i.price * i.qty, 0);
+            $('cart-badge').innerText = n; $('mobile-cart-badge').innerText = n;
+            $('cart-total').innerText = fmt(t); $('mobile-cart-total').innerText = fmt(t);
+            $('checkout-btn').disabled = !cart.length; $('mobile-checkout-btn').disabled = !cart.length;
+            $('cart-items').innerHTML = cart.length ? cart.map(i => `
+                <div class="py-3 flex items-center justify-between gap-2 text-sm font-bold">
+                    <div class="min-w-0"><p class="truncate">${esc(i.name)}</p><p class="text-xs text-slate-500">${fmt(i.price * i.qty)}</p></div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="changeQty(${i.id}, -1)" class="w-8 h-8 rounded-lg bg-slate-100 font-black">−</button>
+                        <span class="w-5 text-center">${i.qty}</span>
+                        <button onclick="changeQty(${i.id}, 1)" class="w-8 h-8 rounded-lg bg-orange-600 text-white font-black">+</button>
+                    </div></div>`).join('')
+                : `<p class="py-8 text-center text-slate-400 font-bold">Keranjang masih kosong</p>`;
+        }
+
+        function openCartDrawer() {
+            $('cart-drawer').classList.remove('pointer-events-none', 'opacity-0');
+            $('cart-panel').classList.remove('translate-x-full');
+        }
+        function closeCartDrawer() {
+            $('cart-drawer').classList.add('pointer-events-none', 'opacity-0');
+            $('cart-panel').classList.add('translate-x-full');
+        }
         function toggleCartDrawer() {
-            const d = document.getElementById('cart-drawer');
-            d.classList.toggle('pointer-events-none');
-            d.classList.toggle('opacity-0');
+            $('cart-drawer').classList.contains('opacity-0') ? openCartDrawer() : closeCartDrawer();
         }
 
         function openCheckoutModal() {
-            toggleCartDrawer();
-            const m = document.getElementById('checkout-modal');
-            m.classList.remove('pointer-events-none', 'opacity-0');
+            if (!cart.length) return;
+            closeCartDrawer();
+            $('checkout-modal').classList.remove('pointer-events-none', 'opacity-0');
+            $('checkout-panel').classList.remove('translate-y-full');
         }
-
         function closeCheckoutModal() {
-            document.getElementById('checkout-modal').classList.add('opacity-0', 'pointer-events-none');
+            $('checkout-modal').classList.add('opacity-0', 'pointer-events-none');
+            $('checkout-panel').classList.add('translate-y-full');
         }
 
         function submitOrder(e) {
             e.preventDefault();
-            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+            if (!cart.length) return;
+            if (!isStoreOpen()) { showToast('Maaf, warteg sedang tutup'); closeCheckoutModal(); return; }
+            const name = $('buyer-name').value.trim();
+            if (!name) { showToast('Nama wajib diisi'); return; }
+            const id = nextOrderId++;
             ordersList.unshift({
-                id: Math.floor(100000 + Math.random() * 900000),
-                name: document.getElementById('buyer-name').value.toUpperCase(),
-                department: document.getElementById('buyer-department').value,
-                location: document.getElementById('buyer-location').value,
-                total, items: [...cart]
+                id, name: name.toUpperCase(),
+                department: $('buyer-department').value, location: $('buyer-location').value,
+                total: cart.reduce((s, i) => s + i.price * i.qty, 0),
+                items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })),
+                status: STATUSES[0], createdAt: new Date().toISOString()
             });
-            cart = [];
-            updateCartUI();
+            lastOrderId = id;
+            saveState();
+            cart = []; updateCartUI();
+            $('checkout-form').reset();
             closeCheckoutModal();
-            showToast('Pesanan berhasil dikirim!');
+            showToast(`Pesanan #${id} terkirim! Simpan nomor ini.`);
         }
 
-        function setManualStoreStatus(status) { storeConfig.manualOverride = status; updateStoreStatusUI(); }
+        function toggleOrderStatusModal() {
+            const m = $('status-modal'), show = m.classList.contains('opacity-0');
+            m.classList.toggle('opacity-0', !show);
+            m.classList.toggle('pointer-events-none', !show);
+            if (show) renderStatusContent(lastOrderId);
+        }
+
+        function renderStatusContent(id) {
+            const o = id ? ordersList.find(x => x.id === Number(id)) : null;
+            let result = '';
+            if (id && !o) result = `<p class="text-sm font-bold text-red-600">Pesanan #${esc(id)} tidak ditemukan.</p>`;
+            if (o) result = `<div class="text-left bg-slate-50 rounded-xl p-3 space-y-1">
+                <p class="font-black">#${o.id} - ${esc(o.name)}</p>
+                <p class="text-xs text-slate-600">${o.items.map(i => `${esc(i.name)} x${i.qty}`).join(', ')}</p>
+                <p class="font-black text-orange-600">${fmt(o.total)}</p>
+                <p class="text-sm font-black">Status: <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900">${o.status}</span></p></div>`;
+            $('status-content').innerHTML = `<h4 class="font-black text-lg mb-3">Cek Status Pesanan</h4>
+                <div class="flex gap-2 mb-3">
+                    <input id="status-input" type="number" inputmode="numeric" value="${id || ''}" placeholder="Nomor pesanan" class="flex-1 px-3 py-2 rounded-xl border-2 border-slate-300 font-bold">
+                    <button onclick="renderStatusContent($('status-input').value)" class="px-4 rounded-xl bg-slate-900 text-white font-bold">Cari</button>
+                </div>${result}
+                <button onclick="toggleOrderStatusModal()" class="mt-4 w-full py-2.5 rounded-xl border-2 border-slate-300 font-bold">Tutup</button>`;
+        }
+
+        function setManualStoreStatus(status) { storeConfig.manualOverride = status; saveState(); updateStoreStatusUI(); }
         function saveStoreHours() {
-            storeConfig.openTime = document.getElementById('store-open-time').value;
-            storeConfig.closeTime = document.getElementById('store-close-time').value;
-            updateStoreStatusUI();
+            const o = $('store-open-time').value, c = $('store-close-time').value;
+            if (!o || !c) { showToast('Jam buka & tutup wajib diisi'); return; }
+            storeConfig.openTime = o; storeConfig.closeTime = c;
+            saveState(); updateStoreStatusUI();
             showToast('Jam operasional disimpan!');
         }
         function showToast(msg) {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-message').innerText = msg;
+            const t = $('toast');
+            $('toast-message').innerText = msg;
             t.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
 
-        window.onload = () => { updateStoreStatusUI(); setInterval(updateStoreStatusUI, 30000); };
-    </script>
+        window.onload = () => {
+            loadState();
+            $('recap-total-th').insertAdjacentHTML('beforebegin',
+                Array.from({ length: 31 }, (_, i) => `<th class="p-1.5 border border-emerald-600 text-center w-8 font-semibold">${i + 1}</th>`).join(''));
+            $('store-open-time').value = storeConfig.openTime;
+            $('store-close-time').value = storeConfig.closeTime;
+            updateStoreStatusUI(); updateCartUI();
+            setInterval(updateStoreStatusUI, 30000);
+        };
+    
+</script>
 </body>
 </html>
