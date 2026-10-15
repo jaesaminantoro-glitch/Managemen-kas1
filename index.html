@@ -12,208 +12,215 @@
         body { overflow-wrap: break-word;
             font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-tap-highlight-color: transparent;
+            font-size: 13px;
         }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
 
-        .sticky-col-1 {
-            position: sticky;
-            left: 0;
-            z-index: 10;
-        }
-        .sticky-col-2 {
-            position: sticky;
-            left: 40px;
-            z-index: 10;
-        }
+        .sticky-col-1 { position: sticky; left: 0; z-index: 10; }
+        .sticky-col-2 { position: sticky; left: 34px; z-index: 10; }
 
-        .touch-btn {
-            min-height: 48px;
-            min-width: 48px;
-        }
+        .touch-btn { min-height: 40px; min-width: 40px; }
+
+        /* Compact overrides */
+        .compact-title { font-size: 1.05rem; line-height: 1.3; }
+        .compact-sub { font-size: 0.7rem; }
+        .compact-card { padding: 0.65rem; }
+        .compact-menu-card { padding: 0.6rem; gap: 0.4rem; }
+        .compact-stat { padding: 0.55rem; }
+        .compact-tab { padding-bottom: 0.5rem; font-size: 0.75rem; }
+        .compact-input { padding: 0.45rem 0.65rem; font-size: 0.78rem; }
+        .compact-btn { padding: 0.45rem 0.75rem; font-size: 0.72rem; }
+        .compact-th { padding: 0.35rem 0.5rem; font-size: 0.68rem; }
+        .compact-td { padding: 0.3rem 0.4rem; font-size: 0.68rem; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-900 min-h-full flex flex-col justify-between pb-32 sm:pb-24 lg:pb-8 selection:bg-orange-500 selection:text-white">
+<body class="bg-slate-100 text-slate-900 min-h-full flex flex-col justify-between pb-28 sm:pb-20 lg:pb-6 selection:bg-orange-500 selection:text-white">
 
     <!-- Header App -->
     <header class="bg-white sticky top-0 z-30 border-b-2 border-slate-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 min-w-0">
-            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20 shrink-0">
-                    <i class="fa-solid fa-bowl-rice text-xl sm:text-2xl"></i>
+        <div class="max-w-7xl mx-auto px-3 sm:px-5 h-14 sm:h-16 flex items-center justify-between gap-2 min-w-0">
+            <div class="flex items-center gap-2 min-w-0">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20 shrink-0">
+                    <i class="fa-solid fa-bowl-rice text-base sm:text-lg"></i>
                 </div>
                 <div class="min-w-0">
-                    <h1 class="font-black text-base sm:text-2xl tracking-tight text-slate-900 leading-none">
+                    <h1 class="font-black text-sm sm:text-lg tracking-tight text-slate-900 leading-none">
                         Warteg <span class="text-orange-600">Bahariku</span>
                     </h1>
-                    <p class="text-[10px] sm:text-sm text-slate-600 font-bold mt-0.5 truncate" id="mode-subtitle">Makan Nikmat, Harga Bersahabat</p>
+                    <p class="text-[9px] sm:text-[11px] text-slate-600 font-bold mt-0.5 truncate" id="mode-subtitle">Makan Nikmat, Harga Bersahabat</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
-                <div id="header-store-badge" class="hidden sm:inline-flex items-center gap-1.5 bg-emerald-100 border-2 border-emerald-500 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black">
-                    <span id="header-store-dot" class="w-3 h-3 rounded-full bg-emerald-600 animate-pulse"></span>
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <div id="header-store-badge" class="hidden sm:inline-flex items-center gap-1.5 bg-emerald-100 border-2 border-emerald-500 px-2.5 py-1 rounded-lg text-[11px] font-black">
+                    <span id="header-store-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse"></span>
                     <span id="header-store-text" class="text-emerald-900">WARTEG BUKA</span>
                 </div>
 
-                <button onclick="toggleAdminMode()" id="mode-switch-btn" class="bg-slate-900 hover:bg-slate-800 text-white px-2.5 sm:px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm shadow-sm flex items-center gap-1.5 sm:gap-2 transition active:scale-95 touch-btn">
-                    <i class="fa-solid fa-kitchen-set text-amber-400 text-sm sm:text-base"></i>
+                <button onclick="toggleAdminMode()" id="mode-switch-btn" class="bg-slate-900 hover:bg-slate-800 text-white px-2.5 sm:px-3 py-2 rounded-lg font-black text-[11px] shadow-sm flex items-center gap-1.5 transition active:scale-95 touch-btn">
+                    <i class="fa-solid fa-kitchen-set text-amber-400 text-xs"></i>
                     <span id="mode-switch-text" class="hidden sm:inline">Mode Dapur</span>
                     <span id="mode-switch-text-mobile" class="sm:hidden">Dapur</span>
                 </button>
 
-                <button onclick="toggleOrderStatusModal()" id="customer-status-btn" aria-label="Cek Status" class="inline-flex items-center justify-center gap-2 px-3 sm:px-3.5 py-2.5 touch-btn rounded-xl border-2 border-slate-300 text-slate-800 hover:bg-slate-50 font-bold text-xs sm:text-sm transition">
+                <button onclick="toggleOrderStatusModal()" id="customer-status-btn" aria-label="Cek Status" class="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 touch-btn rounded-lg border-2 border-slate-300 text-slate-800 hover:bg-slate-50 font-bold text-[11px] transition">
                     <i class="fa-solid fa-receipt text-orange-600"></i><span class="hidden sm:inline">Cek Status</span>
                 </button>
 
-                <button onclick="toggleCartDrawer()" id="customer-cart-btn" class="hidden sm:flex relative bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-xl font-black text-sm shadow-md shadow-orange-600/20 items-center gap-2 transition active:scale-95">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                    <span>Keranjang Saya</span>
-                    <span id="cart-badge" class="bg-amber-400 text-slate-900 text-xs font-black px-2 py-0.5 rounded-full border-2 border-white">0</span>
+                <button onclick="toggleCartDrawer()" id="customer-cart-btn" class="hidden sm:flex relative bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg font-black text-[11px] shadow-md shadow-orange-600/20 items-center gap-1.5 transition active:scale-95">
+                    <i class="fa-solid fa-cart-shopping text-xs"></i>
+                    <span>Keranjang</span>
+                    <span id="cart-badge" class="bg-amber-400 text-slate-900 text-[10px] font-black px-1.5 py-0.5 rounded-full border-2 border-white">0</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-8">
+    <main class="flex-grow max-w-7xl w-full mx-auto px-2 sm:px-5 py-2 sm:py-5">
         <!-- CUSTOMER VIEW -->
-        <div id="view-customer" class="space-y-3 sm:space-y-6">
-            <section class="relative bg-gradient-to-r from-slate-900 via-slate-800 to-orange-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 overflow-hidden shadow-lg border-2 border-slate-800">
+        <div id="view-customer" class="space-y-2.5 sm:space-y-4">
+            <section class="relative bg-gradient-to-r from-slate-900 via-slate-800 to-orange-950 text-white rounded-xl sm:rounded-2xl p-3 sm:p-5 overflow-hidden shadow-lg border-2 border-slate-800">
                 <div class="relative z-10 max-w-2xl">
-                    <div class="flex sm:inline-flex items-center gap-1.5 bg-amber-400 text-slate-950 font-black text-[11px] sm:text-sm px-3 py-1 rounded-lg uppercase tracking-wide mb-2">
-                        <i class="fa-solid fa-hand-pointer text-base"></i> CARA PESAN: TEKAN TOMBOL ORANYE (+) DI MENU
+                    <div class="flex sm:inline-flex items-center gap-1.5 bg-amber-400 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wide mb-1.5">
+                        <i class="fa-solid fa-hand-pointer"></i> CARA PESAN: TEKAN TOMBOL ORANYE (+) DI MENU
                     </div>
-                    <div id="hero-status-tag" class="block sm:inline-flex items-center gap-2 bg-emerald-500/20 border-2 border-emerald-400/40 text-emerald-300 font-black text-xs sm:text-sm px-3 py-1.5 rounded-xl uppercase tracking-wider mb-2 sm:mb-3">
-                        <span id="hero-status-dot" class="inline-block w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <div id="hero-status-tag" class="block sm:inline-flex items-center gap-2 bg-emerald-500/20 border-2 border-emerald-400/40 text-emerald-300 font-black text-[10px] px-2 py-1 rounded-lg uppercase tracking-wider mb-1.5 sm:mb-2">
+                        <span id="hero-status-dot" class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                         <span id="hero-status-text">WARTEG BUKA PRASMANAN (08.00 - 20.00 WIB)</span>
                     </div>
-                    <h2 class="text-xl sm:text-3xl font-black tracking-tight leading-snug mb-1">Pesan Makanan Sangat Mudah & Cepat</h2>
-                    <p class="text-slate-200 text-xs sm:text-base leading-relaxed mb-3 font-semibold">
+                    <h2 class="text-base sm:text-xl font-black tracking-tight leading-snug mb-0.5">Pesan Makanan Sangat Mudah & Cepat</h2>
+                    <p class="text-slate-200 text-[11px] sm:text-xs leading-relaxed font-semibold">
                         Pilih lauk di bawah ini, isi Nama & Lokasi Makan Anda, makanan langsung kami antarkan!
                     </p>
                 </div>
             </section>
 
-            <div id="closed-store-banner" class="hidden bg-red-50 border-2 border-red-300 rounded-2xl p-4 text-red-950 flex items-center gap-3">
-                <div class="w-12 h-12 rounded-2xl bg-red-600 text-white flex items-center justify-center shrink-0 text-2xl font-black">
+            <div id="closed-store-banner" class="hidden bg-red-50 border-2 border-red-300 rounded-xl p-3 text-red-950 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 text-lg font-black">
                     <i class="fa-solid fa-store-slash"></i>
                 </div>
                 <div>
-                    <h4 class="font-black text-sm sm:text-base text-red-900">MOHON MAAF, WARTEG SEDANG TUTUP</h4>
-                    <p class="text-xs sm:text-sm font-bold text-red-800">Dapur belum menerima pesanan. Jam operasional kami adalah jam <strong id="closed-banner-hours" class="underline">08:00 - 20:00 WIB</strong>.</p>
+                    <h4 class="font-black text-xs text-red-900">MOHON MAAF, WARTEG SEDANG TUTUP</h4>
+                    <p class="text-[11px] font-bold text-red-800">Dapur belum menerima pesanan. Jam operasional kami: <strong id="closed-banner-hours" class="underline">08:00 - 20:00 WIB</strong>.</p>
                 </div>
             </div>
 
-            <section id="menu-section" class="scroll-mt-20">
-                <div class="flex flex-wrap items-center justify-between gap-2 mb-3 sm:mb-4 bg-white p-3 rounded-2xl border-2 border-slate-200 shadow-sm">
+            <section id="menu-section" class="scroll-mt-16">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2 sm:mb-3 bg-white p-2 sm:p-2.5 rounded-xl border-2 border-slate-200 shadow-sm">
                     <div>
-                        <h3 class="text-lg sm:text-2xl font-black text-slate-900">PILIH MENU MAKANAN</h3>
-                        <p class="text-xs sm:text-sm font-bold text-slate-600">Tekan tombol Oranye <span class="bg-orange-600 text-white font-black px-2 py-0.5 rounded-lg text-xs inline-block">+ TAMBAH</span> untuk memilih</p>
+                        <h3 class="text-sm sm:text-base font-black text-slate-900">PILIH MENU MAKANAN</h3>
+                        <p class="text-[10px] sm:text-[11px] font-bold text-slate-600">Tekan <span class="bg-orange-600 text-white font-black px-1.5 py-0.5 rounded text-[10px] inline-block">+ TAMBAH</span> untuk memilih</p>
                     </div>
-                    <span id="menu-counter" class="text-xs sm:text-sm bg-orange-100 border border-orange-300 text-orange-950 font-black px-3 py-1.5 rounded-xl">20 Pilihan Menu</span>
+                    <span id="menu-counter" class="text-[10px] bg-orange-100 border border-orange-300 text-orange-950 font-black px-2 py-1 rounded-lg">20 Pilihan Menu</span>
                 </div>
-                <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"></div>
+                <div id="menu-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2.5"></div>
             </section>
         </div>
 
         <!-- ADMIN VIEW -->
-        <div id="view-admin" class="hidden space-y-6">
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
-                <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+        <div id="view-admin" class="hidden space-y-3">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Total Pesanan</p>
-                        <h4 class="text-xl sm:text-3xl font-extrabold text-slate-900 mt-0.5" id="admin-stat-orders">0</h4>
+                        <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Total Pesanan</p>
+                        <h4 class="text-lg font-extrabold text-slate-900 mt-0.5" id="admin-stat-orders">0</h4>
                     </div>
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-lg sm:text-xl font-bold shrink-0">
+                    <div class="w-8 h-8 bg-orange-50 text-orange-600 rounded-lg flex items-center justify-center text-sm font-bold shrink-0">
                         <i class="fa-solid fa-receipt"></i>
                     </div>
                 </div>
-                <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Total Omset</p>
-                        <h4 class="text-lg sm:text-3xl font-extrabold text-emerald-600 mt-0.5" id="admin-stat-revenue">Rp 0</h4>
+                        <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Total Omset</p>
+                        <h4 class="text-sm font-extrabold text-emerald-600 mt-0.5" id="admin-stat-revenue">Rp 0</h4>
                     </div>
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg sm:text-xl font-bold shrink-0">
+                    <div class="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-sm font-bold shrink-0">
                         <i class="fa-solid fa-wallet"></i>
                     </div>
                 </div>
-                <div class="col-span-2 sm:col-span-1 bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div class="col-span-2 sm:col-span-1 bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Status Warteg</p>
-                        <h4 class="text-base sm:text-2xl font-extrabold mt-0.5" id="admin-stat-status-text">BUKA</h4>
+                        <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Status Warteg</p>
+                        <h4 class="text-sm font-extrabold mt-0.5" id="admin-stat-status-text">BUKA</h4>
                     </div>
-                    <div id="admin-stat-status-icon" class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg sm:text-xl font-bold shrink-0">
+                    <div id="admin-stat-status-icon" class="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-sm font-bold shrink-0">
                         <i class="fa-solid fa-door-open"></i>
                     </div>
                 </div>
             </div>
 
             <!-- Jam Buka / Tutup Management Card -->
-            <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div class="bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2">
                     <div>
-                        <h3 class="font-extrabold text-sm sm:text-base text-slate-900 flex items-center gap-2">
+                        <h3 class="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
                             <i class="fa-solid fa-clock text-orange-600"></i> Pengaturan Jam Operasional Warteg
                         </h3>
-                        <p class="text-[11px] sm:text-xs text-slate-500">Atur jam buka otomatis atau ubah status toko secara manual</p>
+                        <p class="text-[10px] text-slate-500">Atur jam buka otomatis atau ubah status toko secara manual</p>
                     </div>
-                    <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl shrink-0">
-                        <button onclick="setManualStoreStatus(true)" id="admin-btn-force-open" class="px-3 py-1.5 rounded-lg text-xs font-bold transition">Buka</button>
-                        <button onclick="setManualStoreStatus(false)" id="admin-btn-force-close" class="px-3 py-1.5 rounded-lg text-xs font-bold transition">Tutup</button>
-                        <button onclick="setManualStoreStatus('auto')" id="admin-btn-force-auto" class="px-3 py-1.5 rounded-lg text-xs font-bold transition">Auto</button>
+                    <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg shrink-0">
+                        <button onclick="setManualStoreStatus(true)" id="admin-btn-force-open" class="px-2.5 py-1 rounded-md text-[10px] font-bold transition">Buka</button>
+                        <button onclick="setManualStoreStatus(false)" id="admin-btn-force-close" class="px-2.5 py-1 rounded-md text-[10px] font-bold transition">Tutup</button>
+                        <button onclick="setManualStoreStatus('auto')" id="admin-btn-force-auto" class="px-2.5 py-1 rounded-md text-[10px] font-bold transition">Auto</button>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end text-[11px]">
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">Jam Buka Dapur</label>
-                        <input type="time" id="store-open-time" value="08:00" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold">
+                        <input type="time" id="store-open-time" value="08:00" class="w-full px-2 py-1.5 rounded-lg border border-slate-200 font-bold text-[11px]">
                     </div>
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">Jam Tutup Dapur</label>
-                        <input type="time" id="store-close-time" value="20:00" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold">
+                        <input type="time" id="store-close-time" value="20:00" class="w-full px-2 py-1.5 rounded-lg border border-slate-200 font-bold text-[11px]">
                     </div>
                     <div>
-                        <button onclick="saveStoreHours()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-xl transition">Simpan Jam</button>
+                        <button onclick="saveStoreHours()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-1.5 rounded-lg transition text-[11px]">Simpan Jam</button>
                     </div>
                 </div>
             </div>
 
             <!-- Admin Navigation Tabs -->
-            <div class="flex border-b border-slate-200 gap-2 sm:gap-6 overflow-x-auto text-xs sm:text-sm no-scrollbar">
-                <button onclick="switchAdminTab('orders')" id="tab-btn-orders" class="pb-2.5 font-extrabold text-orange-600 border-b-2 border-orange-600 transition shrink-0">Pesanan Masuk</button>
-                <button onclick="switchAdminTab('recap')" id="tab-btn-recap" class="pb-2.5 font-extrabold text-slate-400 hover:text-slate-700 transition shrink-0">Rekapan Bulanan</button>
-                <button onclick="switchAdminTab('menu')" id="tab-btn-menu" class="pb-2.5 font-extrabold text-slate-400 hover:text-slate-700 transition shrink-0">Stok & Harga Menu</button>
-                <button onclick="switchAdminTab('settings')" id="tab-btn-settings" class="pb-2.5 font-extrabold text-slate-400 hover:text-slate-700 transition shrink-0">Divisi & Lokasi</button>
+            <div class="flex border-b border-slate-200 gap-2 sm:gap-4 overflow-x-auto text-[11px] no-scrollbar">
+                <button onclick="switchAdminTab('orders')" id="tab-btn-orders" class="compact-tab font-extrabold text-orange-600 border-b-2 border-orange-600 transition shrink-0">Pesanan Masuk</button>
+                <button onclick="switchAdminTab('recap')" id="tab-btn-recap" class="compact-tab font-extrabold text-slate-400 hover:text-slate-700 transition shrink-0">Rekapan Bulanan</button>
+                <button onclick="switchAdminTab('menu')" id="tab-btn-menu" class="compact-tab font-extrabold text-slate-400 hover:text-slate-700 transition shrink-0">Stok & Harga Menu</button>
+                <button onclick="switchAdminTab('settings')" id="tab-btn-settings" class="compact-tab font-extrabold text-slate-400 hover:text-slate-700 transition shrink-0">Divisi & Lokasi</button>
             </div>
 
             <!-- TAB 1: Orders -->
-            <div id="admin-tab-orders" class="space-y-4">
+            <div id="admin-tab-orders" class="space-y-3">
                 <div class="flex justify-between items-center">
-                    <h3 class="font-extrabold text-sm sm:text-lg text-slate-900">Antrean Pesanan Realtime</h3>
-                    <button onclick="resetOrders()" class="text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100">Bersihkan</button>
+                    <h3 class="font-extrabold text-xs sm:text-sm text-slate-900">Antrean Pesanan Realtime</h3>
+                    <button onclick="resetOrders()" class="text-[10px] font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-lg border border-red-100">Bersihkan</button>
                 </div>
-                <div id="admin-orders-container" class="space-y-3"></div>
+                <div id="admin-orders-container" class="space-y-2"></div>
             </div>
 
             <!-- TAB 2: Recap -->
-            <div id="admin-tab-recap" class="hidden space-y-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div id="admin-tab-recap" class="hidden space-y-3">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                     <div>
-                        <h3 class="font-extrabold text-sm sm:text-lg text-slate-900">Rekapan Pesanan Pelanggan (Matriks Tanggal)</h3>
+                        <h3 class="font-extrabold text-xs sm:text-sm text-slate-900">Rekapan Pesanan Pelanggan (Matriks Tanggal)</h3>
                     </div>
-                    <button onclick="exportRecapCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold">Export CSV</button>
+                    <div class="flex gap-2">
+                        <button onclick="exportRecapCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold">Export CSV</button>
+                        <button onclick="exportRecapExcel()" class="bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-excel"></i> Export Excel
+                        </button>
+                    </div>
                 </div>
-                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
                     <div class="overflow-x-auto max-h-[500px]">
-                        <table class="w-full text-left border-collapse text-[11px] sm:text-xs whitespace-nowrap">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
                             <thead class="bg-emerald-700 text-white sticky top-0 z-20">
                                 <tr id="recap-header-row">
-                                    <th class="p-2.5 border border-emerald-600 text-center w-10 font-bold sticky-col-1 bg-emerald-700">No</th>
-                                    <th class="p-2.5 border border-emerald-600 font-bold min-w-[120px] sticky-col-2 bg-emerald-700">Nama</th>
-                                    <th class="p-2.5 border border-emerald-600 font-bold min-w-[130px]">Department</th>
-                                    <th class="p-2.5 border border-emerald-600 font-bold min-w-[140px]">Lokasi Makan</th>
-                                    <th id="recap-total-th" class="p-2.5 border border-emerald-600 text-center font-extrabold bg-emerald-900 min-w-[70px]">Total (Rb)</th>
+                                    <th class="compact-th border border-emerald-600 text-center w-8 font-bold sticky-col-1 bg-emerald-700">No</th>
+                                    <th class="compact-th border border-emerald-600 font-bold min-w-[110px] sticky-col-2 bg-emerald-700">Nama</th>
+                                    <th class="compact-th border border-emerald-600 font-bold min-w-[110px]">Department</th>
+                                    <th class="compact-th border border-emerald-600 font-bold min-w-[120px]">Lokasi Makan</th>
+                                    <th id="recap-total-th" class="compact-th border border-emerald-600 text-center font-extrabold bg-emerald-900 min-w-[60px]">Total (Rb)</th>
                                 </tr>
                             </thead>
                             <tbody id="recap-table-body" class="divide-y divide-slate-200 text-slate-700 font-medium"></tbody>
@@ -223,37 +230,37 @@
             </div>
 
             <!-- TAB 4: Pengaturan -->
-            <div id="admin-tab-settings" class="hidden space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-3">
-                        <h3 class="font-extrabold text-sm sm:text-base text-slate-900">Daftar Divisi / Department</h3>
+            <div id="admin-tab-settings" class="hidden space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm p-3 space-y-2">
+                        <h3 class="font-extrabold text-xs text-slate-900">Daftar Divisi / Department</h3>
                         <div class="flex gap-2">
-                            <input id="new-departments" type="text" maxlength="40" placeholder="Tambah divisi baru..." onkeydown="if(event.key==='Enter')addListItem('departments')" class="flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-300 font-bold text-sm">
-                            <button onclick="addListItem('departments')" class="shrink-0 bg-orange-600 text-white font-bold px-4 rounded-xl text-sm">Tambah</button>
+                            <input id="new-departments" type="text" maxlength="40" placeholder="Tambah divisi baru..." onkeydown="if(event.key==='Enter')addListItem('departments')" class="flex-1 min-w-0 compact-input rounded-lg border border-slate-300 font-bold">
+                            <button onclick="addListItem('departments')" class="shrink-0 bg-orange-600 text-white font-bold px-3 rounded-lg text-[11px]">Tambah</button>
                         </div>
                         <div id="list-departments" class="divide-y divide-slate-100"></div>
                     </div>
-                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-3">
-                        <h3 class="font-extrabold text-sm sm:text-base text-slate-900">Daftar Lokasi Makan</h3>
+                    <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm p-3 space-y-2">
+                        <h3 class="font-extrabold text-xs text-slate-900">Daftar Lokasi Makan</h3>
                         <div class="flex gap-2">
-                            <input id="new-locations" type="text" maxlength="40" placeholder="Tambah lokasi baru..." onkeydown="if(event.key==='Enter')addListItem('locations')" class="flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-300 font-bold text-sm">
-                            <button onclick="addListItem('locations')" class="shrink-0 bg-orange-600 text-white font-bold px-4 rounded-xl text-sm">Tambah</button>
+                            <input id="new-locations" type="text" maxlength="40" placeholder="Tambah lokasi baru..." onkeydown="if(event.key==='Enter')addListItem('locations')" class="flex-1 min-w-0 compact-input rounded-lg border border-slate-300 font-bold">
+                            <button onclick="addListItem('locations')" class="shrink-0 bg-orange-600 text-white font-bold px-3 rounded-lg text-[11px]">Tambah</button>
                         </div>
                         <div id="list-locations" class="divide-y divide-slate-100"></div>
                     </div>
                 </div>
-                <form onsubmit="changePassword(event)" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-3 max-w-md">
-                    <h3 class="font-extrabold text-sm sm:text-base text-slate-900"><i class="fa-solid fa-lock text-orange-600"></i> Ganti Password Admin</h3>
-                    <input id="pw-old" type="password" autocomplete="current-password" required placeholder="Password lama" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-sm">
-                    <input id="pw-new" type="password" autocomplete="new-password" required minlength="4" placeholder="Password baru (min. 4 karakter)" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-sm">
-                    <input id="pw-confirm" type="password" autocomplete="new-password" required placeholder="Ulangi password baru" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-sm">
-                    <button type="submit" class="w-full bg-slate-900 text-white font-bold py-2.5 rounded-xl text-sm">Simpan Password</button>
+                <form onsubmit="changePassword(event)" class="bg-white rounded-xl border border-slate-200/80 shadow-sm p-3 space-y-2 max-w-md">
+                    <h3 class="font-extrabold text-xs text-slate-900"><i class="fa-solid fa-lock text-orange-600"></i> Ganti Password Admin</h3>
+                    <input id="pw-old" type="password" autocomplete="current-password" required placeholder="Password lama" class="w-full compact-input rounded-lg border border-slate-300 font-bold">
+                    <input id="pw-new" type="password" autocomplete="new-password" required minlength="4" placeholder="Password baru (min. 4 karakter)" class="w-full compact-input rounded-lg border border-slate-300 font-bold">
+                    <input id="pw-confirm" type="password" autocomplete="new-password" required placeholder="Ulangi password baru" class="w-full compact-input rounded-lg border border-slate-300 font-bold">
+                    <button type="submit" class="w-full bg-slate-900 text-white font-bold py-2 rounded-lg text-[11px]">Simpan Password</button>
                 </form>
             </div>
 
             <!-- TAB 3: Menu -->
-            <div id="admin-tab-menu" class="hidden space-y-4">
-                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div id="admin-tab-menu" class="hidden space-y-3">
+                <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
                         <div id="admin-menu-table" class="divide-y divide-slate-100"></div>
                     </div>
@@ -263,52 +270,52 @@
     </main>
 
     <!-- Mobile Cart Bar -->
-    <div id="mobile-cart-bar" class="fixed bottom-0 inset-x-0 bg-slate-900 text-white border-t-4 border-orange-500 p-3.5 z-40 sm:hidden shadow-2xl">
+    <div id="mobile-cart-bar" class="fixed bottom-0 inset-x-0 bg-slate-900 text-white border-t-4 border-orange-500 p-2.5 z-40 sm:hidden shadow-2xl">
         <div class="flex items-center justify-between gap-2 max-w-7xl mx-auto">
-            <div class="flex items-center gap-3" onclick="toggleCartDrawer()">
+            <div class="flex items-center gap-2.5" onclick="toggleCartDrawer()">
                 <div class="relative">
-                    <div class="w-12 h-12 rounded-2xl bg-orange-600 text-white flex items-center justify-center text-2xl font-black shadow-md border-2 border-white">
+                    <div class="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center text-lg font-black shadow-md border-2 border-white">
                         <i class="fa-solid fa-cart-shopping"></i>
                     </div>
-                    <span id="mobile-cart-badge" class="absolute -top-2 -right-2 bg-amber-400 text-slate-950 text-xs font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">0</span>
+                    <span id="mobile-cart-badge" class="absolute -top-1.5 -right-1.5 bg-amber-400 text-slate-950 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">0</span>
                 </div>
                 <div>
-                    <p class="text-[11px] font-black uppercase text-amber-400 tracking-wider">TOTAL BELANJA</p>
-                    <p id="mobile-cart-total" class="font-black text-lg text-white">Rp 0</p>
+                    <p class="text-[9px] font-black uppercase text-amber-400 tracking-wider">TOTAL BELANJA</p>
+                    <p id="mobile-cart-total" class="font-black text-sm text-white">Rp 0</p>
                 </div>
             </div>
-            <button onclick="openCheckoutModal()" id="mobile-checkout-btn" disabled class="bg-orange-600 disabled:bg-slate-700 text-white font-black px-5 py-3.5 rounded-2xl text-xs sm:text-sm">PESAN</button>
+            <button onclick="openCheckoutModal()" id="mobile-checkout-btn" disabled class="bg-orange-600 disabled:bg-slate-700 text-white font-black px-4 py-2.5 rounded-xl text-[11px]">PESAN</button>
         </div>
     </div>
 
     <!-- Modals & Drawers -->
     <div id="cart-drawer" onclick="if(event.target===this)closeCartDrawer()" class="fixed inset-0 z-50 bg-slate-900/80 flex justify-end opacity-0 pointer-events-none transition-opacity duration-300">
         <div id="cart-panel" class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl transform translate-x-full transition-transform duration-300">
-            <div class="p-4 border-b-2 border-slate-200 flex items-center justify-between bg-slate-100">
-                <h4 class="font-black text-lg text-slate-900">Keranjang Belanja</h4>
-                <button onclick="toggleCartDrawer()" class="w-10 h-10 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold">✕</button>
+            <div class="p-3 border-b-2 border-slate-200 flex items-center justify-between bg-slate-100">
+                <h4 class="font-black text-sm text-slate-900">Keranjang Belanja</h4>
+                <button onclick="toggleCartDrawer()" class="w-8 h-8 rounded-lg bg-white border border-slate-300 text-slate-700 font-bold">✕</button>
             </div>
-            <div id="cart-items" class="flex-grow overflow-y-auto p-4 divide-y-2 divide-slate-100"></div>
-            <div class="p-4 border-t-2 border-slate-200 bg-slate-50 space-y-3">
-                <div class="flex justify-between font-black text-lg text-slate-900">
+            <div id="cart-items" class="flex-grow overflow-y-auto p-3 divide-y-2 divide-slate-100"></div>
+            <div class="p-3 border-t-2 border-slate-200 bg-slate-50 space-y-2">
+                <div class="flex justify-between font-black text-sm text-slate-900">
                     <span>Total Bayar:</span>
-                    <span id="cart-total" class="text-orange-600 text-xl">Rp 0</span>
+                    <span id="cart-total" class="text-orange-600 text-base">Rp 0</span>
                 </div>
-                <button onclick="openCheckoutModal()" id="checkout-btn" disabled class="w-full bg-orange-600 disabled:bg-slate-300 text-white font-black py-4 rounded-2xl">LANJUT ISI NAMA</button>
+                <button onclick="openCheckoutModal()" id="checkout-btn" disabled class="w-full bg-orange-600 disabled:bg-slate-300 text-white font-black py-3 rounded-xl text-[12px]">LANJUT ISI NAMA</button>
             </div>
         </div>
     </div>
 
     <div id="checkout-modal" onclick="if(event.target===this)closeCheckoutModal()" class="fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div id="checkout-panel" class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[92dvh] flex flex-col shadow-2xl overflow-hidden transform translate-y-full transition-transform duration-300">
-            <div class="p-4 border-b-2 border-slate-200 flex items-center justify-between bg-orange-50">
-                <h4 class="font-black text-lg text-slate-900">Formulir Pesanan</h4>
-                <button onclick="closeCheckoutModal()" class="w-10 h-10 rounded-xl bg-white border border-slate-300">✕</button>
+        <div id="checkout-panel" class="bg-white rounded-t-2xl sm:rounded-2xl max-w-lg w-full max-h-[92dvh] flex flex-col shadow-2xl overflow-hidden transform translate-y-full transition-transform duration-300">
+            <div class="p-3 border-b-2 border-slate-200 flex items-center justify-between bg-orange-50">
+                <h4 class="font-black text-sm text-slate-900">Formulir Pesanan</h4>
+                <button onclick="closeCheckoutModal()" class="w-8 h-8 rounded-lg bg-white border border-slate-300">✕</button>
             </div>
-            <form id="checkout-form" onsubmit="submitOrder(event)" class="p-4 sm:p-6 overflow-y-auto space-y-4">
+            <form id="checkout-form" onsubmit="submitOrder(event)" class="p-3 sm:p-4 overflow-y-auto space-y-3">
                 <div>
-                    <label class="block text-sm font-black text-slate-900 mb-2">Department *</label>
-                    <select id="buyer-department" required class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 font-bold bg-white">
+                    <label class="block text-[11px] font-black text-slate-900 mb-1">Department *</label>
+                    <select id="buyer-department" required class="w-full compact-input rounded-lg border-2 border-slate-300 font-bold bg-white">
                         <option value="" disabled selected>-- Pilih Department --</option>
                         <option value="Produksi">Produksi</option>
                         <option value="QC">QC</option>
@@ -317,8 +324,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-black text-slate-900 mb-2">Lokasi Makan *</label>
-                    <select id="buyer-location" required class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 font-bold bg-white">
+                    <label class="block text-[11px] font-black text-slate-900 mb-1">Lokasi Makan *</label>
+                    <select id="buyer-location" required class="w-full compact-input rounded-lg border-2 border-slate-300 font-bold bg-white">
                         <option value="" disabled selected>-- Pilih Lokasi --</option>
                         <option value="Kantin Utama">Kantin Utama</option>
                         <option value="Mess Karyawan">Mess Karyawan</option>
@@ -326,25 +333,25 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-black text-slate-900 mb-2">Nama Lengkap *</label>
-                    <input type="text" id="buyer-name" required maxlength="60" placeholder="Nama Anda..." class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 font-bold">
+                    <label class="block text-[11px] font-black text-slate-900 mb-1">Nama Lengkap *</label>
+                    <input type="text" id="buyer-name" required maxlength="60" placeholder="Nama Anda..." class="w-full compact-input rounded-lg border-2 border-slate-300 font-bold">
                 </div>
-                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-2xl shadow-lg">KIRIM PESANAN</button>
+                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-3 rounded-xl shadow-lg text-[12px]">KIRIM PESANAN</button>
             </form>
         </div>
     </div>
 
     <div id="status-modal" onclick="if(event.target===this)toggleOrderStatusModal()" class="fixed inset-0 z-50 bg-slate-900/80 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-4 text-center shadow-2xl">
             <div id="status-content"></div>
         </div>
     </div>
 
     <div id="login-modal" onclick="if(event.target===this)closeLoginModal()" class="fixed inset-0 z-50 bg-slate-900/80 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl"><div id="login-content"></div></div>
+        <div class="bg-white rounded-2xl max-w-sm w-full p-4 shadow-2xl"><div id="login-content"></div></div>
     </div>
 
-    <div id="toast" class="pointer-events-none max-w-[calc(100vw-2rem)] fixed bottom-24 right-4 z-50 bg-slate-950 text-white px-5 py-3.5 rounded-2xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 text-xs font-black border border-amber-400">
+    <div id="toast" class="pointer-events-none max-w-[calc(100vw-2rem)] fixed bottom-20 right-3 z-50 bg-slate-950 text-white px-4 py-2.5 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 text-[11px] font-black border border-amber-400">
         <span id="toast-message">Notifikasi</span>
     </div>
 
@@ -435,16 +442,16 @@
         function closeLoginModal() { $('login-modal').classList.add('opacity-0', 'pointer-events-none'); }
 
         function renderLoginContent(msg = '') {
-            const setup = !adminHash, inp = 'w-full px-4 py-3 rounded-xl border-2 border-slate-300 font-bold';
-            $('login-content').innerHTML = `<h4 class="font-black text-lg mb-1">${setup ? 'Buat Password Admin' : 'Login Admin'}</h4>
-                <p class="text-xs text-slate-600 font-bold mb-3">${setup ? 'Belum ada password. Buat password untuk melindungi Mode Dapur.' : 'Masukkan password untuk membuka Mode Dapur.'}</p>
-                <form onsubmit="submitLogin(event)" class="space-y-3">
+            const setup = !adminHash, inp = 'w-full compact-input rounded-lg border-2 border-slate-300 font-bold';
+            $('login-content').innerHTML = `<h4 class="font-black text-sm mb-1">${setup ? 'Buat Password Admin' : 'Login Admin'}</h4>
+                <p class="text-[11px] text-slate-600 font-bold mb-2">${setup ? 'Belum ada password. Buat password untuk melindungi Mode Dapur.' : 'Masukkan password untuk membuka Mode Dapur.'}</p>
+                <form onsubmit="submitLogin(event)" class="space-y-2">
                     <input id="login-pw" type="password" required autocomplete="${setup ? 'new-password' : 'current-password'}" placeholder="Password" class="${inp}">
                     ${setup ? `<input id="login-pw2" type="password" required autocomplete="new-password" placeholder="Ulangi password" class="${inp}">` : ''}
-                    <p class="text-sm font-bold text-red-600">${msg}</p>
+                    <p class="text-[11px] font-bold text-red-600">${msg}</p>
                     <div class="flex gap-2">
-                        <button type="button" onclick="closeLoginModal()" class="flex-1 py-3 rounded-xl border-2 border-slate-300 font-bold">Batal</button>
-                        <button type="submit" class="flex-1 py-3 rounded-xl bg-slate-900 text-white font-black">${setup ? 'Simpan & Masuk' : 'Masuk'}</button>
+                        <button type="button" onclick="closeLoginModal()" class="flex-1 py-2 rounded-lg border-2 border-slate-300 font-bold text-[11px]">Batal</button>
+                        <button type="submit" class="flex-1 py-2 rounded-lg bg-slate-900 text-white font-black text-[11px]">${setup ? 'Simpan & Masuk' : 'Masuk'}</button>
                     </div></form>`;
             setTimeout(() => { const i = $('login-pw'); if (i) i.focus(); }, 100);
         }
@@ -491,11 +498,11 @@
         function renderSettings() {
             Object.keys(LIST_META).forEach(k => {
                 $(`list-${k}`).innerHTML = lists[k].map((v, i) => `
-                    <div class="flex items-center justify-between gap-2 py-2">
-                        <span class="font-bold text-sm min-w-0 break-words">${esc(v)}</span>
-                        <div class="flex gap-1.5 shrink-0">
-                            <button onclick="editListItem('${k}', ${i})" class="text-xs font-bold bg-slate-100 text-slate-800 px-3 py-2 rounded-lg">Edit</button>
-                            <button onclick="deleteListItem('${k}', ${i})" class="text-xs font-bold bg-red-50 text-red-600 px-3 py-2 rounded-lg">Hapus</button>
+                    <div class="flex items-center justify-between gap-2 py-1.5">
+                        <span class="font-bold text-[11px] min-w-0 break-words">${esc(v)}</span>
+                        <div class="flex gap-1 shrink-0">
+                            <button onclick="editListItem('${k}', ${i})" class="text-[10px] font-bold bg-slate-100 text-slate-800 px-2 py-1.5 rounded-md">Edit</button>
+                            <button onclick="deleteListItem('${k}', ${i})" class="text-[10px] font-bold bg-red-50 text-red-600 px-2 py-1.5 rounded-md">Hapus</button>
                         </div>
                     </div>`).join('');
             });
@@ -550,8 +557,8 @@
             ['orders', 'recap', 'menu', 'settings'].forEach(t => {
                 $(`admin-tab-${t}`).classList.toggle('hidden', t !== tabName);
                 $(`tab-btn-${t}`).className = t === tabName
-                    ? "pb-2.5 font-extrabold text-orange-600 border-b-2 border-orange-600 transition shrink-0"
-                    : "pb-2.5 font-extrabold text-slate-400 hover:text-slate-700 transition shrink-0";
+                    ? "compact-tab font-extrabold text-orange-600 border-b-2 border-orange-600 transition shrink-0"
+                    : "compact-tab font-extrabold text-slate-400 hover:text-slate-700 transition shrink-0";
             });
             if (tabName === 'orders') renderAdminOrders();
             if (tabName === 'recap') renderRecapTable();
@@ -568,19 +575,19 @@
             renderAdminDashboard();
             const c = $('admin-orders-container');
             if (!ordersList.length) {
-                c.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-slate-500 font-bold">Belum ada pesanan</div>`;
+                c.innerHTML = `<div class="bg-white rounded-xl p-4 text-center text-slate-500 font-bold text-[11px]">Belum ada pesanan</div>`;
                 return;
             }
             c.innerHTML = ordersList.map(o => {
                 const next = STATUSES[STATUSES.indexOf(o.status) + 1];
                 const jam = new Date(o.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                return `<div class="bg-white rounded-xl border p-4 shadow-sm space-y-2">
-                    <div class="flex justify-between gap-2 font-black break-words"><span>#${o.id} - ${esc(o.name)}</span><span>${fmt(o.total)}</span></div>
-                    <p class="text-xs text-slate-600 font-bold">${esc(o.department)} | ${esc(o.location)} | ${jam}</p>
-                    <ul class="divide-y divide-slate-100 border-t border-slate-100">${o.items.map(i => `<li class="flex justify-between gap-3 py-1.5 text-sm"><span class="font-bold min-w-0 break-words">${esc(i.name)} <span class="text-orange-600">x${i.qty}</span></span><span class="text-slate-500 shrink-0">${fmt(i.price * i.qty)}</span></li>`).join('')}</ul>
-                    <div class="flex items-center justify-between gap-2 pt-1">
-                        <span class="text-xs font-black px-2 py-1 rounded bg-amber-100 text-amber-900">${o.status}</span>
-                        ${next ? `<button onclick="advanceOrder(${o.id})" class="text-xs font-bold bg-slate-900 text-white px-3 py-1.5 rounded-lg">Tandai ${next}</button>` : ''}
+                return `<div class="bg-white rounded-lg border p-2.5 shadow-sm space-y-1.5">
+                    <div class="flex justify-between gap-2 font-black text-[11px] break-words"><span>#${o.id} - ${esc(o.name)}</span><span>${fmt(o.total)}</span></div>
+                    <p class="text-[10px] text-slate-600 font-bold">${esc(o.department)} | ${esc(o.location)} | ${jam}</p>
+                    <ul class="divide-y divide-slate-100 border-t border-slate-100">${o.items.map(i => `<li class="flex justify-between gap-3 py-1 text-[11px]"><span class="font-bold min-w-0 break-words">${esc(i.name)} <span class="text-orange-600">x${i.qty}</span></span><span class="text-slate-500 shrink-0">${fmt(i.price * i.qty)}</span></li>`).join('')}</ul>
+                    <div class="flex items-center justify-between gap-2 pt-0.5">
+                        <span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-900">${o.status}</span>
+                        ${next ? `<button onclick="advanceOrder(${o.id})" class="text-[10px] font-bold bg-slate-900 text-white px-2.5 py-1 rounded-md">Tandai ${next}</button>` : ''}
                     </div></div>`;
             }).join('');
         }
@@ -613,15 +620,16 @@
         function renderRecapTable() {
             const rows = getRecapRows();
             $('recap-table-body').innerHTML = rows.length ? rows.map((r, i) => `<tr>
-                <td class="p-2 text-center border border-slate-200 sticky-col-1 bg-white">${i + 1}</td>
-                <td class="p-2 border border-slate-200 font-bold sticky-col-2 bg-white">${esc(r.name)}</td>
-                <td class="p-2 border border-slate-200">${esc(r.department)}</td>
-                <td class="p-2 border border-slate-200">${esc(r.location)}</td>
-                ${r.days.map(v => `<td class="p-1.5 border border-slate-200 text-center">${v ? v / 1000 : ''}</td>`).join('')}
-                <td class="p-2 border border-slate-200 text-center font-extrabold bg-emerald-50">${r.total / 1000}</td></tr>`).join('')
-                : `<tr><td colspan="36" class="p-4 text-center text-slate-400 font-bold">Belum ada data rekap bulan ini.</td></tr>`;
+                <td class="compact-td text-center border border-slate-200 sticky-col-1 bg-white">${i + 1}</td>
+                <td class="compact-td border border-slate-200 font-bold sticky-col-2 bg-white">${esc(r.name)}</td>
+                <td class="compact-td border border-slate-200">${esc(r.department)}</td>
+                <td class="compact-td border border-slate-200">${esc(r.location)}</td>
+                ${r.days.map(v => `<td class="compact-td border border-slate-200 text-center">${v ? v / 1000 : ''}</td>`).join('')}
+                <td class="compact-td border border-slate-200 text-center font-extrabold bg-emerald-50">${r.total / 1000}</td></tr>`).join('')
+                : `<tr><td colspan="36" class="p-3 text-center text-slate-400 font-bold text-[11px]">Belum ada data rekap bulan ini.</td></tr>`;
         }
 
+        /* ========== EXPORT CSV ========== */
         function exportRecapCSV() {
             const rows = getRecapRows();
             if (!rows.length) { showToast('Belum ada data untuk diexport'); return; }
@@ -636,16 +644,132 @@
             setTimeout(() => URL.revokeObjectURL(a.href), 1000);
         }
 
+        /* ========== EXPORT EXCEL (.xls dengan border & header hijau) ========== */
+        function exportRecapExcel() {
+            const rows = getRecapRows();
+            if (!rows.length) { showToast('Belum ada data untuk diexport'); return; }
+            const now = new Date();
+            const monthLabel = now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+            const dayHeaders = Array.from({ length: 31 }, (_, i) => `<th class="hdr">${i + 1}</th>`).join('');
+
+            // Style inline untuk Excel (dipakai dalam .xls HTML)
+            const styleBlock = `
+                <style>
+                    table { border-collapse: collapse; font-family: Calibri, Arial, sans-serif; }
+                    th, td {
+                        border: 1px solid #000000 !important;
+                        padding: 3px 5px;
+                        font-size: 11px;
+                        mso-number-format: "\\@";
+                    }
+                    th.hdr {
+                        background-color: #15803d !important;
+                        color: #ffffff !important;
+                        font-weight: bold;
+                        text-align: center;
+                    }
+                    th.hdr-total {
+                        background-color: #14532d !important;
+                        color: #ffffff !important;
+                        font-weight: bold;
+                        text-align: center;
+                    }
+                    td.total {
+                        background-color: #dcfce7 !important;
+                        font-weight: bold;
+                        text-align: center;
+                    }
+                    td.center { text-align: center; }
+                    td.name { font-weight: bold; }
+                    .title {
+                        font-size: 14px;
+                        font-weight: bold;
+                        background-color: #15803d;
+                        color: #ffffff;
+                        text-align: center;
+                        padding: 6px;
+                        border: 1px solid #000000;
+                    }
+                </style>`;
+
+            const titleRow = `<tr><td class="title" colspan="${4 + 31 + 1}">REKAPAN WARTEG BAHARIKU - ${monthLabel.toUpperCase()}</td></tr>`;
+
+            const headRow = `<tr>
+                <th class="hdr">No</th>
+                <th class="hdr">Nama</th>
+                <th class="hdr">Department</th>
+                <th class="hdr">Lokasi Makan</th>
+                ${dayHeaders}
+                <th class="hdr-total">Total (Rp)</th>
+            </tr>`;
+
+            const bodyRows = rows.map((r, i) => `<tr>
+                <td class="center">${i + 1}</td>
+                <td class="name">${esc(r.name)}</td>
+                <td>${esc(r.department)}</td>
+                <td>${esc(r.location)}</td>
+                ${r.days.map(v => `<td class="center">${v || ''}</td>`).join('')}
+                <td class="total">${r.total}</td>
+            </tr>`).join('');
+
+            // Baris total keseluruhan
+            const grandTotal = rows.reduce((s, r) => s + r.total, 0);
+            const grandRow = `<tr>
+                <td class="total" colspan="4">GRAND TOTAL</td>
+                ${Array.from({ length: 31 }, () => `<td class="total"></td>`).join('')}
+                <td class="total">${grandTotal}</td>
+            </tr>`;
+
+            const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+                xmlns:x="urn:schemas-microsoft-com:office:excel"
+                xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="UTF-8">
+                    <!--[if gte mso 9]>
+                    <xml>
+                        <x:ExcelWorkbook>
+                            <x:ExcelWorksheets>
+                                <x:ExcelWorksheet>
+                                    <x:Name>Rekap Warteg</x:Name>
+                                    <x:WorksheetOptions>
+                                        <x:DisplayGridlines/>
+                                    </x:WorksheetOptions>
+                                </x:ExcelWorksheet>
+                            </x:ExcelWorksheets>
+                        </x:ExcelWorkbook>
+                    </xml>
+                    <![endif]-->
+                    ${styleBlock}
+                </head>
+                <body>
+                    <table>
+                        ${titleRow}
+                        ${headRow}
+                        ${bodyRows}
+                        ${grandRow}
+                    </table>
+                </body>
+            </html>`;
+
+            const blob = new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `rekap-warteg-${now.toISOString().slice(0, 7)}.xls`;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+            showToast('Excel berhasil diunduh');
+        }
+
         function renderAdminMenuTable() {
             $('admin-menu-table').innerHTML = menuItems.map(item => `
-                <div class="p-3 space-y-2">
+                <div class="p-2 space-y-1.5">
                     <div class="flex items-center justify-between gap-2">
-                        <span class="font-bold text-sm min-w-0 break-words">${esc(item.name)}</span>
-                        <span class="shrink-0 px-2 py-1 rounded text-xs font-bold ${item.available ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}">${item.available ? 'Tersedia' : 'Habis'}</span>
+                        <span class="font-bold text-[11px] min-w-0 break-words">${esc(item.name)}</span>
+                        <span class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ${item.available ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}">${item.available ? 'Tersedia' : 'Habis'}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <input type="number" min="0" step="500" value="${item.price}" onchange="updatePrice(${item.id}, this.value)" class="flex-1 min-w-0 px-3 py-2 border border-slate-300 rounded-lg font-bold text-sm">
-                        <button onclick="toggleItemAvailability(${item.id})" class="shrink-0 text-xs bg-slate-100 text-slate-800 px-3 py-2.5 rounded-lg font-bold">${item.available ? 'Tandai Habis' : 'Tandai Tersedia'}</button>
+                    <div class="flex items-center gap-1.5">
+                        <input type="number" min="0" step="500" value="${item.price}" onchange="updatePrice(${item.id}, this.value)" class="flex-1 min-w-0 compact-input border border-slate-300 rounded-md font-bold">
+                        <button onclick="toggleItemAvailability(${item.id})" class="shrink-0 text-[10px] bg-slate-100 text-slate-800 px-2 py-1.5 rounded-md font-bold">${item.available ? 'Tandai Habis' : 'Tandai Tersedia'}</button>
                     </div>
                 </div>`).join('');
         }
@@ -702,16 +826,16 @@
             };
             const t = toneMap[tone];
 
-            $('header-store-badge').className = `hidden sm:inline-flex items-center gap-1.5 border-2 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black ${t.badge}`;
-            $('header-store-dot').className = `w-3 h-3 rounded-full animate-pulse ${t.dot}`;
+            $('header-store-badge').className = `hidden sm:inline-flex items-center gap-1.5 border-2 px-2.5 py-1 rounded-lg text-[11px] font-black ${t.badge}`;
+            $('header-store-dot').className = `w-2.5 h-2.5 rounded-full animate-pulse ${t.dot}`;
             $('header-store-text').className = `font-black ${t.text}`;
             $('header-store-text').innerText = open ? 'WARTEG BUKA' : 'WARTEG TUTUP';
 
-            $('hero-status-tag').className = `block sm:inline-flex items-center gap-2 border-2 font-black text-xs sm:text-sm px-3 py-1.5 rounded-xl uppercase tracking-wider mb-2 sm:mb-3 ${t.heroTag}`;
-            $('hero-status-dot').className = `inline-block w-3 h-3 rounded-full animate-pulse ${t.heroDot}`;
+            $('hero-status-tag').className = `block sm:inline-flex items-center gap-2 border-2 font-black text-[10px] px-2 py-1 rounded-lg uppercase tracking-wider mb-1.5 sm:mb-2 ${t.heroTag}`;
+            $('hero-status-dot').className = `inline-block w-2.5 h-2.5 rounded-full animate-pulse ${t.heroDot}`;
 
-            $('admin-stat-status-text').className = `text-base sm:text-2xl font-extrabold mt-0.5 ${t.statText}`;
-            $('admin-stat-status-icon').className = `w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-lg sm:text-xl font-bold shrink-0 ${t.statIconBg}`;
+            $('admin-stat-status-text').className = `text-sm font-extrabold mt-0.5 ${t.statText}`;
+            $('admin-stat-status-icon').className = `w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${t.statIconBg}`;
         }
 
         function updateStoreStatusUI() {
@@ -730,7 +854,7 @@
             $('admin-stat-status-icon').innerHTML = `<i class="fa-solid ${open ? 'fa-door-open' : 'fa-door-closed'}"></i>`;
 
             [['admin-btn-force-open', true], ['admin-btn-force-close', false], ['admin-btn-force-auto', 'auto']].forEach(([id, v]) => {
-                $(id).className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition ' + (storeConfig.manualOverride === v ? 'bg-slate-900 text-white' : 'text-slate-600');
+                $(id).className = 'px-2.5 py-1 rounded-md text-[10px] font-bold transition ' + (storeConfig.manualOverride === v ? 'bg-slate-900 text-white' : 'text-slate-600');
             });
             renderMenu();
         }
@@ -739,11 +863,11 @@
             const open = isStoreOpen();
             $('menu-counter').innerText = `${menuItems.filter(i => i.available).length} Pilihan Menu`;
             $('menu-grid').innerHTML = menuItems.map(item => {
-                const btn = !item.available ? `<button disabled class="w-full bg-slate-200 text-slate-500 font-bold py-2 rounded-lg text-sm">Habis</button>`
-                    : open ? `<button onclick="addToCart(${item.id})" class="w-full bg-orange-600 text-white font-black py-2 rounded-lg text-sm">TAMBAH</button>`
-                    : `<button disabled class="w-full bg-slate-200 text-slate-500 font-bold py-2 rounded-lg text-sm">Tutup</button>`;
-                return `<div class="bg-white rounded-xl border p-4 shadow-sm flex flex-col justify-between gap-3 ${item.available ? '' : 'opacity-60'}">
-                    <div><h4 class="font-black text-slate-900">${esc(item.name)}</h4><p class="text-orange-600 font-black">${fmt(item.price)}</p></div>${btn}</div>`;
+                const btn = !item.available ? `<button disabled class="w-full bg-slate-200 text-slate-500 font-bold py-1.5 rounded-md text-[11px]">Habis</button>`
+                    : open ? `<button onclick="addToCart(${item.id})" class="w-full bg-orange-600 text-white font-black py-1.5 rounded-md text-[11px]">TAMBAH</button>`
+                    : `<button disabled class="w-full bg-slate-200 text-slate-500 font-bold py-1.5 rounded-md text-[11px]">Tutup</button>`;
+                return `<div class="bg-white rounded-lg border p-2 shadow-sm flex flex-col justify-between gap-1.5 ${item.available ? '' : 'opacity-60'}">
+                    <div><h4 class="font-black text-slate-900 text-[11px] leading-tight">${esc(item.name)}</h4><p class="text-orange-600 font-black text-[11px] mt-0.5">${fmt(item.price)}</p></div>${btn}</div>`;
             }).join('');
         }
 
@@ -771,14 +895,14 @@
             $('cart-total').innerText = fmt(t); $('mobile-cart-total').innerText = fmt(t);
             $('checkout-btn').disabled = !cart.length; $('mobile-checkout-btn').disabled = !cart.length;
             $('cart-items').innerHTML = cart.length ? cart.map(i => `
-                <div class="py-3 flex items-center justify-between gap-2 text-sm font-bold">
-                    <div class="min-w-0"><p class="truncate">${esc(i.name)}</p><p class="text-xs text-slate-500">${fmt(i.price * i.qty)}</p></div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <button onclick="changeQty(${i.id}, -1)" class="w-8 h-8 rounded-lg bg-slate-100 font-black">−</button>
+                <div class="py-2 flex items-center justify-between gap-2 text-[11px] font-bold">
+                    <div class="min-w-0"><p class="truncate">${esc(i.name)}</p><p class="text-[10px] text-slate-500">${fmt(i.price * i.qty)}</p></div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button onclick="changeQty(${i.id}, -1)" class="w-7 h-7 rounded-md bg-slate-100 font-black">−</button>
                         <span class="w-5 text-center">${i.qty}</span>
-                        <button onclick="changeQty(${i.id}, 1)" class="w-8 h-8 rounded-lg bg-orange-600 text-white font-black">+</button>
+                        <button onclick="changeQty(${i.id}, 1)" class="w-7 h-7 rounded-md bg-orange-600 text-white font-black">+</button>
                     </div></div>`).join('')
-                : `<p class="py-8 text-center text-slate-400 font-bold">Keranjang masih kosong</p>`;
+                : `<p class="py-6 text-center text-slate-400 font-bold text-[11px]">Keranjang masih kosong</p>`;
         }
 
         function openCartDrawer() {
@@ -836,18 +960,18 @@
         function renderStatusContent(id) {
             const o = id ? ordersList.find(x => x.id === Number(id)) : null;
             let result = '';
-            if (id && !o) result = `<p class="text-sm font-bold text-red-600">Pesanan #${esc(id)} tidak ditemukan.</p>`;
-            if (o) result = `<div class="text-left bg-slate-50 rounded-xl p-3 space-y-1">
-                <p class="font-black">#${o.id} - ${esc(o.name)}</p>
-                <p class="text-xs text-slate-600">${o.items.map(i => `${esc(i.name)} x${i.qty}`).join(', ')}</p>
-                <p class="font-black text-orange-600">${fmt(o.total)}</p>
-                <p class="text-sm font-black">Status: <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900">${o.status}</span></p></div>`;
-            $('status-content').innerHTML = `<h4 class="font-black text-lg mb-3">Cek Status Pesanan</h4>
-                <div class="flex gap-2 mb-3">
-                    <input id="status-input" type="number" inputmode="numeric" value="${id || ''}" placeholder="Nomor pesanan" class="flex-1 px-3 py-2 rounded-xl border-2 border-slate-300 font-bold">
-                    <button onclick="renderStatusContent($('status-input').value)" class="px-4 rounded-xl bg-slate-900 text-white font-bold">Cari</button>
+            if (id && !o) result = `<p class="text-[11px] font-bold text-red-600">Pesanan #${esc(id)} tidak ditemukan.</p>`;
+            if (o) result = `<div class="text-left bg-slate-50 rounded-lg p-2.5 space-y-1">
+                <p class="font-black text-[11px]">#${o.id} - ${esc(o.name)}</p>
+                <p class="text-[10px] text-slate-600">${o.items.map(i => `${esc(i.name)} x${i.qty}`).join(', ')}</p>
+                <p class="font-black text-orange-600 text-[11px]">${fmt(o.total)}</p>
+                <p class="text-[11px] font-black">Status: <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900">${o.status}</span></p></div>`;
+            $('status-content').innerHTML = `<h4 class="font-black text-sm mb-2">Cek Status Pesanan</h4>
+                <div class="flex gap-1.5 mb-2">
+                    <input id="status-input" type="number" inputmode="numeric" value="${id || ''}" placeholder="Nomor pesanan" class="flex-1 compact-input rounded-lg border-2 border-slate-300 font-bold">
+                    <button onclick="renderStatusContent($('status-input').value)" class="px-3 rounded-lg bg-slate-900 text-white font-bold text-[11px]">Cari</button>
                 </div>${result}
-                <button onclick="toggleOrderStatusModal()" class="mt-4 w-full py-2.5 rounded-xl border-2 border-slate-300 font-bold">Tutup</button>`;
+                <button onclick="toggleOrderStatusModal()" class="mt-3 w-full py-2 rounded-lg border-2 border-slate-300 font-bold text-[11px]">Tutup</button>`;
         }
 
         function setManualStoreStatus(status) { storeConfig.manualOverride = status; saveState(); updateStoreStatusUI(); }
@@ -870,7 +994,7 @@
             loadState();
             loadLock();
             $('recap-total-th').insertAdjacentHTML('beforebegin',
-                Array.from({ length: 31 }, (_, i) => `<th class="p-1.5 border border-emerald-600 text-center w-8 font-semibold">${i + 1}</th>`).join(''));
+                Array.from({ length: 31 }, (_, i) => `<th class="compact-th border border-emerald-600 text-center w-7 font-semibold">${i + 1}</th>`).join(''));
             $('store-open-time').value = storeConfig.openTime;
             $('store-close-time').value = storeConfig.closeTime;
             renderCheckoutOptions(); updateStoreStatusUI(); updateCartUI();
