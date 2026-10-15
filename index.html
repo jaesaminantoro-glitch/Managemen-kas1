@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Translation Fixer — Perbaiki Hasil Translate Tanpa AI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🛠️ Translation Fixer</h1>
+      <p class="subtitle">Perbaiki hasil translate AI dengan glosarium & aturan penggantian — 100% offline</p>
+    </header>
+
+    <!-- TABS UTAMA -->
+    <div class="main-tabs">
+      <button class="main-tab active" data-tab="glossary">📚 Glosarium</button>
+      <button class="main-tab" data-tab="rules">🔧 Aturan Ganti</button>
+      <button class="main-tab" data-tab="checker">🔍 Cek Konsistensi</button>
+    </div>
+
+    <!-- ============ TAB: GLOSARIUM ============ -->
+    <section class="card tab-panel" id="panel-glossary">
+      <div class="panel-header">
+        <div>
+          <h2>📚 Glosarium Istilah</h2>
+          <p class="hint">Daftar istilah yang harus selalu diterjemahkan dengan cara tertentu. Contoh: <code>server → server</code>, <code>cloud → cloud</code></p>
+        </div>
+        <div class="panel-actions">
+          <button id="addGlossaryBtn" class="btn-primary-sm">+ Tambah</button>
+          <button id="importGlossaryBtn" class="btn-secondary">📥 Import</button>
+          <button id="exportGlossaryBtn" class="btn-secondary">📤 Export</button>
+          <input type="file" id="glossaryFileInput" accept=".json,.csv" hidden />
+        </div>
+      </div>
+
+      <div class="search-row">
+        <input type="text" id="glossarySearch" placeholder="🔍 Cari istilah..." />
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:40px;">✓</th>
+              <th>Istilah Salah / Hasil AI</th>
+              <th>Istilah Benar</th>
+              <th style="width:140px;">Mode</th>
+              <th style="width:60px;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="glossaryBody"></tbody>
+        </table>
+      </div>
+
+      <div class="empty-state" id="glossaryEmpty">
+        Belum ada istilah. Klik <strong>+ Tambah</strong> atau <strong>📥 Import</strong> untuk mulai.
+      </div>
+    </section>
+
+    <!-- ============ TAB: ATURAN GANTI ============ -->
+    <section class="card tab-panel" id="panel-rules" style="display:none;">
+      <div class="panel-header">
+        <div>
+          <h2>🔧 Aturan Ganti (Find & Replace)</h2>
+          <p class="hint">Penggantian berbasis pola. Bisa pakai <strong>Regex</strong> untuk kasus rumit.</p>
+        </div>
+        <div class="panel-actions">
+          <button id="addRuleBtn" class="btn-primary-sm">+ Tambah</button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:40px;">✓</th>
+              <th>Cari</th>
+              <th>Ganti Dengan</th>
+              <th style="width:100px;">Regex?</th>
+              <th style="width:60px;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="rulesBody"></tbody>
+        </table>
+      </div>
+
+      <div class="empty-state" id="rulesEmpty">
+        Belum ada aturan. Klik <strong>+ Tambah</strong> untuk mulai.
+      </div>
+    </section>
+
+    <!-- ============ TAB: CEK KONSISTENSI ============ -->
+    <section class="card tab-panel" id="panel-checker" style="display:none;">
+      <div class="panel-header">
+        <div>
+          <h2>🔍 Cek Konsistensi Istilah</h2>
+          <p class="hint">Deteksi kalau istilah yang sama diterjemahkan berbeda-beda di dokumen Anda.</p>
+        </div>
+      </div>
+
+      <div class="checker-input">
+        <label for="checkerText">Tempelkan dokumen hasil translate di sini:</label>
+        <textarea id="checkerText" rows="10" placeholder="Tempelkan teks Anda..."></textarea>
+        <button id="checkBtn" class="btn-primary">🔍 Cek Konsistensi</button>
+      </div>
+
+      <div id="checkerResult" style="display:none;">
+        <h3>Hasil Pengecekan</h3>
+        <div id="checkerResultBody"></div>
+      </div>
+    </section>
+
+    <!-- ============ PANEL PROSES DOKUMEN ============ -->
+    <section class="card process-section">
+      <h2>✍️ Perbaiki Dokumen</h2>
+      <p class="hint">Tempelkan hasil translate AI, lalu klik <strong>Perbaiki</strong>. Semua istilah di glosarium & aturan akan otomatis diterapkan.</p>
+
+      <textarea id="inputText" rows="10" placeholder="Tempelkan teks hasil translate di sini..."></textarea>
+      <div class="counter"><span id="charCount">0</span> karakter</div>
+
+      <div class="btn-row">
+        <button id="applyBtn" class="btn-primary">✨ Perbaiki Sekarang</button>
+        <button id="clearTextBtn" class="btn-secondary">Bersihkan</button>
+      </div>
+    </section>
+
+    <!-- ============ HASIL ============ -->
+    <section class="card result-section" id="resultSection" style="display:none;">
+      <div class="result-header">
+        <h2>✅ Hasil Perbaikan</h2>
+        <div class="btn-row-inline">
+          <button id="copyBtn" class="btn-secondary">📋 Salin</button>
+          <button id="downloadBtn" class="btn-secondary">⬇️ Unduh</button>
+          <button id="toggleDiffBtn" class="btn-secondary">👁️ Tampilkan Perubahan</button>
+        </div>
+      </div>
+
+      <div class="result-box" id="resultText"></div>
+
+      <div class="diff-info" id="diffInfo" style="display:none;">
+        <h3>📊 Statistik Perbaikan</h3>
+        <div id="diffStats"></div>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      🔒 Semua proses berjalan di browser Anda. Tidak ada data yang dikirim ke server.
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
