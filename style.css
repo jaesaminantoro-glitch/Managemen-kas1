@@ -57,3 +57,5 @@ button:hover{filter:brightness(1.08)}
 .add-form{display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:center}
 .add-form .btn-primary-sm{padding:11px 20px}
 @media(max-width:700px){.add-form{grid-template-columns:1fr}.add-form select{width:100%}}
+.auth-bar{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:.88rem}
+.auth-bar button{padding:6px 12px;font-size:.85rem}

@@ -6,14 +6,14 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const load = (k) => { try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; } catch { return []; } };
 let glossary = load(KEY_G), rules = load(KEY_R);
-let saveTimer, toastTimer, lastResult = '';
+let toastTimer, lastResult = '';
 
-const save = () => {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => { try { localStorage.setItem(KEY_G, JSON.stringify(glossary)); localStorage.setItem(KEY_R, JSON.stringify(rules)); } catch {} }, 250);
+const counts = () => {
   $('glossaryCount').textContent = glossary.filter(g => g.wrong.trim()).length;
   $('rulesCount').textContent = rules.filter(r => r.find).length;
 };
+const saveLocal = () => { try { localStorage.setItem(KEY_G, JSON.stringify(glossary)); localStorage.setItem(KEY_R, JSON.stringify(rules)); } catch {} };
+const save = () => { saveLocal(); counts(); cloudSave(); };
 const toast = msg => {
   let t = $('toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
   t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 2600);
@@ -44,7 +44,7 @@ function renderGlossary() {
     body.append(tr);
   });
   $('glossaryEmpty').hidden = glossary.length > 0;
-  save();
+  counts();
 }
 function renderRules() {
   const body = $('rulesBody'); body.replaceChildren();
@@ -55,7 +55,7 @@ function renderRules() {
     body.append(tr);
   });
   $('rulesEmpty').hidden = rules.length > 0;
-  save();
+  counts();
 }
 function wire(bodyId, list, rerender) {
   const body = $(bodyId);
@@ -70,7 +70,7 @@ function wire(bodyId, list, rerender) {
   body.addEventListener('change', e => upd(e.target));
   body.addEventListener('click', e => {
     if (!e.target.closest('.del')) return;
-    const id = e.target.closest('tr').dataset.id; const l = list(); l.splice(l.findIndex(x => x.id === id), 1); rerender();
+    const id = e.target.closest('tr').dataset.id; const l = list(); l.splice(l.findIndex(x => x.id === id), 1); rerender(); save();
   });
 }
 wire('glossaryBody', () => glossary, renderGlossary);
@@ -84,14 +84,14 @@ function submitGlossary() {
   if (!w || !r) { fb.style.background = '#fff4e0'; fb.textContent = 'Isi istilah salah dan istilah benar dulu.'; ($('newWrong').value.trim() ? $('newRight') : $('newWrong')).focus(); return; }
   const mode = $('newMode').value, ex = glossary.find(g => g.wrong.trim().toLowerCase() === w.toLowerCase());
   if (ex) { ex.right = r; ex.mode = mode; ex.on = true; } else glossary.unshift({ id: uid(), on: true, wrong: w, right: r, mode });
-  $('glossarySearch').value = ''; renderGlossary();
+  $('glossarySearch').value = ''; renderGlossary(); save();
   fb.style.background = '#eaf6ee'; fb.textContent = `✅ ${ex ? 'Diperbarui' : 'Ditambahkan'}: ${w} → ${r}  (total ${glossary.length} istilah)`;
   $('newWrong').value = ''; $('newRight').value = ''; $('newWrong').focus();
 }
 $('submitGlossaryBtn').onclick = submitGlossary;
 [$('newWrong'), $('newRight')].forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submitGlossary(); } }));
 $('goAddBtn').onclick = () => { showTab('add'); $('newWrong').focus(); };
-$('addRuleBtn').onclick = () => { rules.unshift({ id: uid(), on: true, find: '', repl: '', regex: false }); renderRules(); $('rulesBody').querySelector('input[type=text]')?.focus(); };
+$('addRuleBtn').onclick = () => { rules.unshift({ id: uid(), on: true, find: '', repl: '', regex: false }); renderRules(); save(); $('rulesBody').querySelector('input[type=text]')?.focus(); };
 
 /* ---------- Paste massal ---------- */
 const SEPS = [/\t/, /\s*\|\s*/, /\s*(?:→|->|=>|⇒)\s*/, /\s*[,;]\s*/];
@@ -107,7 +107,7 @@ $('parseBulkBtn').onclick = () => {
     if (ex) { ex.right = r; upd++; } else { glossary.push({ id: uid(), on: true, wrong: w, right: r, mode: 'word' }); add++; }
   });
   glossary = glossary.filter(g => g.wrong.trim() || g.right.trim());
-  renderGlossary();
+  renderGlossary(); save();
   const pv = $('bulkPreview'); pv.hidden = false;
   pv.textContent = `✅ ${add} ditambahkan, ${upd} diperbarui` + (bad.length ? `, ${bad.length} baris dilewati (tidak ada pemisah / kosong): ${bad.slice(0, 3).join(' • ')}${bad.length > 3 ? '…' : ''}` : '.');
   pv.style.background = bad.length ? '#fff4e0' : '#eaf6ee';
@@ -211,7 +211,7 @@ function download(name, content) {
 $('downloadBtn').onclick = () => download('hasil-perbaikan.txt', lastResult);
 
 /* ---------- Cek konsistensi ---------- */
-const count = (t, p) => (t.match(new RegExp(p, 'giu')) || []).length;
+const count = (t, p, f = 'giu') => (t.match(new RegExp(p, f)) || []).length;
 $('checkBtn').onclick = () => {
   const t = $('checkerText').value; if (!t.trim()) return toast('Tempelkan dokumen dulu.');
   const out = $('checkerResultBody'); out.replaceChildren();
@@ -222,7 +222,7 @@ $('checkBtn').onclick = () => {
   Object.entries(byWrong).forEach(([w, s]) => s.size > 1 && add('bad', `Konflik glosarium: "${w}" punya ${s.size} padanan (${[...s].join(', ')}).`));
   let issues = 0;
   G.forEach(g => {
-    const w = count(t, pat(g)), r = count(t, WB[0] + esc(g.right.trim()).replace(/\s+/g, '\\s+') + WB[1]);
+    const w = count(t, pat(g), g.mode === 'exact' ? 'gu' : 'giu'), r = count(t, WB[0] + esc(g.right.trim()).replace(/\s+/g, '\\s+') + WB[1]);
     if (g.wrong.trim().toLowerCase() === g.right.trim().toLowerCase()) return;
     if (w && r) { issues++; add('warn', `Tidak konsisten: "${g.wrong}" muncul ${w}× dan "${g.right}" muncul ${r}×.`); }
     else if (w) { issues++; add('bad', `Belum diperbaiki: "${g.wrong}" muncul ${w}× (seharusnya "${g.right}").`); }
@@ -232,8 +232,68 @@ $('checkBtn').onclick = () => {
   $('checkerResult').hidden = false;
 };
 
+/* ---------- Sinkron Firebase (Realtime Database) ---------- */
+const normG = a => Object.values(a || {}).filter(g => g && (g.wrong || g.right)).map(g => ({ id: g.id || uid(), on: g.on !== false, wrong: g.wrong || '', right: g.right || '', mode: g.mode || 'word' }));
+const normR = a => Object.values(a || {}).filter(Boolean).map(r => ({ id: r.id || uid(), on: r.on !== false, find: r.find || '', repl: r.repl || '', regex: !!r.regex }));
+const sig = (g, r) => JSON.stringify([g.map(x => [x.id, x.on, x.wrong, x.right, x.mode]), r.map(x => [x.id, x.on, x.find, x.repl, x.regex])]);
+const union = (remote, local, k) => { const s = new Set(remote.map(x => x[k].trim().toLowerCase())); return remote.concat(local.filter(x => !s.has(x[k].trim().toLowerCase()))); };
+let cloudUser = null, cloudOk = false, applying = false, firstSnap = true, cloudTimer = null, unsub = null;
+const status = t => $('syncStatus').textContent = t;
+
+function cloudSave() {
+  if (!cloudUser || !cloudOk || applying) return;
+  clearTimeout(cloudTimer); status('☁️ Menyimpan…');
+  cloudTimer = setTimeout(pushCloud, 800);
+}
+async function pushCloud() {
+  clearTimeout(cloudTimer); cloudTimer = null;
+  if (!cloudUser) return;
+  try { await window.cloud.save(cloudUser.uid, { glossary, rules }); status('☁️ Tersimpan di server · ' + cloudUser.email); }
+  catch (e) { status('⚠️ Gagal menyimpan ke server (' + (e.code || e.message) + '). Data tetap ada di browser.'); }
+}
+function applyData(g, r) {
+  applying = true; glossary = g; rules = r;
+  saveLocal(); renderGlossary(); renderRules(); applying = false;
+}
+function onRemote(u, remote) {
+  const rg = normG(remote?.glossary), rr = normR(remote?.rules);
+  if (firstSnap) {
+    firstSnap = false;
+    let first = true; try { first = localStorage.getItem('tf_synced_uid') !== u.uid; } catch {}
+    applyData(first ? union(rg, glossary, 'wrong') : rg, first ? union(rr, rules, 'find') : rr);   // login pertama di perangkat ini: gabungkan data lokal
+    try { localStorage.setItem('tf_synced_uid', u.uid); } catch {}
+    cloudOk = true;
+    if (first || sig(glossary, rules) !== sig(rg, rr)) cloudSave(); else status('☁️ Tersinkron · ' + u.email);
+    return;
+  }
+  if (cloudTimer || sig(glossary, rules) === sig(rg, rr)) return;   // perubahan lokal belum terkirim, atau data sama
+  applyData(rg, rr); status('☁️ Diperbarui dari perangkat lain · ' + u.email);
+}
+function onUser(u) {
+  if (unsub) { unsub(); unsub = null; }
+  clearTimeout(cloudTimer); cloudTimer = null;
+  cloudUser = u; cloudOk = false; firstSnap = true;
+  $('loginBtn').hidden = !!u; $('logoutBtn').hidden = !u;
+  if (!u) return status('💾 Disimpan di browser ini');
+  status('☁️ Memuat dari server…');
+  unsub = window.cloud.listen(u.uid, r => onRemote(u, r),
+    e => status('⚠️ Gagal memuat dari server (' + (e.code || e.message) + '). Cek aturan database dan DATABASE_URL.'));
+}
+function initCloud() {
+  $('loginBtn').hidden = false;
+  $('loginBtn').onclick = () => window.cloud.signIn().catch(e => toast('Gagal masuk: ' + (e.code || e.message)));
+  $('logoutBtn').onclick = async () => {
+    if (cloudTimer) await pushCloud();   // kirim perubahan terakhir sebelum keluar
+    await window.cloud.signOut();
+    applyData([], []); try { localStorage.removeItem('tf_synced_uid'); } catch {}
+    toast('Keluar. Data tetap tersimpan di server.');
+  };
+  window.cloud.onAuth(onUser);
+}
+if (window.cloud) initCloud(); else window.addEventListener('cloud-ready', initCloud, { once: true });
+setTimeout(() => { if (!window.cloud) status('⚠️ Firebase tidak termuat (mungkin diblokir). Data disimpan di browser ini.'); }, 6000);
+
 /* ---------- Init ---------- */
-glossary = glossary.filter(g => g && (g.wrong || g.right)).map(g => ({ id: g.id || uid(), on: g.on !== false, wrong: g.wrong || '', right: g.right || '', mode: g.mode || 'word' }));
-rules = rules.filter(Boolean).map(r => ({ id: r.id || uid(), on: r.on !== false, find: r.find || '', repl: r.repl || '', regex: !!r.regex }));
+glossary = normG(glossary); rules = normR(rules);
 renderGlossary(); renderRules();
 })();
