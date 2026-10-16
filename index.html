@@ -10,7 +10,7 @@
   <div class="container">
     <header>
       <h1>🛠️ Translation Fixer</h1>
-      <p class="subtitle">Perbaiki hasil translate AI dengan glosarium & aturan penggantian — 100% offline</p>
+      <p class="subtitle">Perbaiki hasil translate AI dengan glosarium & aturan penggantian — tanpa AI</p>
     </header>
 
     <!-- ============ PANEL PROSES DOKUMEN ============ -->
@@ -179,9 +179,32 @@ penyebaran aplikasi | deployment"></textarea>
     </section>
 
     <div class="footer-note">
-      🔒 Semua proses berjalan di browser Anda. Tidak ada data yang dikirim ke server.
+      🔒 Teks dan glosarium Anda diproses di browser dan tidak dikirim ke server. Situs ini hanya mencatat statistik kunjungan anonim (Firebase Analytics).
     </div>
   </div>
+
+  <!-- Firebase (hanya Analytics) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD80t_y7xfzUZzh8hmBBV6CJ0z0uQSjFx4",
+      authDomain: "translatefixer.firebaseapp.com",
+      projectId: "translatefixer",
+      storageBucket: "translatefixer.firebasestorage.app",
+      messagingSenderId: "208306339975",
+      appId: "1:208306339975:web:2f000d9aa7dc9fb0aef822",
+      measurementId: "G-7MZG7YTQQE"
+    };
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      getAnalytics(app);
+    } catch (e) {
+      console.warn("Firebase Analytics tidak aktif:", e.message);
+    }
+  </script>
 
   <script src="script.js"></script>
 </body>
