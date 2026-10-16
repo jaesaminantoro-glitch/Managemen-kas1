@@ -1,669 +1,232 @@
-// ============================================================
-//  TRANSLATION FIXER — Tanpa AI
-//  100% offline, berbasis glosarium & aturan penggantian
-// ============================================================
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const KEY_G = 'tf_glossary_v2', KEY_R = 'tf_rules_v2';
+const uid = () => Math.random().toString(36).slice(2, 10);
+const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const load = (k) => { try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; } catch { return []; } };
+let glossary = load(KEY_G), rules = load(KEY_R);
+let saveTimer, toastTimer, lastResult = '';
 
-// ====== STATE ======
-let glossary = []; // { id, from, to, mode, active }
-let rules = [];    // { id, from, to, isRegex, active }
-let lastStats = [];
+const save = () => {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { try { localStorage.setItem(KEY_G, JSON.stringify(glossary)); localStorage.setItem(KEY_R, JSON.stringify(rules)); } catch {} }, 250);
+  $('glossaryCount').textContent = glossary.filter(g => g.wrong.trim()).length;
+  $('rulesCount').textContent = rules.filter(r => r.find).length;
+};
+const toast = msg => {
+  let t = $('toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 2600);
+};
+const el = (tag, props = {}, ...kids) => { const e = Object.assign(document.createElement(tag), props); kids.forEach(k => e.append(k)); return e; };
 
-// ====== STORAGE KEYS ======
-const LS_GLOSSARY = "tfx_glossary";
-const LS_RULES = "tfx_rules";
-
-// ====== HELPERS ======
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-
-function loadState() {
-  try {
-    glossary = JSON.parse(localStorage.getItem(LS_GLOSSARY) || "[]");
-    rules = JSON.parse(localStorage.getItem(LS_RULES) || "[]");
-  } catch {
-    glossary = [];
-    rules = [];
-  }
-}
-
-function saveGlossary() {
-  localStorage.setItem(LS_GLOSSARY, JSON.stringify(glossary));
-}
-
-function saveRules() {
-  localStorage.setItem(LS_RULES, JSON.stringify(rules));
-}
-
-// ====== TAB SWITCHING ======
-document.querySelectorAll(".main-tab").forEach((tab) => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".main-tab").forEach((t) => t.classList.remove("active"));
-    tab.classList.add("active");
-    const target = tab.dataset.tab;
-    document.querySelectorAll(".tab-panel").forEach((p) => (p.style.display = "none"));
-    document.getElementById("panel-" + target).style.display = "block";
-  });
+/* ---------- Tabs ---------- */
+document.querySelectorAll('.main-tab').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.main-tab').forEach(x => x.classList.toggle('active', x === b));
+  document.querySelectorAll('.tab-panel').forEach(p => p.hidden = p.id !== 'panel-' + b.dataset.tab);
 });
 
-// ============================================================
-//                    GLOSARIUM
-// ============================================================
-
-const glossaryBody = document.getElementById("glossaryBody");
-const glossaryEmpty = document.getElementById("glossaryEmpty");
-const glossarySearch = document.getElementById("glossarySearch");
+/* ---------- Tabel (glosarium & aturan) ---------- */
+const cell = (...k) => el('td', {}, ...k);
+const check = (on, field) => { const c = el('input', { type: 'checkbox', checked: on }); c.dataset.f = field; return c; };
+const text = (v, f, ph) => { const i = el('input', { type: 'text', value: v, placeholder: ph }); i.dataset.f = f; return i; };
+const delBtn = () => el('button', { className: 'del', title: 'Hapus', textContent: '🗑️' });
 
 function renderGlossary() {
-  const keyword = glossarySearch.value.trim().toLowerCase();
-  const filtered = glossary.filter(
-    (g) =>
-      !keyword ||
-      g.from.toLowerCase().includes(keyword) ||
-      g.to.toLowerCase().includes(keyword)
-  );
-
-  glossaryBody.innerHTML = "";
-
-  if (filtered.length === 0) {
-    glossaryEmpty.style.display = "block";
-    glossaryEmpty.textContent =
-      glossary.length === 0
-        ? "Belum ada istilah. Paste daftar di atas, atau klik + Tambah Manual."
-        : "Tidak ada istilah yang cocok dengan pencarian.";
-    return;
-  }
-
-  glossaryEmpty.style.display = "none";
-
-  filtered.forEach((item) => {
-    const tr = document.createElement("tr");
-
-    // checkbox
-    const tdCheck = document.createElement("td");
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = item.active;
-    cb.addEventListener("change", () => {
-      item.active = cb.checked;
-      saveGlossary();
-    });
-    tdCheck.appendChild(cb);
-
-    // from
-    const tdFrom = document.createElement("td");
-    const inpFrom = document.createElement("input");
-    inpFrom.type = "text";
-    inpFrom.value = item.from;
-    inpFrom.placeholder = "contoh: pelayan";
-    inpFrom.addEventListener("input", () => {
-      item.from = inpFrom.value;
-      saveGlossary();
-    });
-    tdFrom.appendChild(inpFrom);
-
-    // to
-    const tdTo = document.createElement("td");
-    const inpTo = document.createElement("input");
-    inpTo.type = "text";
-    inpTo.value = item.to;
-    inpTo.placeholder = "contoh: server";
-    inpTo.addEventListener("input", () => {
-      item.to = inpTo.value;
-      saveGlossary();
-    });
-    tdTo.appendChild(inpTo);
-
-    // mode
-    const tdMode = document.createElement("td");
-    const sel = document.createElement("select");
-    [
-      { v: "exact", l: "Persis" },
-      { v: "word", l: "Kata utuh" },
-      { v: "regex", l: "Regex" },
-    ].forEach((opt) => {
-      const o = document.createElement("option");
-      o.value = opt.v;
-      o.textContent = opt.l;
-      if (opt.v === item.mode) o.selected = true;
-      sel.appendChild(o);
-    });
-    sel.addEventListener("change", () => {
-      item.mode = sel.value;
-      saveGlossary();
-    });
-    tdMode.appendChild(sel);
-
-    // delete
-    const tdDel = document.createElement("td");
-    const delBtn = document.createElement("button");
-    delBtn.className = "btn-icon";
-    delBtn.textContent = "🗑️";
-    delBtn.title = "Hapus";
-    delBtn.addEventListener("click", () => {
-      glossary = glossary.filter((g) => g.id !== item.id);
-      saveGlossary();
-      renderGlossary();
-    });
-    tdDel.appendChild(delBtn);
-
-    tr.append(tdCheck, tdFrom, tdTo, tdMode, tdDel);
-    glossaryBody.appendChild(tr);
+  const q = $('glossarySearch').value.trim().toLowerCase(), body = $('glossaryBody');
+  body.replaceChildren();
+  glossary.forEach(g => {
+    const tr = el('tr'); tr.dataset.id = g.id;
+    if (q && !(g.wrong + ' ' + g.right).toLowerCase().includes(q)) tr.hidden = true;
+    const sel = el('select'); sel.dataset.f = 'mode';
+    [['word', 'Kata utuh'], ['partial', 'Sebagian kata'], ['exact', 'Persis (Aa)']].forEach(([v, l]) => sel.append(el('option', { value: v, textContent: l, selected: g.mode === v })));
+    tr.append(cell(check(g.on, 'on')), cell(text(g.wrong, 'wrong', 'contoh: pelayan')), cell(text(g.right, 'right', 'contoh: server')), cell(sel), cell(delBtn()));
+    body.append(tr);
   });
+  $('glossaryEmpty').hidden = glossary.length > 0;
+  save();
 }
-
-glossarySearch.addEventListener("input", renderGlossary);
-
-document.getElementById("addGlossaryBtn").addEventListener("click", () => {
-  glossary.unshift({
-    id: uid(),
-    from: "",
-    to: "",
-    mode: "word",
-    active: true,
-  });
-  saveGlossary();
-  renderGlossary();
-  const firstInput = glossaryBody.querySelector("tr input[type='text']");
-  if (firstInput) firstInput.focus();
-});
-
-// ============================================================
-//          PASTE MASSAL (BULK PASTE)
-// ============================================================
-
-const bulkPaste = document.getElementById("bulkPaste");
-const parseBulkBtn = document.getElementById("parseBulkBtn");
-const clearBulkBtn = document.getElementById("clearBulkBtn");
-const bulkPreview = document.getElementById("bulkPreview");
-
-/**
- * Deteksi separator & pisahkan baris
- * Support: TAB (Excel), |, →, ,, ;, :, =
- */
-function parseLine(line) {
-  const separators = ["\t", "|", "→", ";", ",", " = ", ":"];
-  for (const sep of separators) {
-    if (line.includes(sep)) {
-      const parts = line.split(sep).map((s) => s.trim());
-      if (parts.length >= 2 && parts[0] && parts[1]) {
-        return { from: parts[0], to: parts[1] };
-      }
-    }
-  }
-  return null;
-}
-
-function parseBulkText(text) {
-  const lines = text.split(/\r?\n/);
-  const parsed = [];
-  const skipped = [];
-
-  lines.forEach((line, idx) => {
-    const trimmed = line.trim();
-    if (!trimmed) return;
-
-    const lower = trimmed.toLowerCase();
-    if (
-      idx === 0 &&
-      (lower.includes("from") ||
-        lower.includes("istilah salah") ||
-        lower.includes("cari") ||
-        lower.includes("salah"))
-    ) {
-      return;
-    }
-
-    const result = parseLine(trimmed);
-    if (result) {
-      parsed.push({
-        id: uid(),
-        from: result.from,
-        to: result.to,
-        mode: "word",
-        active: true,
-      });
-    } else {
-      skipped.push(trimmed);
-    }
-  });
-
-  return { parsed, skipped };
-}
-
-parseBulkBtn.addEventListener("click", () => {
-  const text = bulkPaste.value;
-  if (!text.trim()) {
-    alert("Belum ada teks yang ditempel. Copy dari Excel/Word lalu paste di kotak.");
-    return;
-  }
-
-  const { parsed, skipped } = parseBulkText(text);
-
-  if (parsed.length === 0) {
-    alert(
-      "Tidak ada istilah yang bisa diparse.\n\n" +
-        "Format yang didukung:\n" +
-        "  pelayan | server\n" +
-        "  pelayan → server\n" +
-        "  pelayan, server\n" +
-        "  Atau copy langsung dari Excel (TAB)"
-    );
-    return;
-  }
-
-  let addedCount = 0;
-  parsed.forEach((p) => {
-    const dup = glossary.some(
-      (g) => g.from.toLowerCase() === p.from.toLowerCase()
-    );
-    if (!dup) {
-      glossary.unshift(p);
-      addedCount++;
-    }
-  });
-
-  saveGlossary();
-  renderGlossary();
-
-  bulkPreview.style.display = "block";
-  let html = `<div class="preview-success">✅ <strong>${addedCount} istilah berhasil ditambahkan</strong>`;
-  if (parsed.length - addedCount > 0) {
-    html += ` <span style="color:#c33;">(${parsed.length - addedCount} duplikat di-skip)</span>`;
-  }
-  html += "</div>";
-
-  if (skipped.length > 0) {
-    html += `<div class="preview-warning">⚠️ <strong>${skipped.length} baris dilewati</strong> (format tidak dikenali):`;
-    html += `<ul>${skipped.slice(0, 5).map((s) => `<li><code>${escapeHtml(s)}</code></li>`).join("")}`;
-    if (skipped.length > 5) html += `<li>...dan ${skipped.length - 5} lainnya</li>`;
-    html += `</ul></div>`;
-  }
-
-  html += `<div class="preview-list"><strong>Daftar yang ditambahkan:</strong><ul>`;
-  parsed.slice(0, 10).forEach((p) => {
-    if (glossary.some((g) => g.id === p.id)) {
-      html += `<li><code>${escapeHtml(p.from)}</code> → <code>${escapeHtml(p.to)}</code></li>`;
-    }
-  });
-  if (parsed.length > 10) html += `<li>...dan ${parsed.length - 10} lainnya</li>`;
-  html += `</ul></div>`;
-
-  bulkPreview.innerHTML = html;
-
-  bulkPaste.value = "";
-});
-
-clearBulkBtn.addEventListener("click", () => {
-  bulkPaste.value = "";
-  bulkPreview.style.display = "none";
-});
-
-// ====== EXPORT GLOSARIUM ======
-document.getElementById("exportGlossaryBtn").addEventListener("click", () => {
-  if (glossary.length === 0) {
-    alert("Glosarium masih kosong.");
-    return;
-  }
-  const data = glossary.map(({ from, to, mode, active }) => ({ from, to, mode, active }));
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json",
-  });
-  downloadBlob(blob, "glosarium.json");
-});
-
-// ============================================================
-//                    ATURAN GANTI
-// ============================================================
-
-const rulesBody = document.getElementById("rulesBody");
-const rulesEmpty = document.getElementById("rulesEmpty");
-
 function renderRules() {
-  rulesBody.innerHTML = "";
-
-  if (rules.length === 0) {
-    rulesEmpty.style.display = "block";
-    return;
-  }
-  rulesEmpty.style.display = "none";
-
-  rules.forEach((item) => {
-    const tr = document.createElement("tr");
-
-    const tdCheck = document.createElement("td");
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = item.active;
-    cb.addEventListener("change", () => {
-      item.active = cb.checked;
-      saveRules();
-    });
-    tdCheck.appendChild(cb);
-
-    const tdFrom = document.createElement("td");
-    const inpFrom = document.createElement("input");
-    inpFrom.type = "text";
-    inpFrom.value = item.from;
-    inpFrom.placeholder = "pola yang dicari";
-    inpFrom.addEventListener("input", () => {
-      item.from = inpFrom.value;
-      saveRules();
-    });
-    tdFrom.appendChild(inpFrom);
-
-    const tdTo = document.createElement("td");
-    const inpTo = document.createElement("input");
-    inpTo.type = "text";
-    inpTo.value = item.to;
-    inpTo.placeholder = "ganti dengan";
-    inpTo.addEventListener("input", () => {
-      item.to = inpTo.value;
-      saveRules();
-    });
-    tdTo.appendChild(inpTo);
-
-    const tdRegex = document.createElement("td");
-    const cbRegex = document.createElement("input");
-    cbRegex.type = "checkbox";
-    cbRegex.checked = !!item.isRegex;
-    cbRegex.addEventListener("change", () => {
-      item.isRegex = cbRegex.checked;
-      saveRules();
-    });
-    tdRegex.appendChild(cbRegex);
-
-    const tdDel = document.createElement("td");
-    const delBtn = document.createElement("button");
-    delBtn.className = "btn-icon";
-    delBtn.textContent = "🗑️";
-    delBtn.addEventListener("click", () => {
-      rules = rules.filter((r) => r.id !== item.id);
-      saveRules();
-      renderRules();
-    });
-    tdDel.appendChild(delBtn);
-
-    tr.append(tdCheck, tdFrom, tdTo, tdRegex, tdDel);
-    rulesBody.appendChild(tr);
+  const body = $('rulesBody'); body.replaceChildren();
+  rules.forEach(r => {
+    const tr = el('tr'); tr.dataset.id = r.id;
+    const f = text(r.find, 'find', 'cari...'); if (r.regex && !compile(r)) f.classList.add('invalid');
+    tr.append(cell(check(r.on, 'on')), cell(f), cell(text(r.repl, 'repl', 'ganti dengan...')), cell(check(r.regex, 'regex')), cell(delBtn()));
+    body.append(tr);
+  });
+  $('rulesEmpty').hidden = rules.length > 0;
+  save();
+}
+function wire(bodyId, list, rerender) {
+  const body = $(bodyId);
+  const item = t => list().find(x => x.id === t.closest('tr').dataset.id);
+  const upd = t => {
+    const it = item(t); if (!it || !t.dataset.f) return;
+    it[t.dataset.f] = t.type === 'checkbox' ? t.checked : t.value;
+    if (bodyId === 'rulesBody') { const f = t.closest('tr').querySelector('[data-f=find]'); f.classList.toggle('invalid', !!it.regex && !compile(it)); }
+    save();
+  };
+  body.addEventListener('input', e => { if (e.target.type === 'text') upd(e.target); });
+  body.addEventListener('change', e => upd(e.target));
+  body.addEventListener('click', e => {
+    if (!e.target.closest('.del')) return;
+    const id = e.target.closest('tr').dataset.id; const l = list(); l.splice(l.findIndex(x => x.id === id), 1); rerender();
   });
 }
+wire('glossaryBody', () => glossary, renderGlossary);
+wire('rulesBody', () => rules, renderRules);
+$('glossarySearch').oninput = renderGlossary;
 
-document.getElementById("addRuleBtn").addEventListener("click", () => {
-  rules.unshift({
-    id: uid(),
-    from: "",
-    to: "",
-    isRegex: false,
-    active: true,
+$('addGlossaryBtn').onclick = () => {
+  $('glossarySearch').value = '';
+  const blank = glossary.find(g => !g.wrong.trim() && !g.right.trim());
+  if (!blank) glossary.unshift({ id: uid(), on: true, wrong: '', right: '', mode: 'word' });
+  renderGlossary();
+  $('glossaryBody').querySelector('input[type=text]')?.focus();
+};
+$('addRuleBtn').onclick = () => { rules.unshift({ id: uid(), on: true, find: '', repl: '', regex: false }); renderRules(); $('rulesBody').querySelector('input[type=text]')?.focus(); };
+
+/* ---------- Paste massal ---------- */
+const SEPS = [/\t/, /\s*\|\s*/, /\s*(?:→|->|=>|⇒)\s*/, /\s*[,;]\s*/];
+const unq = s => s.trim().replace(/^"(.*)"$/, '$1').trim();
+$('parseBulkBtn').onclick = () => {
+  let add = 0, upd = 0; const bad = [];
+  $('bulkPaste').value.split(/\r?\n/).forEach(line => {
+    if (!line.trim()) return;
+    const sep = SEPS.find(s => s.test(line)), p = sep && line.split(sep);
+    const w = p && unq(p[0]), r = p && unq(p[1] || '');
+    if (!w || !r) { bad.push(line.trim()); return; }
+    const ex = glossary.find(g => g.wrong.trim().toLowerCase() === w.toLowerCase());
+    if (ex) { ex.right = r; upd++; } else { glossary.push({ id: uid(), on: true, wrong: w, right: r, mode: 'word' }); add++; }
   });
-  saveRules();
-  renderRules();
-  const firstInput = rulesBody.querySelector("tr input[type='text']");
-  if (firstInput) firstInput.focus();
-});
+  glossary = glossary.filter(g => g.wrong.trim() || g.right.trim());
+  renderGlossary();
+  const pv = $('bulkPreview'); pv.hidden = false;
+  pv.textContent = `✅ ${add} ditambahkan, ${upd} diperbarui` + (bad.length ? `, ${bad.length} baris dilewati (tidak ada pemisah / kosong): ${bad.slice(0, 3).join(' • ')}${bad.length > 3 ? '…' : ''}` : '.');
+  pv.style.background = bad.length ? '#fff4e0' : '#eaf6ee';
+  if (add + upd) $('bulkPaste').value = '';
+};
+$('clearBulkBtn').onclick = () => { $('bulkPaste').value = ''; $('bulkPreview').hidden = true; };
+$('exportGlossaryBtn').onclick = () => {
+  const rows = glossary.filter(g => g.wrong.trim() && g.right.trim());
+  if (!rows.length) return toast('Glosarium masih kosong.');
+  download('glosarium.txt', rows.map(g => `${g.wrong} | ${g.right}`).join('\n'));
+};
 
-// ============================================================
-//          MESIN PERBAIKAN (CORE)
-// ============================================================
-
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function applyRule(text, rule, stats, label) {
-  if (!rule.active || !rule.from) return text;
-
-  const { from, to, mode, isRegex } = rule;
-  let regex;
-  let counter = 0;
-
+/* ---------- Mesin penggantian ---------- */
+const WB = ['(?<![\\p{L}\\p{N}_])', '(?![\\p{L}\\p{N}_])'];
+const pat = g => { const s = esc(g.wrong.trim()).replace(/\s+/g, '\\s+'); return g.mode === 'partial' ? s : WB[0] + s + WB[1]; };
+const activeGloss = () => {
+  const seen = new Set();
+  return glossary.filter(g => g.on && g.wrong.trim() && g.right.trim()).sort((a, b) => b.wrong.length - a.wrong.length)
+    .filter(g => { const k = g.wrong.trim().toLowerCase() + g.mode; if (seen.has(k)) return false; seen.add(k); return true; });
+};
+function compile(r) {
   try {
-    if (isRegex || mode === "regex") {
-      regex = new RegExp(from, "g");
-    } else if (mode === "exact" || mode === undefined) {
-      regex = new RegExp(escapeRegex(from), "g");
-    } else {
-      regex = new RegExp(`\\b${escapeRegex(from)}\\b`, "gi");
-    }
-  } catch (err) {
-    return text;
+    if (!r.regex) return new RegExp(esc(r.find), 'gu');
+    const m = r.find.match(/^\/([\s\S]+)\/([a-z]*)$/);
+    const flags = m ? [...new Set((m[2] + 'g').split(''))].join('') : 'g';
+    return new RegExp(m ? m[1] : r.find, flags);
+  } catch { return null; }
+}
+const expand = (m, s) => s.replace(/\$(\$|&|\d{1,2}|<[^>]+>)/g, (_, k) =>
+  k === '$' ? '$' : k === '&' ? m[0] : k[0] === '<' ? (m.groups?.[k.slice(1, -1)] ?? '') : (m[+k] ?? ''));
+function matchCase(m, g) {
+  if (m === g.wrong.trim() || g.mode === 'exact') return g.right.trim();
+  const r = g.right.trim();
+  if (m.length > 1 && m === m.toUpperCase() && m !== m.toLowerCase()) return r.toUpperCase();
+  if (m[0] !== m[0].toLowerCase() && g.wrong.trim()[0] === g.wrong.trim()[0].toLowerCase()) return r[0].toUpperCase() + r.slice(1);
+  return r;
+}
+// ganti sambil melacak huruf mana yang berubah (mask '1' = hasil penggantian)
+function sub(st, re, fn, onHit) {
+  let out = '', mk = '', last = 0;
+  for (const m of st.text.matchAll(re)) {
+    if (!m[0].length) continue;
+    const rep = fn(m); if (rep === null || rep === m[0]) continue;
+    out += st.text.slice(last, m.index) + rep; mk += st.mask.slice(last, m.index) + '1'.repeat(rep.length);
+    last = m.index + m[0].length; onHit(m);
   }
-
-  const result = text.replace(regex, (match) => {
-    counter++;
-    return to;
+  st.text = out + st.text.slice(last); st.mask = mk + st.mask.slice(last);
+}
+function fix(input) {
+  const st = { text: input, mask: '0'.repeat(input.length) }, stats = [], errors = [];
+  const G = activeGloss();
+  if (G.length) {
+    const re = new RegExp(G.map(g => '(' + pat(g) + ')').join('|'), 'giu'), cnt = G.map(() => 0);
+    sub(st, re, m => { const i = G.findIndex((_, k) => m[k + 1] !== undefined); const g = G[i];
+      if (g.mode === 'exact' && m[0].replace(/\s+/g, ' ') !== g.wrong.trim().replace(/\s+/g, ' ')) return null;
+      m.gi = i; return matchCase(m[0], g); }, m => cnt[m.gi]++);
+    G.forEach((g, i) => cnt[i] && stats.push([`${g.wrong.trim()} → ${g.right.trim()}`, cnt[i]]));
+  }
+  rules.filter(r => r.on && r.find).forEach(r => {
+    const re = compile(r); if (!re) return errors.push(r.find);
+    let n = 0; const repl = r.regex ? r.repl.replace(/\\n/g, '\n').replace(/\\t/g, '\t') : r.repl;
+    sub(st, re, m => r.regex ? expand(m, repl) : repl, () => n++);
+    if (n) stats.push([`${r.find} → ${r.repl}`, n]);
   });
-
-  if (counter > 0) {
-    stats.push({
-      label: label || "aturan",
-      from,
-      to,
-      count: counter,
-    });
-  }
-
-  return result;
+  return { ...st, stats, errors };
 }
 
-function fixDocument(text) {
-  const stats = [];
-  let result = text;
-
-  glossary.forEach((g) => {
-    result = applyRule(result, g, stats, "glosarium");
-  });
-
-  rules.forEach((r) => {
-    result = applyRule(result, r, stats, "aturan");
-  });
-
-  return { result, stats };
+/* ---------- Perbaiki dokumen ---------- */
+const input = $('inputText');
+input.oninput = () => $('charCount').textContent = input.value.length.toLocaleString('id-ID');
+$('applyBtn').onclick = () => {
+  if (!input.value.trim()) return toast('Tempelkan teks dulu.');
+  const r = fix(input.value); lastResult = r.text;
+  const box = $('resultText'); box.replaceChildren();
+  for (const m of r.mask.matchAll(/0+|1+/g)) {
+    const s = r.text.slice(m.index, m.index + m[0].length);
+    box.append(m[0][0] === '1' ? el('mark', { textContent: s }) : document.createTextNode(s));
+  }
+  const total = r.stats.reduce((a, s) => a + s[1], 0), ds = $('diffStats'); ds.replaceChildren();
+  ds.append(el('p', { textContent: total ? `${total} penggantian dari ${r.stats.length} istilah/aturan.` : 'Tidak ada yang perlu diperbaiki.' }));
+  const ul = el('ul'); r.stats.forEach(([k, n]) => ul.append(el('li', { textContent: `${k}: ${n}×` }))); ds.append(ul);
+  if (r.errors.length) ds.append(el('p', { className: 'chk bad', textContent: 'Regex tidak valid, dilewati: ' + r.errors.join(', ') }));
+  $('resultSection').hidden = false;
+  $('resultSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (r.errors.length) toast('Ada aturan regex yang tidak valid.');
+};
+$('clearTextBtn').onclick = () => { input.value = ''; input.oninput(); $('resultSection').hidden = true; lastResult = ''; };
+$('toggleDiffBtn').onclick = () => {
+  const on = $('resultText').classList.toggle('show-diff');
+  $('diffInfo').hidden = !on; $('toggleDiffBtn').textContent = on ? '🙈 Sembunyikan Perubahan' : '👁️ Tampilkan Perubahan';
+};
+$('copyBtn').onclick = async () => {
+  try { await navigator.clipboard.writeText(lastResult); }
+  catch { const t = el('textarea', { value: lastResult }); document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); }
+  toast('Hasil disalin.');
+};
+function download(name, content) {
+  const a = el('a', { href: URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' })), download: name });
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
+$('downloadBtn').onclick = () => download('hasil-perbaikan.txt', lastResult);
 
-// ============================================================
-//          PANEL PROSES DOKUMEN
-// ============================================================
-
-const inputText = document.getElementById("inputText");
-const charCount = document.getElementById("charCount");
-const applyBtn = document.getElementById("applyBtn");
-const clearTextBtn = document.getElementById("clearTextBtn");
-const resultSection = document.getElementById("resultSection");
-const resultText = document.getElementById("resultText");
-const diffInfo = document.getElementById("diffInfo");
-const diffStats = document.getElementById("diffStats");
-const toggleDiffBtn = document.getElementById("toggleDiffBtn");
-const copyBtn = document.getElementById("copyBtn");
-const downloadBtn = document.getElementById("downloadBtn");
-
-inputText.addEventListener("input", () => {
-  charCount.textContent = inputText.value.length;
-});
-
-clearTextBtn.addEventListener("click", () => {
-  inputText.value = "";
-  charCount.textContent = "0";
-  resultSection.style.display = "none";
-});
-
-applyBtn.addEventListener("click", () => {
-  const text = inputText.value;
-  if (!text.trim()) {
-    alert("Masukkan teks terlebih dahulu.");
-    return;
-  }
-
-  const activeGlossary = glossary.filter((g) => g.active && g.from).length;
-  const activeRules = rules.filter((r) => r.active && r.from).length;
-
-  if (activeGlossary === 0 && activeRules === 0) {
-    alert("Belum ada aturan aktif. Tambahkan istilah di tab 📚 Glosarium atau 🔧 Aturan Ganti.");
-    return;
-  }
-
-  const { result, stats } = fixDocument(text);
-  lastStats = stats;
-
-  resultText.textContent = result;
-  resultSection.style.display = "block";
-  document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
-
-  highlightOn = false;
-  toggleDiffBtn.textContent = "👁️ Tampilkan Perubahan";
-
-  if (stats.length > 0) {
-    diffStats.innerHTML = "";
-    stats.forEach((s) => {
-      const div = document.createElement("div");
-      div.className = "diff-item";
-      div.innerHTML = `
-        <span><span class="from">${escapeHtml(s.from)}</span> → <span class="to">${escapeHtml(s.to)}</span></span>
-        <span class="count">${s.count}×</span>
-      `;
-      diffStats.appendChild(div);
-    });
-    diffInfo.style.display = "block";
-  } else {
-    diffStats.innerHTML = "<p>Tidak ada perubahan yang terjadi. Coba cek apakah istilah di glosarium cocok dengan teks Anda.</p>";
-    diffInfo.style.display = "block";
-  }
-
-  resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
-});
-
-// ====== TOGGLE HIGHLIGHT ======
-let highlightOn = false;
-toggleDiffBtn.addEventListener("click", () => {
-  highlightOn = !highlightOn;
-  if (highlightOn) {
-    const original = inputText.value;
-    const { result } = fixDocument(original);
-    let highlighted = escapeHtml(result);
-    lastStats.forEach((s) => {
-      if (!s.to) return;
-      const esc = escapeRegex(escapeHtml(s.to));
-      highlighted = highlighted.replace(
-        new RegExp(esc, "g"),
-        `<span class="highlight-change">${escapeHtml(s.to)}</span>`
-      );
-    });
-    resultText.innerHTML = highlighted;
-    toggleDiffBtn.textContent = "👁️ Sembunyikan Highlight";
-  } else {
-    resultText.textContent = lastStats.length ? fixDocument(inputText.value).result : inputText.value;
-    toggleDiffBtn.textContent = "👁️ Tampilkan Perubahan";
-  }
-});
-
-// ====== COPY & DOWNLOAD ======
-copyBtn.addEventListener("click", async () => {
-  const text = resultText.textContent;
-  try {
-    await navigator.clipboard.writeText(text);
-    copyBtn.textContent = "✅ Tersalin!";
-    setTimeout(() => (copyBtn.textContent = "📋 Salin"), 1500);
-  } catch {
-    alert("Gagal menyalin.");
-  }
-});
-
-downloadBtn.addEventListener("click", () => {
-  const text = resultText.textContent;
-  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-  downloadBlob(blob, "hasil-perbaikan.txt");
-});
-
-function downloadBlob(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// ============================================================
-//              CEK KONSISTENSI
-// ============================================================
-
-const checkerText = document.getElementById("checkerText");
-const checkBtn = document.getElementById("checkBtn");
-const checkerResult = document.getElementById("checkerResult");
-const checkerResultBody = document.getElementById("checkerResultBody");
-
-checkBtn.addEventListener("click", () => {
-  const text = checkerText.value.trim();
-  if (!text) {
-    alert("Masukkan teks terlebih dahulu.");
-    return;
-  }
-
-  const issues = [];
-
-  glossary.forEach((g) => {
-    if (!g.active || !g.from || !g.to) return;
-    const re = new RegExp(`\\b${escapeRegex(g.from)}\\b`, "gi");
-    const matches = text.match(re);
-    if (matches && matches.length > 0) {
-      issues.push({
-        term: g.to,
-        variants: [
-          { text: g.from, count: matches.length, type: "salah" },
-          { text: g.to, count: "-", type: "benar" },
-        ],
-        note: `Istilah "${g.from}" masih muncul ${matches.length}× dan seharusnya diganti jadi "${g.to}".`,
-      });
-    }
+/* ---------- Cek konsistensi ---------- */
+const count = (t, p) => (t.match(new RegExp(p, 'giu')) || []).length;
+$('checkBtn').onclick = () => {
+  const t = $('checkerText').value; if (!t.trim()) return toast('Tempelkan dokumen dulu.');
+  const out = $('checkerResultBody'); out.replaceChildren();
+  const add = (cls, msg) => out.append(el('div', { className: 'chk ' + cls, textContent: msg }));
+  const G = glossary.filter(g => g.on && g.wrong.trim() && g.right.trim());
+  const byWrong = {};
+  G.forEach(g => (byWrong[g.wrong.trim().toLowerCase()] ||= new Set()).add(g.right.trim()));
+  Object.entries(byWrong).forEach(([w, s]) => s.size > 1 && add('bad', `Konflik glosarium: "${w}" punya ${s.size} padanan (${[...s].join(', ')}).`));
+  let issues = 0;
+  G.forEach(g => {
+    const w = count(t, pat(g)), r = count(t, WB[0] + esc(g.right.trim()).replace(/\s+/g, '\\s+') + WB[1]);
+    if (g.wrong.trim().toLowerCase() === g.right.trim().toLowerCase()) return;
+    if (w && r) { issues++; add('warn', `Tidak konsisten: "${g.wrong}" muncul ${w}× dan "${g.right}" muncul ${r}×.`); }
+    else if (w) { issues++; add('bad', `Belum diperbaiki: "${g.wrong}" muncul ${w}× (seharusnya "${g.right}").`); }
   });
+  if (!G.length) add('warn', 'Glosarium masih kosong, tidak ada yang bisa dicek.');
+  else if (!issues) add('ok', '✅ Semua istilah glosarium konsisten.');
+  $('checkerResult').hidden = false;
+};
 
-  checkerResult.style.display = "block";
-  checkerResultBody.innerHTML = "";
-
-  if (issues.length === 0) {
-    const div = document.createElement("div");
-    div.className = "no-issue";
-    div.textContent = "✅ Tidak ditemukan inkonsistensi. Semua istilah sudah sesuai dengan glosarium Anda.";
-    checkerResultBody.appendChild(div);
-  } else {
-    issues.forEach((issue) => {
-      const div = document.createElement("div");
-      div.className = "inconsistency-item";
-      div.innerHTML = `
-        <div class="term">⚠️ ${escapeHtml(issue.term)}</div>
-        <div style="margin-bottom:6px; font-size:0.85rem; color:#555;">${escapeHtml(issue.note)}</div>
-        <div class="variants">
-          ${issue.variants
-            .map(
-              (v) =>
-                `<span class="variant" style="${v.type === "salah" ? "background:#fee;color:#c33;" : "background:#e8f5e9;color:#2e7d32;"}">
-                  ${escapeHtml(v.text)} ${v.count !== "-" ? `(${v.count}×)` : ""}
-                </span>`
-            )
-            .join("")}
-        </div>
-      `;
-      checkerResultBody.appendChild(div);
-    });
-  }
-});
-
-// ============================================================
-//              UTIL
-// ============================================================
-
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-// ============================================================
-//              INIT
-// ============================================================
-
-loadState();
-renderGlossary();
-renderRules();
+/* ---------- Init ---------- */
+glossary = glossary.filter(g => g && (g.wrong || g.right)).map(g => ({ id: g.id || uid(), on: g.on !== false, wrong: g.wrong || '', right: g.right || '', mode: g.mode || 'word' }));
+rules = rules.filter(Boolean).map(r => ({ id: r.id || uid(), on: r.on !== false, find: r.find || '', repl: r.repl || '', regex: !!r.regex }));
+renderGlossary(); renderRules();
+})();
