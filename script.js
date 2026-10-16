@@ -506,6 +506,7 @@ applyBtn.addEventListener("click", () => {
 
   resultText.textContent = result;
   resultSection.style.display = "block";
+  document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
 
   highlightOn = false;
   toggleDiffBtn.textContent = "👁️ Tampilkan Perubahan";
