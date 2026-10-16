@@ -77,13 +77,20 @@ wire('glossaryBody', () => glossary, renderGlossary);
 wire('rulesBody', () => rules, renderRules);
 $('glossarySearch').oninput = renderGlossary;
 
-$('addGlossaryBtn').onclick = () => {
-  $('glossarySearch').value = '';
-  const blank = glossary.find(g => !g.wrong.trim() && !g.right.trim());
-  if (!blank) glossary.unshift({ id: uid(), on: true, wrong: '', right: '', mode: 'word' });
-  renderGlossary();
-  $('glossaryBody').querySelector('input[type=text]')?.focus();
-};
+const showTab = n => document.querySelector(`.main-tab[data-tab="${n}"]`).click();
+function submitGlossary() {
+  const w = $('newWrong').value.trim(), r = $('newRight').value.trim(), fb = $('addFeedback');
+  fb.hidden = false;
+  if (!w || !r) { fb.style.background = '#fff4e0'; fb.textContent = 'Isi istilah salah dan istilah benar dulu.'; ($('newWrong').value.trim() ? $('newRight') : $('newWrong')).focus(); return; }
+  const mode = $('newMode').value, ex = glossary.find(g => g.wrong.trim().toLowerCase() === w.toLowerCase());
+  if (ex) { ex.right = r; ex.mode = mode; ex.on = true; } else glossary.unshift({ id: uid(), on: true, wrong: w, right: r, mode });
+  $('glossarySearch').value = ''; renderGlossary();
+  fb.style.background = '#eaf6ee'; fb.textContent = `✅ ${ex ? 'Diperbarui' : 'Ditambahkan'}: ${w} → ${r}  (total ${glossary.length} istilah)`;
+  $('newWrong').value = ''; $('newRight').value = ''; $('newWrong').focus();
+}
+$('submitGlossaryBtn').onclick = submitGlossary;
+[$('newWrong'), $('newRight')].forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submitGlossary(); } }));
+$('goAddBtn').onclick = () => { showTab('add'); $('newWrong').focus(); };
 $('addRuleBtn').onclick = () => { rules.unshift({ id: uid(), on: true, find: '', repl: '', regex: false }); renderRules(); $('rulesBody').querySelector('input[type=text]')?.focus(); };
 
 /* ---------- Paste massal ---------- */

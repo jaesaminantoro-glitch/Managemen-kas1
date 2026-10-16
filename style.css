@@ -54,3 +54,6 @@ button:hover{filter:brightness(1.08)}
 .footer-note{text-align:center;color:#dfe6f5;font-size:.85rem;margin-top:8px}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:12px;font-size:.9rem;z-index:9;box-shadow:0 4px 16px rgba(0,0,0,.3)}
 @media(max-width:600px){.card{padding:18px}.btn-row{flex-direction:column}}
+.add-form{display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:center}
+.add-form .btn-primary-sm{padding:11px 20px}
+@media(max-width:700px){.add-form{grid-template-columns:1fr}.add-form select{width:100%}}

@@ -48,49 +48,58 @@
 
     <!-- TABS UTAMA -->
     <div class="main-tabs">
-      <button class="main-tab active" data-tab="glossary">📚 Glosarium <span class="badge" id="glossaryCount">0</span></button>
+      <button class="main-tab active" data-tab="add">➕ Tambah Istilah</button>
+      <button class="main-tab" data-tab="glossary">📚 Daftar Glosarium <span class="badge" id="glossaryCount">0</span></button>
       <button class="main-tab" data-tab="rules">🔧 Aturan Ganti <span class="badge" id="rulesCount">0</span></button>
       <button class="main-tab" data-tab="checker">🔍 Cek Konsistensi</button>
     </div>
 
-    <!-- ============ TAB: GLOSARIUM ============ -->
-    <section class="card tab-panel" id="panel-glossary">
-      <div class="panel-header">
-        <div>
-          <h2>📚 Glosarium Istilah</h2>
-          <p class="hint">Daftar istilah yang harus selalu diterjemahkan dengan cara tertentu. Contoh: <code>server → server</code>, <code>cloud → cloud</code></p>
-        </div>
-        <div class="panel-actions">
-          <button id="exportGlossaryBtn" class="btn-secondary">📤 Export</button>
-        </div>
-      </div>
+    <!-- ============ TAB: TAMBAH ISTILAH ============ -->
+    <section class="card tab-panel" id="panel-add">
+      <h2>➕ Tambah Istilah</h2>
+      <p class="hint">Isi istilah lalu klik <strong>Submit</strong> (atau tekan Enter). Istilah masuk ke tab <strong>Daftar Glosarium</strong>.</p>
 
-      <!-- AREA PASTE MASSAL -->
+      <div class="add-form">
+        <input type="text" id="newWrong" placeholder="Istilah salah / hasil AI (contoh: pelayan)" autocomplete="off" />
+        <input type="text" id="newRight" placeholder="Istilah benar (contoh: server)" autocomplete="off" />
+        <select id="newMode">
+          <option value="word">Kata utuh</option>
+          <option value="partial">Sebagian kata</option>
+          <option value="exact">Persis (Aa)</option>
+        </select>
+        <button id="submitGlossaryBtn" class="btn-primary-sm">✅ Submit</button>
+      </div>
+      <div id="addFeedback" class="bulk-preview" hidden></div>
+
+      <hr class="divider" />
+
       <div class="paste-area">
-        <label for="bulkPaste">📋 Tempel (Paste) Daftar Istilah</label>
-        <p class="paste-hint">
-          Copy dari Excel / Google Sheets / Word, lalu paste di sini. Format yang didukung:
-        </p>
-        <ul class="paste-format">
-          <li><code>pelayan | server</code> (pakai tanda pipa)</li>
-          <li><code>pelayan → server</code> (pakai tanda panah)</li>
-          <li><code>pelayan, server</code> (pakai koma)</li>
-          <li>Copy langsung dari Excel (kolom dipisah TAB)</li>
-        </ul>
-        <textarea id="bulkPaste" rows="6" placeholder="Contoh:
+        <label for="bulkPaste">📋 Atau tempel banyak istilah sekaligus</label>
+        <p class="paste-hint">Copy dari Excel / Google Sheets / Word. Pemisah yang didukung: <code>|</code>, <code>→</code>, koma, atau TAB.</p>
+        <textarea id="bulkPaste" rows="5" placeholder="Contoh:
 pelayan | server
 awan | cloud
-penyebaran aplikasi | deployment
-pipa data | pipeline"></textarea>
+penyebaran aplikasi | deployment"></textarea>
         <div class="paste-actions">
-          <button id="parseBulkBtn" class="btn-primary-sm">➕ Tambahkan ke Glosarium</button>
-          <button id="addGlossaryBtn" class="btn-primary-sm">+ Tambah Manual</button>
+          <button id="parseBulkBtn" class="btn-primary-sm">✅ Submit Semua</button>
           <button id="clearBulkBtn" class="btn-secondary">Bersihkan</button>
         </div>
         <div id="bulkPreview" class="bulk-preview" hidden></div>
       </div>
+    </section>
 
-      <hr class="divider" />
+    <!-- ============ TAB: DAFTAR GLOSARIUM ============ -->
+    <section class="card tab-panel" id="panel-glossary" hidden>
+      <div class="panel-header">
+        <div>
+          <h2>📚 Daftar Glosarium</h2>
+          <p class="hint">Istilah yang tersimpan. Bisa diedit langsung, dinonaktifkan, atau dihapus.</p>
+        </div>
+        <div class="panel-actions">
+          <button id="goAddBtn" class="btn-primary-sm">➕ Tambah Istilah</button>
+          <button id="exportGlossaryBtn" class="btn-secondary">📤 Export</button>
+        </div>
+      </div>
 
       <div class="search-row">
         <input type="text" id="glossarySearch" placeholder="🔍 Cari istilah..." />
@@ -112,7 +121,7 @@ pipa data | pipeline"></textarea>
       </div>
 
       <div class="empty-state" id="glossaryEmpty" hidden>
-        Belum ada istilah. Paste daftar di atas, atau klik <strong>+ Tambah Manual</strong>.
+        Belum ada istilah. Buka tab <strong>Tambah Istilah</strong> untuk memulai.
       </div>
     </section>
 
