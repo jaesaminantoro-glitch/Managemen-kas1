@@ -3,6 +3,7 @@
 const $ = id => document.getElementById(id);
 const KEY_G = 'tf_glossary_v2', KEY_R = 'tf_rules_v2';
 const uid = () => Math.random().toString(36).slice(2, 10);
+const stamp = (() => { let l = 0; return () => (l = Math.max(Date.now(), l + 1)); })();
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const load = (k) => { try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; } catch { return []; } };
 let glossary = load(KEY_G), rules = load(KEY_R);
@@ -83,7 +84,7 @@ function submitGlossary() {
   fb.hidden = false;
   if (!w || !r) { fb.style.background = '#fff4e0'; fb.textContent = 'Isi istilah salah dan istilah benar dulu.'; ($('newWrong').value.trim() ? $('newRight') : $('newWrong')).focus(); return; }
   const mode = $('newMode').value, ex = glossary.find(g => g.wrong.trim().toLowerCase() === w.toLowerCase());
-  if (ex) { ex.right = r; ex.mode = mode; ex.on = true; } else glossary.unshift({ id: uid(), on: true, wrong: w, right: r, mode });
+  if (ex) { ex.right = r; ex.mode = mode; ex.on = true; } else glossary.unshift({ id: uid(), on: true, wrong: w, right: r, mode, ts: stamp() });
   $('glossarySearch').value = ''; renderGlossary(); save();
   fb.style.background = '#eaf6ee'; fb.textContent = `✅ ${ex ? 'Diperbarui' : 'Ditambahkan'}: ${w} → ${r}  (total ${glossary.length} istilah)`;
   $('newWrong').value = ''; $('newRight').value = ''; $('newWrong').focus();
@@ -91,7 +92,7 @@ function submitGlossary() {
 $('submitGlossaryBtn').onclick = submitGlossary;
 [$('newWrong'), $('newRight')].forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submitGlossary(); } }));
 $('goAddBtn').onclick = () => { showTab('add'); $('newWrong').focus(); };
-$('addRuleBtn').onclick = () => { rules.unshift({ id: uid(), on: true, find: '', repl: '', regex: false }); renderRules(); save(); $('rulesBody').querySelector('input[type=text]')?.focus(); };
+$('addRuleBtn').onclick = () => { rules.unshift({ id: uid(), on: true, find: '', repl: '', regex: false, ts: stamp() }); renderRules(); save(); $('rulesBody').querySelector('input[type=text]')?.focus(); };
 
 /* ---------- Paste massal ---------- */
 const SEPS = [/\t/, /\s*\|\s*/, /\s*(?:→|->|=>|⇒)\s*/, /\s*[,;]\s*/];
@@ -104,7 +105,7 @@ $('parseBulkBtn').onclick = () => {
     const w = p && unq(p[0]), r = p && unq(p[1] || '');
     if (!w || !r) { bad.push(line.trim()); return; }
     const ex = glossary.find(g => g.wrong.trim().toLowerCase() === w.toLowerCase());
-    if (ex) { ex.right = r; upd++; } else { glossary.push({ id: uid(), on: true, wrong: w, right: r, mode: 'word' }); add++; }
+    if (ex) { ex.right = r; upd++; } else { glossary.push({ id: uid(), on: true, wrong: w, right: r, mode: 'word', ts: stamp() }); add++; }
   });
   glossary = glossary.filter(g => g.wrong.trim() || g.right.trim());
   renderGlossary(); save();
@@ -232,63 +233,68 @@ $('checkBtn').onclick = () => {
   $('checkerResult').hidden = false;
 };
 
-/* ---------- Sinkron Firebase (Realtime Database) ---------- */
-const normG = a => Object.values(a || {}).filter(g => g && (g.wrong || g.right)).map(g => ({ id: g.id || uid(), on: g.on !== false, wrong: g.wrong || '', right: g.right || '', mode: g.mode || 'word' }));
-const normR = a => Object.values(a || {}).filter(Boolean).map(r => ({ id: r.id || uid(), on: r.on !== false, find: r.find || '', repl: r.repl || '', regex: !!r.regex }));
-const sig = (g, r) => JSON.stringify([g.map(x => [x.id, x.on, x.wrong, x.right, x.mode]), r.map(x => [x.id, x.on, x.find, x.repl, x.regex])]);
+/* ---------- Sinkron Firebase (Realtime Database, data bersama tanpa login) ---------- */
+const withIds = o => Object.entries(o && typeof o === 'object' ? o : {}).filter(([, v]) => v && typeof v === 'object').map(([id, v]) => ({ ...v, id }));
+const byTs = (a, b) => b.ts - a.ts;
+const normG = a => a.filter(g => g && (g.wrong || g.right)).map(g => ({ id: g.id || uid(), on: g.on !== false, wrong: String(g.wrong || ''), right: String(g.right || ''), mode: ['word', 'partial', 'exact'].includes(g.mode) ? g.mode : 'word', ts: +g.ts || 0 }));
+const normR = a => a.filter(Boolean).map(r => ({ id: r.id || uid(), on: r.on !== false, find: String(r.find || ''), repl: String(r.repl || ''), regex: !!r.regex, ts: +r.ts || 0 }));
+const packG = g => ({ on: !!g.on, wrong: g.wrong, right: g.right, mode: g.mode, ts: g.ts });
+const packR = r => ({ on: !!r.on, find: r.find, repl: r.repl, regex: !!r.regex, ts: r.ts });
+const mapOf = (list, pack) => new Map(list.map(x => [x.id, JSON.stringify(pack(x))]));
+const sig = (g, r) => JSON.stringify([[...mapOf(g, packG)].sort(), [...mapOf(r, packR)].sort()]);
 const union = (remote, local, k) => { const s = new Set(remote.map(x => x[k].trim().toLowerCase())); return remote.concat(local.filter(x => !s.has(x[k].trim().toLowerCase()))); };
-let cloudUser = null, cloudOk = false, applying = false, firstSnap = true, cloudTimer = null, unsub = null;
+let cloudOk = false, applying = false, firstSnap = true, cloudTimer = null, pendingRemote = null;
+let knownG = new Map(), knownR = new Map();   // kondisi terakhir yang diketahui di server (untuk menghitung selisih)
 const status = t => $('syncStatus').textContent = t;
+const editing = () => !!document.activeElement?.closest?.('.data-table');
 
 function cloudSave() {
-  if (!cloudUser || !cloudOk || applying) return;
+  if (!cloudOk || applying) return;
   clearTimeout(cloudTimer); status('☁️ Menyimpan…');
   cloudTimer = setTimeout(pushCloud, 800);
 }
 async function pushCloud() {
   clearTimeout(cloudTimer); cloudTimer = null;
-  if (!cloudUser) return;
-  try { await window.cloud.save(cloudUser.uid, { glossary, rules }); status('☁️ Tersimpan di server · ' + cloudUser.email); }
+  const paths = {};
+  // Hanya kirim item yang berubah/dihapus, supaya edit orang lain tidak tertimpa
+  const diff = (list, pack, known, node) => {
+    const cur = mapOf(list, pack);
+    cur.forEach((s, id) => { if (known.get(id) !== s) paths[`shared/${node}/${id}`] = JSON.parse(s); });
+    known.forEach((s, id) => { if (!cur.has(id)) paths[`shared/${node}/${id}`] = null; });
+  };
+  diff(glossary, packG, knownG, 'glossary'); diff(rules, packR, knownR, 'rules');
+  if (!Object.keys(paths).length) return status('☁️ Tersinkron · data bersama');
+  try { await window.cloud.save(paths); status('☁️ Tersimpan di server · data bersama'); }
   catch (e) { status('⚠️ Gagal menyimpan ke server (' + (e.code || e.message) + '). Data tetap ada di browser.'); }
 }
 function applyData(g, r) {
   applying = true; glossary = g; rules = r;
   saveLocal(); renderGlossary(); renderRules(); applying = false;
 }
-function onRemote(u, remote) {
-  const rg = normG(remote?.glossary), rr = normR(remote?.rules);
+function onRemote(remote) {
+  const rg = normG(withIds(remote?.glossary)).sort(byTs), rr = normR(withIds(remote?.rules)).sort(byTs);
   if (firstSnap) {
     firstSnap = false;
-    let first = true; try { first = localStorage.getItem('tf_synced_uid') !== u.uid; } catch {}
-    applyData(first ? union(rg, glossary, 'wrong') : rg, first ? union(rr, rules, 'find') : rr);   // login pertama di perangkat ini: gabungkan data lokal
-    try { localStorage.setItem('tf_synced_uid', u.uid); } catch {}
+    knownG = mapOf(rg, packG); knownR = mapOf(rr, packR);
+    let first = true; try { first = localStorage.getItem('tf_synced_shared') !== '1'; } catch {}
+    applyData(first ? union(rg, glossary, 'wrong') : rg, first ? union(rr, rules, 'find') : rr);   // pertama kali di perangkat ini: gabungkan data lokal
+    try { localStorage.setItem('tf_synced_shared', '1'); } catch {}
     cloudOk = true;
-    if (first || sig(glossary, rules) !== sig(rg, rr)) cloudSave(); else status('☁️ Tersinkron · ' + u.email);
+    if (sig(glossary, rules) !== sig(rg, rr)) cloudSave(); else status('☁️ Tersinkron · data bersama');
     return;
   }
-  if (cloudTimer || sig(glossary, rules) === sig(rg, rr)) return;   // perubahan lokal belum terkirim, atau data sama
-  applyData(rg, rr); status('☁️ Diperbarui dari perangkat lain · ' + u.email);
+  if (cloudTimer) return;                                  // perubahan lokal belum terkirim
+  if (editing()) { pendingRemote = remote ?? {}; return; } // jangan ganggu yang sedang mengetik
+  knownG = mapOf(rg, packG); knownR = mapOf(rr, packR);
+  if (sig(glossary, rules) === sig(rg, rr)) return;
+  applyData(rg, rr); status('☁️ Diperbarui dari pengguna lain');
 }
-function onUser(u) {
-  if (unsub) { unsub(); unsub = null; }
-  clearTimeout(cloudTimer); cloudTimer = null;
-  cloudUser = u; cloudOk = false; firstSnap = true;
-  $('loginBtn').hidden = !!u; $('logoutBtn').hidden = !u;
-  if (!u) return status('💾 Disimpan di browser ini');
-  status('☁️ Memuat dari server…');
-  unsub = window.cloud.listen(u.uid, r => onRemote(u, r),
-    e => status('⚠️ Gagal memuat dari server (' + (e.code || e.message) + '). Cek aturan database dan DATABASE_URL.'));
-}
+document.addEventListener('focusout', () => setTimeout(() => {
+  if (pendingRemote && !editing() && !cloudTimer) { const p = pendingRemote; pendingRemote = null; onRemote(p); }
+}, 0));
 function initCloud() {
-  $('loginBtn').hidden = false;
-  $('loginBtn').onclick = () => window.cloud.signIn().catch(e => toast('Gagal masuk: ' + (e.code || e.message)));
-  $('logoutBtn').onclick = async () => {
-    if (cloudTimer) await pushCloud();   // kirim perubahan terakhir sebelum keluar
-    await window.cloud.signOut();
-    applyData([], []); try { localStorage.removeItem('tf_synced_uid'); } catch {}
-    toast('Keluar. Data tetap tersimpan di server.');
-  };
-  window.cloud.onAuth(onUser);
+  status('☁️ Memuat dari server…');
+  window.cloud.listen(onRemote, e => status('⚠️ Gagal memuat dari server (' + (e.code || e.message) + '). Cek aturan database dan DATABASE_URL.'));
 }
 if (window.cloud) initCloud(); else window.addEventListener('cloud-ready', initCloud, { once: true });
 setTimeout(() => { if (!window.cloud) status('⚠️ Firebase tidak termuat (mungkin diblokir). Data disimpan di browser ini.'); }, 6000);

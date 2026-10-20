@@ -12,9 +12,7 @@
       <h1>🛠️ Translation Fixer</h1>
       <p class="subtitle">Perbaiki hasil translate AI dengan glosarium & aturan penggantian — tanpa AI</p>
       <div class="auth-bar">
-        <span id="syncStatus">💾 Disimpan di browser ini</span>
-        <button id="loginBtn" class="btn-secondary" hidden>🔐 Masuk dengan Google</button>
-        <button id="logoutBtn" class="btn-secondary" hidden>Keluar</button>
+        <span id="syncStatus">💾 Memuat…</span>
       </div>
     </header>
 
@@ -184,16 +182,15 @@ penyebaran aplikasi | deployment"></textarea>
     </section>
 
     <div class="footer-note">
-      🔒 Teks dokumen hanya diproses di browser Anda. Glosarium & aturan disimpan di browser, atau di akun Google Anda (Firebase) jika login. Situs ini juga mencatat statistik kunjungan anonim.
+      🔒 Teks dokumen hanya diproses di browser Anda. Glosarium & aturan disimpan di server bersama: siapa pun yang membuka situs ini bisa melihat dan mengubahnya, jadi jangan simpan data rahasia. Situs ini juga mencatat statistik kunjungan anonim.
     </div>
   </div>
 
-  <!-- Firebase: Analytics + Login Google + Realtime Database -->
+  <!-- Firebase: Analytics + Realtime Database (data bersama, tanpa login) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
-    import { getDatabase, ref, onValue, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD80t_y7xfzUZzh8hmBBV6CJ0z0uQSjFx4",
@@ -213,17 +210,10 @@ penyebaran aplikasi | deployment"></textarea>
     const app = initializeApp(firebaseConfig);
     try { getAnalytics(app); } catch (e) { console.warn("Analytics tidak aktif:", e.message); }
 
-    const auth = getAuth(app), db = getDatabase(app, DATABASE_URL || undefined);
+    const db = getDatabase(app, DATABASE_URL || undefined);
     window.cloud = {
-      signIn: async () => {
-        const p = new GoogleAuthProvider();
-        try { await signInWithPopup(auth, p); }
-        catch (e) { if (e.code === "auth/popup-blocked") await signInWithRedirect(auth, p); else throw e; }
-      },
-      signOut: () => signOut(auth),
-      onAuth: cb => onAuthStateChanged(auth, cb),
-      listen: (uid, cb, onErr) => onValue(ref(db, "users/" + uid), snap => cb(snap.exists() ? snap.val() : null), onErr),
-      save: (uid, data) => set(ref(db, "users/" + uid), { ...data, updatedAt: serverTimestamp() })
+      listen: (cb, onErr) => onValue(ref(db, "shared"), snap => cb(snap.exists() ? snap.val() : null), onErr),
+      save: paths => update(ref(db), paths)
     };
     window.dispatchEvent(new Event("cloud-ready"));
   </script>
